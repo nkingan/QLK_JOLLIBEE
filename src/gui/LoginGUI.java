@@ -10,8 +10,6 @@ public class LoginGUI extends JFrame {
     private JTextField txtUser;
     private JPasswordField txtPass;
     private JButton btnLogin;
-    private String tenDangNhap; // lưu lại để truyền cho MainGUI
-
     public LoginGUI() {
         setTitle("Quản Lý Kho Jollibee - Đăng Nhập");
         setSize(420, 300);

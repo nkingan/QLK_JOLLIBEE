@@ -7,9 +7,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class MainGUI extends JFrame {
@@ -45,11 +45,12 @@ public class MainGUI extends JFrame {
     private JTextField txtCTPX_Ma, txtCTPX_MaNL, txtCTPX_SL, txtCTPX_DG;
 
     // DAOs
-    private NguyenLieuDAO nlDAO   = new NguyenLieuDAO();
-    private NhaCungCapDAO nccDAO  = new NhaCungCapDAO();
-    private NhanVienDAO   nvDAO   = new NhanVienDAO();
-    private PhieuNhapDAO  pnDAO   = new PhieuNhapDAO();
-    private PhieuXuatDAO  pxDAO   = new PhieuXuatDAO();
+    private NguyenLieuDAO         nlDAO    = new NguyenLieuDAO();
+    private NhaCungCapDAO         nccDAO   = new NhaCungCapDAO();
+    private NhanVienDAO           nvDAO    = new NhanVienDAO();
+    private PhieuNhapDAO          pnDAO    = new PhieuNhapDAO();
+    private PhieuXuatDAO          pxDAO    = new PhieuXuatDAO();
+    private ChiTietPhieuXuatDAO   ctpxDAO  = new ChiTietPhieuXuatDAO(); // FIX: tách DAO riêng
 
     public MainGUI(String currentUser) {
         this.currentUser = currentUser;
@@ -457,17 +458,21 @@ public class MainGUI extends JFrame {
             String maPN = txtPN_Ma.getText().trim();
             if (maPN.isEmpty()) { JOptionPane.showMessageDialog(this, "Tạo phiếu nhập trước!"); return; }
             if (!validateFields(txtCTPN_MaNL, txtCTPN_SL, txtCTPN_DG)) return;
-            String maCT = pnDAO.genMaCTPN();
-            pnDAO.insertChiTiet(new ChiTietPhieuNhap(
-                maCT,
-                Integer.parseInt(txtCTPN_SL.getText().trim()),
-                txtCTPN_MaNL.getText().trim(),
-                Double.parseDouble(txtCTPN_DG.getText().trim()),
-                maPN
-            ));
-            loadCTPN(maPN); loadPN(); loadNL();
-            txtCTPN_MaNL.setText(""); txtCTPN_SL.setText(""); txtCTPN_DG.setText("");
-            JOptionPane.showMessageDialog(this, "Thêm chi tiết thành công! Kho đã được cập nhật.");
+            try {
+                String maCT = pnDAO.genMaCTPN();
+                pnDAO.insertChiTiet(new ChiTietPhieuNhap(
+                    maCT,
+                    Integer.parseInt(txtCTPN_SL.getText().trim()),
+                    txtCTPN_MaNL.getText().trim(),
+                    Double.parseDouble(txtCTPN_DG.getText().trim()),
+                    maPN
+                ));
+                loadCTPN(maPN); loadPN(); loadNL();
+                txtCTPN_MaNL.setText(""); txtCTPN_SL.setText(""); txtCTPN_DG.setText("");
+                JOptionPane.showMessageDialog(this, "Thêm chi tiết thành công! Kho đã được cập nhật.");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Số lượng và đơn giá phải là số hợp lệ!", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         JPanel top = new JPanel(new BorderLayout());
@@ -489,14 +494,21 @@ public class MainGUI extends JFrame {
     private void loadPN() {
         modelPN.setRowCount(0);
         for (PhieuNhap pn : pnDAO.getAll())
-            modelPN.addRow(new Object[]{pn.getMaPN(), pn.getNgayNhap(),
-                pn.getMaNV(), pn.getMaNCC(), String.format("%,.0f đ", pn.getTongTien())});
+            modelPN.addRow(new Object[]{
+                pn.getMaPN(), pn.getNgayNhap(),
+                pn.getMaNV(), pn.getMaNCC(),
+                String.format("%,.0f đ", pn.getTongTien())
+            });
     }
     private void loadCTPN(String maPN) {
         modelCTPN.setRowCount(0);
         for (ChiTietPhieuNhap ct : pnDAO.getChiTiet(maPN))
-            modelCTPN.addRow(new Object[]{ct.getMaCTPN(), ct.getMaNL(),
-                ct.getSoLuong(), String.format("%,.0f đ", ct.getDonGia()), ct.getMaPN()});
+            modelCTPN.addRow(new Object[]{
+                ct.getMaCTPN(), ct.getMaNL(),
+                ct.getSoLuong(),
+                String.format("%,.0f đ", ct.getDonGia()),
+                ct.getMaPN()
+            });
     }
 
     // =====================================================================
@@ -535,7 +547,6 @@ public class MainGUI extends JFrame {
         formCT.add(new JLabel(" Số lượng:")); formCT.add(txtCTPX_SL);
         formCT.add(new JLabel(" Đơn giá:"));  formCT.add(txtCTPX_DG);
 
-        // FIX: khai báo bntsCT đúng chỗ
         JPanel bntsCT = new JPanel();
         JButton btnThemCT = btn("Thêm chi tiết", new Color(30,144,255));
         bntsCT.add(btnThemCT);
@@ -559,12 +570,26 @@ public class MainGUI extends JFrame {
             }
         });
 
+        // FIX: dùng generateNextMaPX() đúng tên, parse ngày đúng kiểu java.sql.Date
         btnTaoPX.addActionListener(e -> {
-            String maPX = pxDAO.genMaPX();
-            pxDAO.insert(new PhieuXuat(maPX, txtPX_Ngay.getText().trim(), currentUser, 0));
-            txtPX_Ma.setText(maPX);
-            loadPX();
-            JOptionPane.showMessageDialog(this, "Tạo phiếu " + maPX + " thành công! Hãy thêm chi tiết.");
+            try {
+                String maPX = pxDAO.generateNextMaPX();
+                Date ngayXuat = Date.valueOf(txtPX_Ngay.getText().trim()); // "yyyy-MM-dd" → java.sql.Date
+                PhieuXuat px = new PhieuXuat(maPX, ngayXuat, currentUser, BigDecimal.ZERO);
+                boolean ok = pxDAO.insert(px);
+                if (ok) {
+                    txtPX_Ma.setText(maPX);
+                    loadPX();
+                    JOptionPane.showMessageDialog(this, "Tạo phiếu " + maPX + " thành công! Hãy thêm chi tiết.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Tạo phiếu thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IllegalArgumentException ex) {
+                // Date.valueOf ném IllegalArgumentException nếu format sai
+                JOptionPane.showMessageDialog(this, "Ngày không hợp lệ! Định dạng: yyyy-MM-dd", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi tạo phiếu xuất: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         btnXoaPX.addActionListener(e -> {
@@ -581,24 +606,32 @@ public class MainGUI extends JFrame {
             modelCTPX.setRowCount(0); tablePX.clearSelection();
         });
 
+        // FIX: dùng ctpxDAO, build đúng object ChiTietPhieuXuat với đủ tham số
         btnThemCT.addActionListener(e -> {
             String maPX = txtPX_Ma.getText().trim();
             if (maPX.isEmpty()) { JOptionPane.showMessageDialog(this, "Tạo phiếu xuất trước!"); return; }
             if (!validateFields(txtCTPX_MaNL, txtCTPX_SL, txtCTPX_DG)) return;
             try {
-                String maCT = pxDAO.genMaCTPX();
-                pxDAO.insertChiTiet(new ChiTietPhieuXuat(
-                    maCT,
-                    Integer.parseInt(txtCTPX_SL.getText().trim()),
-                    txtCTPX_MaNL.getText().trim(),
-                    Double.parseDouble(txtCTPX_DG.getText().trim()),
-                    maPX
-                ));
-                loadCTPX(maPX); loadPX(); loadNL();
-                txtCTPX_MaNL.setText(""); txtCTPX_SL.setText(""); txtCTPX_DG.setText("");
-                JOptionPane.showMessageDialog(this, "Xuất kho thành công! Kho đã được cập nhật.");
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Không đủ hàng trong kho!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                int soLuong = Integer.parseInt(txtCTPX_SL.getText().trim());
+                BigDecimal donGia = new BigDecimal(txtCTPX_DG.getText().trim());
+                String maCTPX = ctpxDAO.generateNextMaCTPX();
+                String maNL   = txtCTPX_MaNL.getText().trim();
+
+                ChiTietPhieuXuat ct = new ChiTietPhieuXuat(maCTPX, soLuong, donGia, maNL, maPX);
+                boolean ok = ctpxDAO.insert(ct);
+                if (ok) {
+                    loadCTPX(maPX); loadPX(); loadNL();
+                    txtCTPX_MaNL.setText(""); txtCTPX_SL.setText(""); txtCTPX_DG.setText("");
+                    JOptionPane.showMessageDialog(this, "Xuất kho thành công! Kho đã được cập nhật.");
+                } else {
+                    // insert trả false khi tồn kho không đủ (trigger chặn)
+                    JOptionPane.showMessageDialog(this, "Xuất thất bại! Có thể tồn kho không đủ.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Số lượng và đơn giá phải là số hợp lệ!", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalArgumentException ex) {
+                // Bắt lỗi từ validation trong setter ChiTietPhieuXuat
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -618,17 +651,28 @@ public class MainGUI extends JFrame {
         return panel;
     }
 
+    // FIX: cột đầu phải là getMaPX(), không phải getMaNV()
     private void loadPX() {
         modelPX.setRowCount(0);
         for (PhieuXuat px : pxDAO.getAll())
-            modelPX.addRow(new Object[]{px.getMaXuat(), px.getNgayXuat(),
-                px.getMaNV(), String.format("%,.0f đ", px.getTongTien())});
+            modelPX.addRow(new Object[]{
+                px.getMaPX(),       // FIX: trước đây là getMaNV() — sai cột
+                px.getNgayXuat(),
+                px.getMaNV(),
+                String.format("%,.0f đ", px.getTongTien())
+            });
     }
+
+    // FIX: dùng ctpxDAO.getByMaPX() thay vì pxDAO.insertChiTiet()
     private void loadCTPX(String maPX) {
         modelCTPX.setRowCount(0);
-        for (ChiTietPhieuXuat ct : pxDAO.getChiTiet(maPX))
-            modelCTPX.addRow(new Object[]{ct.getMaCTPX(), ct.getMaNL(),
-                ct.getSoLuong(), String.format("%,.0f đ", ct.getDonGia()), ct.getMaPX()});
+        for (ChiTietPhieuXuat ct : ctpxDAO.getByMaPX(maPX))
+            modelCTPX.addRow(new Object[]{
+                ct.getMaCTPX(), ct.getMaNL(),
+                ct.getSoLuong(),
+                String.format("%,.0f đ", ct.getDonGia()),
+                ct.getMaPX()
+            });
     }
 
     // =====================================================================
@@ -660,6 +704,6 @@ public class MainGUI extends JFrame {
     private String safe(Object o) { return o == null ? "" : o.toString(); }
 
     private String today() {
-        return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
     }
 }
