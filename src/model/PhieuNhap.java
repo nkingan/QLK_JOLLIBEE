@@ -1,14 +1,26 @@
 package model;
 
+import java.util.Date;
+
 public class PhieuNhap {
 
     private String maPN;
-    private String ngayNhap;
+    private Date ngayNhap; 
     private String maNV;
     private String maNCC;
     private double tongTien;
 
-    public PhieuNhap(String maPN, String ngayNhap, String maNV, String maNCC, double tongTien) {
+  
+    public PhieuNhap() {
+        maPN =" ";
+        ngayNhap=new Date();
+        maNV=" ";
+        maNCC=" ";
+        tongTien=0;
+    }
+
+   
+    public PhieuNhap(String maPN, Date ngayNhap, String maNV, String maNCC, double tongTien) {
         this.maPN = maPN;
         this.ngayNhap = ngayNhap;
         this.maNV = maNV;
@@ -16,42 +28,42 @@ public class PhieuNhap {
         this.tongTien = tongTien;
     }
 
-    
+    // --- GETTER & SETTER 
+
     public String getMaPN() {
         return maPN;
     }
 
-    public String getNgayNhap() {
+    public void setMaPN(String maPN) {
+        this.maPN = maPN;
+    }
+
+    public Date getNgayNhap() { 
         return ngayNhap;
+    }
+
+    public void setNgayNhap(Date ngayNhap) {
+        this.ngayNhap = ngayNhap;
     }
 
     public String getMaNV() {
         return maNV;
     }
 
-    public String getMaNCC() {
-        return maNCC;
-    }
-
-    public double getTongTien() {
-        return tongTien;
-    }
-
-   
-    public void setMaPN(String maPN) {
-        this.maPN = maPN;
-    }
-
-    public void setNgayNhap(String ngayNhap) {
-        this.ngayNhap = ngayNhap;
-    }
-
     public void setMaNV(String maNV) {
         this.maNV = maNV;
     }
 
+    public String getMaNCC() {
+        return maNCC;
+    }
+
     public void setMaNCC(String maNCC) {
         this.maNCC = maNCC;
+    }
+
+    public double getTongTien() {
+        return tongTien;
     }
 
     public void setTongTien(double tongTien) {
