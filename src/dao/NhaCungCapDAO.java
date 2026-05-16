@@ -1,119 +1,143 @@
-// package dao;
-
-// import model.NhaCungCap;
-// import util.DBConnection;
-
-// import java.sql.*;
-// import java.util.*;
-
-// public class NhaCungCapDAO implements CrudDAO<NhaCungCap> {
-
-//     public void insert(NhaCungCap ncc) {
-//         String sql = "INSERT INTO NhaCungCap VALUES (?, ?, ?, ?, ?)";
-
-//         try (Connection conn = DBConnection.getConnection();
-//              PreparedStatement ps = conn.prepareStatement(sql)) {
-
-//             ps.setString(1, ncc.getMaNCC());
-//             ps.setString(2, ncc.getTenNCC());
-//             ps.setString(3, ncc.getDiaChi());
-//             ps.setString(4, ncc.getSdt());
-//             ps.setString(5, ncc.getEmail());
-
-//             ps.executeUpdate();
-//         } catch (Exception e) { e.printStackTrace(); }
-//     }
-
-//     public List<NhaCungCap> getAll() {
-//         List<NhaCungCap> list = new ArrayList<>();
-//         String sql = "SELECT * FROM NhaCungCap";
-
-//         try (Connection conn = DBConnection.getConnection();
-//              Statement st = conn.createStatement();
-//              ResultSet rs = st.executeQuery(sql)) {
-
-//             while (rs.next()) {
-//                 NhaCungCap ncc = new NhaCungCap();
-//                 ncc.setMaNCC(rs.getString("MaNCC"));
-//                 ncc.setTenNCC(rs.getString("TenNCC"));
-//                 list.add(ncc);
-//             }
-//         } catch (Exception e) { e.printStackTrace(); }
-
-//         return list;
-//     }
-
-//     public void update(NhaCungCap t) {}
-//     public void delete(String id) {}
-//     public NhaCungCap findById(String id) { return null; }
-// }
 package dao;
 
 import model.NhaCungCap;
 import util.DBConnection;
+
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NhaCungCapDAO {
 
     public List<NhaCungCap> getAll() {
+
         List<NhaCungCap> list = new ArrayList<>();
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT * FROM NhaCungCap")) {
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery("SELECT * FROM NhaCungCap")
+        ) {
+
             while (rs.next()) {
-                list.add(new NhaCungCap(
-                    rs.getString("MaNCC"),
-                    rs.getString("TenNCC"),
-                    rs.getString("DiaChi"),
-                    rs.getString("SDT"),
-                    rs.getString("Email")
-                ));
+
+                NhaCungCap ncc = new NhaCungCap(
+                        rs.getString("MaNCC"),
+                        rs.getString("TenNCC"),
+                        rs.getString("DiaChi"),
+                        rs.getString("SDT"),
+                        rs.getString("Email")
+                );
+
+                list.add(ncc);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+
+        } catch (Exception e) {
+
+            System.out.println("Lỗi lấy danh sách nhà cung cấp!");
+            e.printStackTrace();
+        }
+
         return list;
     }
 
     public void insert(NhaCungCap ncc) {
-        String sql = "INSERT INTO NhaCungCap (MaNCC,TenNCC,DiaChi,SDT,Email) VALUES (?,?,?,?,?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        String sql = """
+                INSERT INTO NhaCungCap
+                (MaNCC, TenNCC, DiaChi, SDT, Email)
+                VALUES (?, ?, ?, ?, ?)
+                """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
             ps.setString(1, ncc.getMaNCC());
             ps.setString(2, ncc.getTenNCC());
             ps.setString(3, ncc.getDiaChi());
             ps.setString(4, ncc.getSdt());
             ps.setString(5, ncc.getEmail());
+
             ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+
+        } catch (Exception e) {
+
+            System.out.println("Lỗi thêm nhà cung cấp!");
+            e.printStackTrace();
+        }
     }
 
     public void update(NhaCungCap ncc) {
-        String sql = "UPDATE NhaCungCap SET TenNCC=?,DiaChi=?,SDT=?,Email=? WHERE MaNCC=?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        String sql = """
+                UPDATE NhaCungCap
+                SET TenNCC=?, DiaChi=?, SDT=?, Email=?
+                WHERE MaNCC=?
+                """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
             ps.setString(1, ncc.getTenNCC());
             ps.setString(2, ncc.getDiaChi());
             ps.setString(3, ncc.getSdt());
             ps.setString(4, ncc.getEmail());
             ps.setString(5, ncc.getMaNCC());
+
             ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+
+        } catch (Exception e) {
+
+            System.out.println("Lỗi cập nhật nhà cung cấp!");
+            e.printStackTrace();
+        }
     }
 
     public void delete(String maNCC) {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM NhaCungCap WHERE MaNCC=?")) {
+
+        String sql = "DELETE FROM NhaCungCap WHERE MaNCC=?";
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
             ps.setString(1, maNCC);
+
             ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+
+        } catch (Exception e) {
+
+            System.out.println("Lỗi xóa nhà cung cấp!");
+            e.printStackTrace();
+        }
     }
 
     public boolean existsById(String maNCC) {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT 1 FROM NhaCungCap WHERE MaNCC=?")) {
+
+        String sql = "SELECT 1 FROM NhaCungCap WHERE MaNCC=?";
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
             ps.setString(1, maNCC);
-            return ps.executeQuery().next();
-        } catch (Exception e) { e.printStackTrace(); }
+
+            ResultSet rs = ps.executeQuery();
+
+            return rs.next();
+
+        } catch (Exception e) {
+
+            System.out.println("Lỗi kiểm tra mã nhà cung cấp!");
+            e.printStackTrace();
+        }
+
         return false;
     }
 }
