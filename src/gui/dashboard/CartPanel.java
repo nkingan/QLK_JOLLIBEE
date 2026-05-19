@@ -55,8 +55,14 @@ public class CartPanel extends JPanel {
 
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         actionPanel.setOpaque(false);
+        JButton btnDecrease = createButton("-", new Color(220, 150, 50));
+        btnDecrease.setPreferredSize(new Dimension(45, 35));
+        JButton btnIncrease = createButton("+", new Color(46, 139, 87));
+        btnIncrease.setPreferredSize(new Dimension(45, 35));
         JButton btnRemove = createButton("Xóa Sản Phẩm", new Color(220, 50, 50));
         JButton btnClear = createButton("Làm Sạch Giỏ", new Color(100, 100, 100));
+        actionPanel.add(btnDecrease);
+        actionPanel.add(btnIncrease);
         actionPanel.add(btnRemove);
         actionPanel.add(btnClear);
 
@@ -81,12 +87,52 @@ public class CartPanel extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
 
         // Actions
+        btnIncrease.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                String id = (String) model.getValueAt(row, 0);
+                for (CartItem item : cartManager.getItems()) {
+                    if (item.getProduct().getId().equals(id)) {
+                        if (item.getQuantity() < item.getProduct().getStock()) {
+                            cartManager.updateQuantity(id, item.getQuantity() + 1);
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Vượt quá số lượng tồn kho!");
+                        }
+                        break;
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần tăng!");
+            }
+        });
+
+        btnDecrease.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                String id = (String) model.getValueAt(row, 0);
+                for (CartItem item : cartManager.getItems()) {
+                    if (item.getProduct().getId().equals(id)) {
+                        if (item.getQuantity() > 1) {
+                            cartManager.updateQuantity(id, item.getQuantity() - 1);
+                        } else {
+                            int result = JOptionPane.showConfirmDialog(this, "Xóa sản phẩm khỏi giỏ hàng?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                            if(result == JOptionPane.YES_OPTION) {
+                                cartManager.removeItem(id);
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần giảm!");
+            }
+        });
+
         btnRemove.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
                 String id = (String) model.getValueAt(row, 0);
                 cartManager.removeItem(id);
-                loadData();
             } else {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần xóa!");
             }

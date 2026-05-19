@@ -19,7 +19,9 @@ import java.util.List;
 public class DashboardPanel extends JPanel {
 
     private CartManager cartManager;
-
+    private List<Product> allProducts;
+    private JPanel productList;
+    
     public DashboardPanel(CartManager cartManager) {
         this.cartManager = cartManager;
         setLayout(new BorderLayout(0, 15));
@@ -45,26 +47,46 @@ public class DashboardPanel extends JPanel {
         JPanel middlePanel = new JPanel(new BorderLayout(0, 5));
         middlePanel.setOpaque(false);
         
+        JPanel headerMiddlePanel = new JPanel(new BorderLayout());
+        headerMiddlePanel.setOpaque(false);
+        
         JLabel lblProductTitle = new JLabel("Danh sách sản phẩm nổi bật");
         lblProductTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
         lblProductTitle.setForeground(new Color(60, 60, 60));
-        middlePanel.add(lblProductTitle, BorderLayout.NORTH);
+        headerMiddlePanel.add(lblProductTitle, BorderLayout.WEST);
+        
+        // Category filters
+        JPanel categoryPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        categoryPanel.setOpaque(false);
+        String[] categories = {"Tất cả", "Gà Rán", "Thức Uống", "Ăn Kèm"};
+        for (String cat : categories) {
+            JButton btnCat = new JButton(cat);
+            btnCat.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            btnCat.setBackground(Color.WHITE);
+            btnCat.setFocusPainted(false);
+            btnCat.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            btnCat.addActionListener(e -> filterProducts(cat.equals("Tất cả") ? "" : cat));
+            categoryPanel.add(btnCat);
+        }
+        headerMiddlePanel.add(categoryPanel, BorderLayout.EAST);
+        
+        middlePanel.add(headerMiddlePanel, BorderLayout.NORTH);
 
-        JPanel productList = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        productList = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         productList.setOpaque(false);
         
         // Mock Products
-        List<Product> products = new ArrayList<>();
-        products.add(new Product("SP001", "Gà Giòn Vui Vẻ", 35000, 120, "🍗"));
-        products.add(new Product("SP002", "Mì Ý Sốt Xúc Xích", 40000, 85, "🍝"));
-        products.add(new Product("SP003", "Khoai Tây Chiên", 20000, 200, "🍟"));
-        products.add(new Product("SP004", "Burger Gà", 45000, 50, "🍔"));
-        products.add(new Product("SP005", "Nước Ngọt", 15000, 500, "🥤"));
-        products.add(new Product("SP006", "Kem Sundae", 25000, 75, "🍦"));
+        allProducts = new ArrayList<>();
+        allProducts.add(new Product("SP001", "Gà Giòn Vui Vẻ", 35000, 120, "🍗")); // Gà Rán
+        allProducts.add(new Product("SP002", "Mì Ý Sốt Xúc Xích", 40000, 85, "🍝")); // Ăn Kèm
+        allProducts.add(new Product("SP003", "Khoai Tây Chiên", 20000, 200, "🍟")); // Ăn Kèm
+        allProducts.add(new Product("SP004", "Burger Gà", 45000, 50, "🍔")); // Ăn Kèm
+        allProducts.add(new Product("SP005", "Nước Ngọt", 15000, 500, "🥤")); // Thức Uống
+        allProducts.add(new Product("SP006", "Kem Sundae", 25000, 75, "🍦")); // Ăn Kèm
+        allProducts.add(new Product("SP007", "Gà Sốt Cay", 38000, 90, "🍗")); // Gà Rán
+        allProducts.add(new Product("SP008", "Trà Đào", 22000, 150, "🍹")); // Thức Uống
 
-        for (Product p : products) {
-            productList.add(new ProductCard(p, cartManager));
-        }
+        renderProducts(allProducts);
 
         JScrollPane scrollPane = new JScrollPane(productList);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -160,5 +182,35 @@ public class DashboardPanel extends JPanel {
         renderer.setSeriesPaint(0, new Color(46, 139, 87));
         renderer.setSeriesPaint(1, new Color(220, 60, 20));
         return chart;
+    }
+
+    public void filterProducts(String keyword) {
+        if (keyword == null) keyword = "";
+        String kw = keyword.toLowerCase().trim();
+        List<Product> filtered = new ArrayList<>();
+        for (Product p : allProducts) {
+            boolean match = false;
+            if (p.getName().toLowerCase().contains(kw) || p.getId().toLowerCase().contains(kw)) {
+                match = true;
+            }
+            // Category check based on mock names
+            if (kw.equalsIgnoreCase("Gà Rán") && p.getName().contains("Gà")) match = true;
+            if (kw.equalsIgnoreCase("Thức Uống") && (p.getName().contains("Nước") || p.getName().contains("Trà"))) match = true;
+            if (kw.equalsIgnoreCase("Ăn Kèm") && !p.getName().contains("Gà") && !p.getName().contains("Nước") && !p.getName().contains("Trà")) match = true;
+            
+            if (kw.isEmpty() || match) {
+                filtered.add(p);
+            }
+        }
+        renderProducts(filtered);
+    }
+
+    private void renderProducts(List<Product> products) {
+        productList.removeAll();
+        for (Product p : products) {
+            productList.add(new ProductCard(p, cartManager));
+        }
+        productList.revalidate();
+        productList.repaint();
     }
 }

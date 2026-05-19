@@ -62,6 +62,7 @@ public class ProductCard extends JPanel {
         
         // Hover & Click Effect
         addMouseListener(new MouseAdapter() {
+            Timer clickTimer;
             @Override
             public void mouseEntered(MouseEvent evt) {
                 setBackground(new Color(255, 252, 245));
@@ -81,7 +82,24 @@ public class ProductCard extends JPanel {
             }
             @Override
             public void mouseClicked(MouseEvent evt) {
-                showAddToCartDialog(cartManager);
+                if (evt.getClickCount() == 2) {
+                    if (clickTimer != null && clickTimer.isRunning()) {
+                        clickTimer.stop();
+                    }
+                    if (product.getStock() > 0) {
+                        cartManager.addProduct(product, 1);
+                        // Show a temporary non-blocking toast or a quick JOptionPane
+                        JOptionPane.showMessageDialog(ProductCard.this, "Đã thêm nhanh 1 " + product.getName() + " vào giỏ!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(ProductCard.this, "Sản phẩm đã hết hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else if (evt.getClickCount() == 1) {
+                    clickTimer = new Timer(250, e -> {
+                        showAddToCartDialog(cartManager);
+                    });
+                    clickTimer.setRepeats(false);
+                    clickTimer.start();
+                }
             }
         });
     }
@@ -94,10 +112,15 @@ public class ProductCard extends JPanel {
         
         JPanel qtyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         qtyPanel.add(new JLabel("Số lượng mua: "));
-        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, product.getStock(), 1);
+        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, product.getStock() > 0 ? product.getStock() : 1, 1);
         JSpinner spinner = new JSpinner(spinnerModel);
         qtyPanel.add(spinner);
         panel.add(qtyPanel);
+
+        if (product.getStock() == 0) {
+            JOptionPane.showMessageDialog(this, "Sản phẩm đã hết hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Thêm vào giỏ hàng", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {

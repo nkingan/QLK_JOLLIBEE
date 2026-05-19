@@ -8,12 +8,14 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import java.util.function.Consumer;
+
 public class HeaderPanel extends JPanel {
 
     private JLabel lblTime;
     private JLabel lblCartCount;
 
-    public HeaderPanel(String adminName, CartManager cartManager, Runnable onCartClicked) {
+    public HeaderPanel(String adminName, CartManager cartManager, Runnable onCartClicked, Consumer<String> onSearch) {
         setLayout(new BorderLayout());
         setBackground(new Color(220, 60, 20)); // Jollibee Orange-Brown
         setPreferredSize(new Dimension(0, 70));
@@ -47,6 +49,18 @@ public class HeaderPanel extends JPanel {
         btnSearch.setBorder(BorderFactory.createEmptyBorder());
         btnSearch.setFocusPainted(false);
         btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnSearch.addActionListener(e -> {
+            if (onSearch != null) {
+                onSearch.accept(txtSearch.getText());
+            }
+        });
+        
+        txtSearch.addActionListener(e -> {
+            if (onSearch != null) {
+                onSearch.accept(txtSearch.getText());
+            }
+        });
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 0; searchPanel.add(txtSearch, gbc);
