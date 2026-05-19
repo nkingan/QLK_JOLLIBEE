@@ -21,9 +21,15 @@ public class DashboardPanel extends JPanel {
     private CartManager cartManager;
     private List<Product> allProducts;
     private JPanel productList;
+    private boolean showMetrics;
     
     public DashboardPanel(CartManager cartManager) {
+        this(cartManager, true);
+    }
+
+    public DashboardPanel(CartManager cartManager, boolean showMetrics) {
         this.cartManager = cartManager;
+        this.showMetrics = showMetrics;
         setLayout(new BorderLayout(0, 15));
         setBackground(new Color(245, 246, 250));
         setBorder(new EmptyBorder(15, 20, 15, 20));
@@ -36,13 +42,15 @@ public class DashboardPanel extends JPanel {
         lblGreeting.setForeground(new Color(40, 40, 40));
         topPanel.add(lblGreeting, BorderLayout.NORTH);
 
-        JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
-        statsPanel.setOpaque(false);
-        statsPanel.add(createStatCard("Tổng sản phẩm", "1,250", "📦", new Color(65, 105, 225)));
-        statsPanel.add(createStatCard("Hàng sắp hết", "15", "⚠️", new Color(220, 50, 50)));
-        statsPanel.add(createStatCard("Nhập hôm nay", "320", "📥", new Color(46, 139, 87)));
-        statsPanel.add(createStatCard("Doanh thu", "45.5M", "💰", new Color(255, 140, 0)));
-        topPanel.add(statsPanel, BorderLayout.CENTER);
+        if (showMetrics) {
+            JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+            statsPanel.setOpaque(false);
+            statsPanel.add(createStatCard("Tổng sản phẩm", "1,250", "📦", new Color(65, 105, 225)));
+            statsPanel.add(createStatCard("Hàng sắp hết", "15", "⚠️", new Color(220, 50, 50)));
+            statsPanel.add(createStatCard("Nhập hôm nay", "320", "📥", new Color(46, 139, 87)));
+            statsPanel.add(createStatCard("Doanh thu", "45.5M", "💰", new Color(255, 140, 0)));
+            topPanel.add(statsPanel, BorderLayout.CENTER);
+        }
 
         JPanel middlePanel = new JPanel(new BorderLayout(0, 5));
         middlePanel.setOpaque(false);
@@ -101,11 +109,14 @@ public class DashboardPanel extends JPanel {
         bottomPanel.setOpaque(false);
         bottomPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
         
-        JFreeChart chart = createChart();
-        ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new Dimension(800, 240)); 
-        chartPanel.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1, true));
-        bottomPanel.add(chartPanel, BorderLayout.CENTER);
+        JFreeChart chart = null;
+        if (showMetrics) {
+            chart = createChart();
+            ChartPanel chartPanel = new ChartPanel(chart);
+            chartPanel.setPreferredSize(new Dimension(800, 240)); 
+            chartPanel.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1, true));
+            bottomPanel.add(chartPanel, BorderLayout.CENTER);
+        }
 
         JPanel contentWrapper = new JPanel();
         contentWrapper.setLayout(new BoxLayout(contentWrapper, BoxLayout.Y_AXIS));
@@ -113,13 +124,17 @@ public class DashboardPanel extends JPanel {
         
         topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         middlePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        bottomPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        if (showMetrics) {
+            bottomPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        }
         
         contentWrapper.add(topPanel);
         contentWrapper.add(Box.createVerticalStrut(15));
         contentWrapper.add(middlePanel);
-        contentWrapper.add(Box.createVerticalStrut(15));
-        contentWrapper.add(bottomPanel);
+        if (showMetrics) {
+            contentWrapper.add(Box.createVerticalStrut(15));
+            contentWrapper.add(bottomPanel);
+        }
         
         add(contentWrapper, BorderLayout.NORTH);
     }

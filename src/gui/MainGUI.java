@@ -1,6 +1,10 @@
 package gui;
 
 import dao.*;
+import gui.dashboard.CartPanel;
+import gui.dashboard.DashboardPanel;
+import gui.dashboard.InvoicePanel;
+import gui.dashboard.model.CartManager;
 import model.*;
 import ui.TrangChuUI;
 
@@ -17,6 +21,7 @@ public class MainGUI extends JFrame {
 
     private String currentUser;
     private JTabbedPane tabs;
+    private CartManager cartManager;
 
     // ===== NGUYÊN LIỆU =====
     private DefaultTableModel modelNL;
@@ -55,7 +60,8 @@ public class MainGUI extends JFrame {
     public MainGUI(String currentUser) {
         this.currentUser = currentUser;
         setTitle("Quản Lý Kho Jollibee - [" + currentUser + "]");
-        setSize(1000, 650);
+        setSize(1350, 780);
+        setMinimumSize(new Dimension(1200, 720));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -78,9 +84,11 @@ public class MainGUI extends JFrame {
         header.add(btnLogout, BorderLayout.EAST);
 
         // Tabs
+        cartManager = new CartManager();
         tabs = new JTabbedPane();
         tabs.setFont(new Font("Arial", Font.PLAIN, 13));
-        tabs.addTab("Trang Chủ",    new TrangChuUI(currentUser));
+        tabs.addTab("Trang Chủ",    new TrangChuUI(currentUser, tabs));
+        tabs.addTab("Bán Hàng",     buildSalesPanel());
         tabs.addTab("Nguyên Liệu",  buildNLPanel());
         tabs.addTab("Nhà Cung Cấp", buildNCCPanel());
         tabs.addTab("Nhân Viên",    buildNVPanel());
@@ -95,6 +103,55 @@ public class MainGUI extends JFrame {
     // =====================================================================
     // TAB NGUYÊN LIỆU
     // =====================================================================
+    private JPanel buildSalesPanel() {
+        JPanel salesPanel = new JPanel(new BorderLayout(10, 10));
+        salesPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel centerPanel;
+        try {
+            DashboardPanel dashboardPanel = new DashboardPanel(cartManager, false);
+            centerPanel = dashboardPanel;
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            centerPanel = new JPanel(new BorderLayout());
+            centerPanel.setBackground(new Color(245, 246, 250));
+            JLabel lblError = new JLabel("Không thể tải dashboard bán hàng. Vui lòng kiểm tra thư viện.", SwingConstants.CENTER);
+            lblError.setFont(new Font("Arial", Font.BOLD, 16));
+            lblError.setForeground(new Color(180, 50, 50));
+            centerPanel.add(lblError, BorderLayout.CENTER);
+        }
+
+        CartPanel cartPanel = new CartPanel(cartManager, () -> {
+            showInvoiceDialog();
+        });
+        cartPanel.setMinimumSize(new Dimension(360, 0));
+        centerPanel.setMinimumSize(new Dimension(520, 0));
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, centerPanel, cartPanel);
+        splitPane.setResizeWeight(0.7);
+        splitPane.setContinuousLayout(true);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(0.7);
+        salesPanel.add(splitPane, BorderLayout.CENTER);
+
+        return salesPanel;
+    }
+
+    private void showInvoiceDialog() {
+        JDialog dialog = new JDialog(this, "Hóa đơn", true);
+
+        InvoicePanel invoicePanel = new InvoicePanel(() -> {
+            dialog.dispose();
+        });
+        invoicePanel.generateInvoice(cartManager);
+
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.setContentPane(invoicePanel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
     private JPanel buildNLPanel() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));

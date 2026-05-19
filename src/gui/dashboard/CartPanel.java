@@ -40,6 +40,7 @@ public class CartPanel extends JPanel {
             }
         };
         table = new JTable(model);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.setRowHeight(35);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -49,39 +50,50 @@ public class CartPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         centerPanel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel bottomPanel = new JPanel(new BorderLayout());
+        JPanel bottomPanel = new JPanel(new GridBagLayout());
         bottomPanel.setOpaque(false);
         bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
 
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actionPanel.setOpaque(false);
-        JButton btnDecrease = createButton("-", new Color(220, 150, 50));
-        btnDecrease.setPreferredSize(new Dimension(45, 35));
         JButton btnIncrease = createButton("+", new Color(46, 139, 87));
         btnIncrease.setPreferredSize(new Dimension(45, 35));
         JButton btnRemove = createButton("Xóa Sản Phẩm", new Color(220, 50, 50));
+        btnRemove.setPreferredSize(new Dimension(130, 35));
         JButton btnClear = createButton("Làm Sạch Giỏ", new Color(100, 100, 100));
-        actionPanel.add(btnDecrease);
+        btnClear.setPreferredSize(new Dimension(130, 35));
         actionPanel.add(btnIncrease);
         actionPanel.add(btnRemove);
         actionPanel.add(btnClear);
 
-        JPanel totalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 0));
+        JPanel totalPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
         totalPanel.setOpaque(false);
         
         lblTotalAmount = new JLabel("Tổng cộng: 0 đ");
-        lblTotalAmount.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTotalAmount.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblTotalAmount.setForeground(new Color(220, 60, 20));
         
         JButton btnCheckout = createButton("Thanh Toán & Hóa Đơn", new Color(46, 139, 87));
-        btnCheckout.setPreferredSize(new Dimension(200, 45));
+        btnCheckout.setPreferredSize(new Dimension(180, 45));
         btnCheckout.setFont(new Font("Segoe UI", Font.BOLD, 16));
 
         totalPanel.add(lblTotalAmount);
         totalPanel.add(btnCheckout);
 
-        bottomPanel.add(actionPanel, BorderLayout.WEST);
-        bottomPanel.add(totalPanel, BorderLayout.EAST);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        bottomPanel.add(actionPanel, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0;
+        gbc.anchor = GridBagConstraints.WEST;
+        bottomPanel.add(totalPanel, gbc);
 
         centerPanel.add(bottomPanel, BorderLayout.SOUTH);
         add(centerPanel, BorderLayout.CENTER);
@@ -103,28 +115,6 @@ public class CartPanel extends JPanel {
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần tăng!");
-            }
-        });
-
-        btnDecrease.addActionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row >= 0) {
-                String id = (String) model.getValueAt(row, 0);
-                for (CartItem item : cartManager.getItems()) {
-                    if (item.getProduct().getId().equals(id)) {
-                        if (item.getQuantity() > 1) {
-                            cartManager.updateQuantity(id, item.getQuantity() - 1);
-                        } else {
-                            int result = JOptionPane.showConfirmDialog(this, "Xóa sản phẩm khỏi giỏ hàng?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-                            if(result == JOptionPane.YES_OPTION) {
-                                cartManager.removeItem(id);
-                            }
-                        }
-                        break;
-                    }
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần giảm!");
             }
         });
 
@@ -181,6 +171,9 @@ public class CartPanel extends JPanel {
         btn.setForeground(Color.WHITE);
         btn.setBackground(color);
         btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+        btn.setBorderPainted(false);
+        btn.setOpaque(true);
         btn.setPreferredSize(new Dimension(150, 35));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;

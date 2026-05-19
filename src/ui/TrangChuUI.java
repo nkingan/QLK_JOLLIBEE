@@ -12,9 +12,17 @@ import java.util.TimerTask;
 
 public class TrangChuUI extends JPanel {
 
+    private JTabbedPane tabs;
     private JLabel lblTime;
+    private String currentUser;
 
     public TrangChuUI(String currentUser) {
+        this(currentUser, null);
+    }
+
+    public TrangChuUI(String currentUser, JTabbedPane tabs) {
+        this.currentUser = currentUser;
+        this.tabs = tabs;
         setLayout(new BorderLayout());
         setBackground(new Color(245, 245, 245));
 
@@ -33,64 +41,180 @@ public class TrangChuUI extends JPanel {
         topBar.setBackground(new Color(220, 50, 50));
         topBar.setBorder(new EmptyBorder(15, 25, 15, 25));
 
-        JPanel titleGroup = new JPanel(new BorderLayout(4, 4));
-        titleGroup.setOpaque(false);
         JLabel lblTitle = new JLabel("Quản Lý Kho Jollibee");
         lblTitle.setFont(new Font("Arial", Font.BOLD, 22));
         lblTitle.setForeground(Color.WHITE);
-        JLabel lblSubtitle = new JLabel("Dashboard");
-        lblSubtitle.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblSubtitle.setForeground(new Color(255, 255, 255, 200));
-        titleGroup.add(lblTitle, BorderLayout.NORTH);
-        titleGroup.add(lblSubtitle, BorderLayout.SOUTH);
 
-        JPanel searchGroup = new JPanel(new BorderLayout(8, 0));
-        searchGroup.setOpaque(false);
-        JTextField txtSearch = new JTextField("Tìm kiếm sản phẩm...");
-        txtSearch.setBackground(new Color(255, 245, 245));
+        JTextField txtSearch = new JTextField("Tìm kiếm...");
+        txtSearch.setPreferredSize(new Dimension(360, 38));
+        txtSearch.setBackground(Color.WHITE);
         txtSearch.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-        searchGroup.add(txtSearch, BorderLayout.CENTER);
-        JButton btnSearch = new JButton("🔍");
-        btnSearch.setFocusPainted(false);
-        btnSearch.setBackground(Color.WHITE);
-        searchGroup.add(btnSearch, BorderLayout.EAST);
 
-        JPanel userGroup = new JPanel(new GridLayout(2, 1));
+        JPanel searchWrapper = new JPanel(new BorderLayout());
+        searchWrapper.setOpaque(false);
+        searchWrapper.add(txtSearch, BorderLayout.CENTER);
+
+        JPanel userGroup = new JPanel(new GridLayout(2, 1, 4, 4));
         userGroup.setOpaque(false);
         lblTime = new JLabel();
         lblTime.setFont(new Font("Arial", Font.PLAIN, 12));
         lblTime.setForeground(Color.WHITE);
-        JLabel lblUser = new JLabel(currentUser != null && !currentUser.isEmpty() ? currentUser : "Admin Jollibee");
+        JLabel lblUser = new JLabel(formatUserName(currentUser));
         lblUser.setFont(new Font("Arial", Font.BOLD, 14));
         lblUser.setForeground(Color.WHITE);
         userGroup.add(lblTime);
         userGroup.add(lblUser);
 
-        topBar.add(titleGroup, BorderLayout.WEST);
-        topBar.add(searchGroup, BorderLayout.CENTER);
+        topBar.add(lblTitle, BorderLayout.WEST);
+        topBar.add(searchWrapper, BorderLayout.CENTER);
         topBar.add(userGroup, BorderLayout.EAST);
 
         return topBar;
     }
 
     private JPanel buildBody() {
-        JPanel body = new JPanel(new BorderLayout(20, 20));
+        JPanel body = new JPanel(new BorderLayout(20, 0));
         body.setOpaque(false);
         body.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        body.add(buildHeaderCards(), BorderLayout.NORTH);
-        body.add(buildMainSection(), BorderLayout.CENTER);
+        body.add(buildSidebar(), BorderLayout.WEST);
+        body.add(buildHomeContent(), BorderLayout.CENTER);
 
         return body;
+    }
+
+    private JPanel buildSidebar() {
+        JPanel sidebar = new JPanel(new BorderLayout());
+        sidebar.setBackground(new Color(18, 23, 28));
+        sidebar.setPreferredSize(new Dimension(220, 0));
+        sidebar.setBorder(new EmptyBorder(20, 15, 20, 15));
+
+        JLabel lblBrand = new JLabel("JOLLIBEE WAREHOUSE");
+        lblBrand.setFont(new Font("Arial", Font.BOLD, 16));
+        lblBrand.setForeground(Color.WHITE);
+        lblBrand.setBorder(new EmptyBorder(0, 0, 20, 0));
+
+        JPanel navPanel = new JPanel();
+        navPanel.setLayout(new BoxLayout(navPanel, BoxLayout.Y_AXIS));
+        navPanel.setOpaque(false);
+
+        String[] navLabels = {"Bán Hàng", "Nguyên Liệu", "Nhà Cung Cấp", "Nhân Viên", "Phiếu Nhập", "Phiếu Xuất"};
+        int[] navIndex = {1, 2, 3, 4, 5, 6};
+        for (int i = 0; i < navLabels.length; i++) {
+            JButton btn = new JButton(navLabels[i]);
+            btn.setFont(new Font("Arial", Font.BOLD, 13));
+            btn.setForeground(Color.WHITE);
+            btn.setBackground(new Color(35, 40, 47));
+            btn.setFocusPainted(false);
+            btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+            int index = navIndex[i];
+            btn.addActionListener(e -> {
+                if (tabs != null && tabs.getTabCount() > index) {
+                    tabs.setSelectedIndex(index);
+                }
+            });
+            btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+            btn.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+            btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            navPanel.add(btn);
+            navPanel.add(Box.createVerticalStrut(10));
+        }
+
+        JTextField searchField = new JTextField("Tìm kiếm sản phẩm...");
+        searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        searchField.setBackground(new Color(255, 255, 255, 230));
+        searchField.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+
+        JButton btnLogout = new JButton("Đăng xuất");
+        btnLogout.setFont(new Font("Arial", Font.BOLD, 13));
+        btnLogout.setForeground(new Color(220, 50, 50));
+        btnLogout.setBackground(new Color(255, 255, 255));
+        btnLogout.setFocusPainted(false);
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogout.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        btnLogout.addActionListener(e -> {
+            Window window = SwingUtilities.getWindowAncestor(TrangChuUI.this);
+            if (window instanceof JFrame) {
+                ((JFrame) window).dispose();
+                new gui.LoginGUI().setVisible(true);
+            }
+        });
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setOpaque(false);
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+        bottomPanel.add(Box.createVerticalGlue());
+        bottomPanel.add(btnLogout);
+
+        JPanel sidebarContent = new JPanel();
+        sidebarContent.setOpaque(false);
+        sidebarContent.setLayout(new BoxLayout(sidebarContent, BoxLayout.Y_AXIS));
+        sidebarContent.add(lblBrand);
+        sidebarContent.add(searchField);
+        sidebarContent.add(Box.createVerticalStrut(20));
+        sidebarContent.add(navPanel);
+        sidebarContent.add(Box.createVerticalGlue());
+
+        sidebar.add(sidebarContent, BorderLayout.CENTER);
+        sidebar.add(bottomPanel, BorderLayout.SOUTH);
+
+        return sidebar;
+    }
+
+    private JPanel buildHomeContent() {
+        JPanel homeContent = new JPanel(new BorderLayout(0, 20));
+        homeContent.setOpaque(false);
+
+        JPanel content = new JPanel();
+        content.setOpaque(false);
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.add(buildGreetingSection());
+        content.add(Box.createVerticalStrut(20));
+        content.add(buildHeaderCards());
+        content.add(Box.createVerticalStrut(20));
+        content.add(buildFeaturedProducts());
+        content.add(Box.createVerticalStrut(20));
+        content.add(buildTransactionSection());
+
+        JScrollPane contentScroll = new JScrollPane(content, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        contentScroll.setBorder(BorderFactory.createEmptyBorder());
+        contentScroll.getViewport().setOpaque(false);
+        contentScroll.setOpaque(false);
+        contentScroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        homeContent.add(contentScroll, BorderLayout.CENTER);
+        return homeContent;
+    }
+
+
+    private JPanel buildGreetingSection() {
+        JPanel greeting = new JPanel(new BorderLayout());
+        greeting.setOpaque(false);
+        JLabel lblGreeting = new JLabel("Chào mừng, " + formatUserName(currentUser) + " 👋");
+        lblGreeting.setFont(new Font("Arial", Font.BOLD, 24));
+        lblGreeting.setForeground(new Color(30, 30, 30));
+        greeting.add(lblGreeting, BorderLayout.WEST);
+        return greeting;
+    }
+
+    private String formatUserName(String user) {
+        if (user == null || user.trim().isEmpty()) {
+            return "admin";
+        }
+        String normalized = user.trim();
+        if (normalized.replaceAll("\\s+", "").equalsIgnoreCase("admin")) {
+            return "admin";
+        }
+        return normalized;
     }
 
     private JPanel buildHeaderCards() {
         JPanel cards = new JPanel(new GridLayout(1, 4, 20, 0));
         cards.setOpaque(false);
-        cards.add(createStatCard("1,250", "Tổng sản phẩm", "📦", new Color(37, 99, 235)));
-        cards.add(createStatCard("15", "Hàng sắp hết", "⚠️", new Color(234, 88, 12)));
-        cards.add(createStatCard("320", "Nhập hôm nay", "⬆️", new Color(16, 185, 129)));
-        cards.add(createStatCard("45.5M", "Doanh thu", "💰", new Color(220, 153, 26)));
+        cards.add(createStatCard("1,250", "Tổng sản phẩm", "📦", new Color(37, 99, 235), "+12% so với hôm qua", 1));
+        cards.add(createStatCard("15", "Hàng sắp hết", "⚠️", new Color(234, 88, 12), "-5% so với tuần trước", 1));
+        cards.add(createStatCard("320", "Nhập hôm nay", "⬆️", new Color(16, 185, 129), "+8% so với hôm qua", 4));
+        cards.add(createStatCard("45.5M", "Doanh thu", "💰", new Color(220, 153, 26), "+18% so với tháng trước", -1));
         return cards;
     }
 
@@ -99,28 +223,105 @@ public class TrangChuUI extends JPanel {
         section.setOpaque(false);
 
         section.add(buildFeaturedProducts(), BorderLayout.NORTH);
-        section.add(buildChartPanel(), BorderLayout.CENTER);
+        section.add(buildTransactionSection(), BorderLayout.CENTER);
 
         return section;
     }
 
     private JPanel buildFeaturedProducts() {
+        JPanel section = new JPanel(new BorderLayout(10, 10));
+        section.setOpaque(false);
+
+        JLabel lblTitle = new JLabel("Danh sách sản phẩm nổi bật");
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        lblTitle.setForeground(new Color(30, 30, 30));
+        section.add(lblTitle, BorderLayout.NORTH);
+
         JPanel products = new JPanel(new GridLayout(1, 6, 16, 0));
         products.setOpaque(false);
+        products.setPreferredSize(new Dimension(0, 220));
+        products.setMinimumSize(new Dimension(0, 220));
         products.add(createProductCard("Gà Giòn Vui Vẻ", "35,000 đ", "Kho: 120", "🍗"));
         products.add(createProductCard("Mì Ý Sốt Xúc Xích", "40,000 đ", "Kho: 85", "🍝"));
         products.add(createProductCard("Khoai Tây Chiên", "20,000 đ", "Kho: 200", "🍟"));
         products.add(createProductCard("Burger Gà", "45,000 đ", "Kho: 50", "🍔"));
         products.add(createProductCard("Nước Ngọt", "15,000 đ", "Kho: 500", "🥤"));
         products.add(createProductCard("Kem Sundae", "25,000 đ", "Kho: 75", "🍨"));
-        return products;
+
+        JScrollPane scrollPane = new JScrollPane(products, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setOpaque(false);
+        scrollPane.setPreferredSize(new Dimension(0, 240));
+        section.add(scrollPane, BorderLayout.CENTER);
+
+        return section;
+    }
+
+    private JPanel buildTransactionSection() {
+        JPanel transaction = new JPanel(new BorderLayout(0, 20));
+        transaction.setOpaque(false);
+        transaction.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+
+        JPanel chartWrapper = buildChartPanel();
+        chartWrapper.setPreferredSize(new Dimension(0, 340));
+        transaction.add(chartWrapper, BorderLayout.CENTER);
+        transaction.add(buildRatioPanel(), BorderLayout.SOUTH);
+
+        return transaction;
+    }
+
+    private JPanel buildRatioPanel() {
+        JPanel ratioPanel = new JPanel(new GridLayout(1, 3, 16, 0));
+        ratioPanel.setOpaque(false);
+
+        ratioPanel.add(createMiniStatCard("Nhập", "1.890", "+16% so với tuần trước", new Color(16, 185, 129)));
+        ratioPanel.add(createMiniStatCard("Xuất", "1.650", "+10% so với tuần trước", new Color(239, 68, 68)));
+        ratioPanel.add(createMiniStatCard("Tỉ lệ N/X", "114%", "Nhập nhiều hơn xuất", new Color(59, 130, 246)));
+
+        return ratioPanel;
+    }
+
+    private JPanel createMiniStatCard(String label, String value, String description, Color color) {
+        JPanel card = new JPanel(new BorderLayout(8, 8));
+        card.setOpaque(true);
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230, 230, 230)),
+                new EmptyBorder(14, 14, 14, 14)
+        ));
+
+        JLabel lblValue = new JLabel(value, SwingConstants.CENTER);
+        lblValue.setFont(new Font("Arial", Font.BOLD, 20));
+        lblValue.setForeground(color);
+
+        JLabel lblLabel = new JLabel(label, SwingConstants.CENTER);
+        lblLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        lblLabel.setForeground(new Color(100, 100, 100));
+
+        JLabel lblDesc = new JLabel(description, SwingConstants.CENTER);
+        lblDesc.setFont(new Font("Arial", Font.PLAIN, 11));
+        lblDesc.setForeground(new Color(130, 130, 130));
+
+        JPanel text = new JPanel();
+        text.setOpaque(false);
+        text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
+        text.add(lblLabel);
+        text.add(Box.createVerticalStrut(8));
+        text.add(lblValue);
+        text.add(Box.createVerticalStrut(8));
+        text.add(lblDesc);
+
+        card.add(text, BorderLayout.CENTER);
+        return card;
     }
 
     private JPanel buildChartPanel() {
         JPanel chartContainer = new JPanel(new BorderLayout());
-        chartContainer.setOpaque(false);
+        chartContainer.setOpaque(true);
+        chartContainer.setBackground(Color.WHITE);
         chartContainer.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(220, 220, 220)),
+                BorderFactory.createLineBorder(new Color(220, 220, 220), 1, true),
                 new EmptyBorder(20, 20, 20, 20)
         ));
 
@@ -135,7 +336,7 @@ public class TrangChuUI extends JPanel {
         return chartContainer;
     }
 
-    private JPanel createStatCard(String value, String label, String icon, Color color) {
+    private JPanel createStatCard(String value, String label, String icon, Color color, String ratio, int targetTab) {
         JPanel card = new JPanel(new BorderLayout(10, 10));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -155,13 +356,48 @@ public class TrangChuUI extends JPanel {
         lblLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         lblLabel.setForeground(new Color(120, 120, 120));
 
-        JPanel text = new JPanel(new GridLayout(2, 1));
+        JLabel lblRatio = new JLabel(ratio);
+        lblRatio.setFont(new Font("Arial", Font.PLAIN, 11));
+        lblRatio.setForeground(new Color(100, 140, 100));
+
+        JPanel text = new JPanel(new GridLayout(3, 1, 4, 4));
         text.setOpaque(false);
         text.add(lblValue);
         text.add(lblLabel);
+        text.add(lblRatio);
 
         card.add(lblIcon, BorderLayout.WEST);
         card.add(text, BorderLayout.CENTER);
+
+        if (targetTab >= 0) {
+            card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            card.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    card.setBackground(new Color(250, 250, 250));
+                    card.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(color, 2, true),
+                            new EmptyBorder(17, 17, 17, 17)
+                    ));
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    card.setBackground(Color.WHITE);
+                    card.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(new Color(230, 230, 230)),
+                            new EmptyBorder(18, 18, 18, 18)
+                    ));
+                }
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (tabs != null) {
+                        tabs.setSelectedIndex(targetTab);
+                    }
+                }
+            });
+        }
 
         return card;
     }
@@ -257,13 +493,28 @@ public class TrangChuUI extends JPanel {
 
             g2.setColor(new Color(120, 120, 120));
             g2.setFont(new Font("Arial", Font.PLAIN, 12));
-            g2.drawString("Nhập", x0 + chartWidth - 110, 18);
+            g2.drawString("Nhập", x0 + chartWidth - 170, 18);
             g2.setColor(new Color(16, 185, 129));
-            g2.fillRect(x0 + chartWidth - 140, 10, 12, 12);
+            g2.fillRect(x0 + chartWidth - 200, 10, 12, 12);
             g2.setColor(new Color(239, 68, 68));
-            g2.fillRect(x0 + chartWidth - 60, 10, 12, 12);
+            g2.fillRect(x0 + chartWidth - 110, 10, 12, 12);
             g2.setColor(new Color(120, 120, 120));
-            g2.drawString("Xuất", x0 + chartWidth - 45, 18);
+            g2.drawString("Xuất", x0 + chartWidth - 90, 18);
+
+            g2.setColor(new Color(170, 170, 170));
+            g2.setStroke(new BasicStroke(1f));
+            g2.drawLine(x0, y0, x0 + chartWidth, y0);
+            g2.drawLine(x0, y0, x0, y0 - chartHeight);
+            for (int i = 0; i <= 5; i++) {
+                int y = y0 - i * chartHeight / 5;
+                g2.setColor(new Color(200, 200, 200));
+                g2.drawLine(x0 - 5, y, x0, y);
+                if (i < 5) {
+                    g2.setColor(new Color(120, 120, 120));
+                    g2.setFont(new Font("Arial", Font.PLAIN, 10));
+                    g2.drawString(String.valueOf(i * 50), x0 - 35, y + 4);
+                }
+            }
         }
     }
 

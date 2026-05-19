@@ -94,7 +94,7 @@ public class InvoicePanel extends JPanel {
         footerPanel.setOpaque(false);
         
         lblTotal = new JLabel("Tổng Cộng: 0 đ");
-        lblTotal.setFont(new Font("Monospaced", Font.BOLD, 18));
+        lblTotal.setFont(new Font("Monospaced", Font.BOLD, 10));
         lblTotal.setHorizontalAlignment(SwingConstants.RIGHT);
         
         JLabel lblThankYou = new JLabel("Cảm ơn quý khách và hẹn gặp lại!");

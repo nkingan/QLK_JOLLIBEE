@@ -87,9 +87,14 @@ public class LoginGUI extends JFrame {
 
         TaiKhoanDAO dao = new TaiKhoanDAO();
         if (dao.login(user, pass)) {
-            JOptionPane.showMessageDialog(this, "Đăng nhập thành công! Xin chào, " + user, "Thành công", JOptionPane.INFORMATION_MESSAGE);
-            new MainGUI(user).setVisible(true);
-            this.dispose();
+            try {
+                JOptionPane.showMessageDialog(this, "Đăng nhập thành công! Xin chào, " + user, "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                new MainGUI(user).setVisible(true);
+                this.dispose();
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Không thể mở giao diện chính: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         } else {
             JOptionPane.showMessageDialog(this, "Sai tên đăng nhập hoặc mật khẩu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             txtPass.setText("");
