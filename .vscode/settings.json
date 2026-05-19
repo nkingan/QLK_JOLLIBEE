@@ -8,5 +8,7 @@
         "src",
         "gui"
     ],
-    "java.project.referencedLibraries": ["lib/**/*.jar"]
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ]
 }

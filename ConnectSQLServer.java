@@ -1,5 +1,3 @@
-
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -7,25 +5,27 @@ import java.sql.Statement;
 
 public class ConnectSQLServer {
 
-    private static final String URL =
-    "jdbc:sqlserver://localhost;"
-    + "instanceName=SQLEXPRESS01;"
-    + "databaseName=QuanLyKhoJollibee;"
-    + "encrypt=true;"
-    + "trustServerCertificate=true;";
-
-    private static final String USER = "sa";
-    private static final String PASSWORD = "123456";
+    private static final String url =
+        "jdbc:sqlserver://DESKTOP-60DM5F0\\SQLEXPRESS;"
+        + "databaseName=QuanLyKhoJollibee;"
+        + "user=sa;"
+        + "password=260226;"
+        + "encrypt=true;"
+        + "trustServerCertificate=true;";
 
     public static void main(String[] args) {
+
         try {
-            Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            Connection conn = DriverManager.getConnection(url);
+
             System.out.println("Kết nối thành công!");
 
             Statement stmt = conn.createStatement();
+
             ResultSet rs = stmt.executeQuery("SELECT * FROM NguyenLieu");
 
             while (rs.next()) {
+
                 System.out.println(
                     rs.getString("MaNL") + " | " +
                     rs.getString("TenNL") + " | " +
@@ -38,6 +38,7 @@ public class ConnectSQLServer {
             conn.close();
 
         } catch (Exception e) {
+
             System.out.println("Lỗi:");
             e.printStackTrace();
         }

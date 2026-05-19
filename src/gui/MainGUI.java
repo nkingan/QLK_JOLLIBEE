@@ -2,6 +2,7 @@ package gui;
 
 import dao.*;
 import model.*;
+import ui.TrangChuUI;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -79,6 +80,7 @@ public class MainGUI extends JFrame {
         // Tabs
         tabs = new JTabbedPane();
         tabs.setFont(new Font("Arial", Font.PLAIN, 13));
+        tabs.addTab("Trang Chủ",    new TrangChuUI(currentUser));
         tabs.addTab("Nguyên Liệu",  buildNLPanel());
         tabs.addTab("Nhà Cung Cấp", buildNCCPanel());
         tabs.addTab("Nhân Viên",    buildNVPanel());
