@@ -2,6 +2,10 @@ package gui;
 
 import dao.*;
 import model.*;
+import bus.NguyenLieuBUS;
+import bus.NhaCungCapBUS;
+import ui.NguyenLieuPanel;
+import ui.NhaCungCapPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -661,5 +665,37 @@ public class MainGUI extends JFrame {
 
     private String today() {
         return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+    }
+    public static void main(String[] args) {
+        // --- PHẦN 1: GỘP TEST LOGIC BUS (Hiển thị ở Terminal) ---
+        System.out.println("---------- ĐANG KIỂM TRA LOGIC BUS ----------");
+        
+        // 1. Test NguyenLieuBUS
+        NguyenLieuBUS nlBus = new NguyenLieuBUS();
+        NguyenLieu testNL = new NguyenLieu("NL01", "Ga", "Kg", -5, "K01"); // Số lượng âm để test
+        System.out.println("Test Nguyên Liệu (-5kg): " + nlBus.validate(testNL));
+
+        // 2. Test NhaCungCapBUS
+        NhaCungCapBUS nccBus = new NhaCungCapBUS();
+        NhaCungCap testNCC = new NhaCungCap("NCC01", "Jollibee VN", "Hà Nội", "0123456789", "jollibee_email.com"); // Sai email để test
+        System.out.println("Test Nhà Cung Cấp (sai email): " + nccBus.validate(testNCC));
+        
+        System.out.println("----------------------------------------------\n");
+
+        // --- PHẦN 2: GỘP GIAO DIỆN CHÍNH (Mở cửa sổ UI) ---
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Hệ Thống Quản Lý Kho Jollibee");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(1100, 700);
+            frame.setLocationRelativeTo(null);
+
+            // Sử dụng TabbedPane để gộp các Panel giao diện
+            JTabbedPane tabbedPane = new JTabbedPane();
+            tabbedPane.addTab("Quản Lý Nguyên Liệu", new NguyenLieuPanel());
+            tabbedPane.addTab("Quản Lý Nhà Cung Cấp", new NhaCungCapPanel());
+
+            frame.add(tabbedPane);
+            frame.setVisible(true);
+        });
     }
 }
