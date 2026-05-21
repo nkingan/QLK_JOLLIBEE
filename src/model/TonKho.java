@@ -1,6 +1,6 @@
 package model;
 
-import java.util.Date; // Thư viện xử lý ngày tháng chuẩn của Java
+import java.util.Date; 
 
 public class TonKho {
 
@@ -130,20 +130,20 @@ public class TonKho {
         this.trangThaiHan = trangThaiHan;
     }
 
-    // 5. Hàm bổ trợ đặc biệt: Chuyển đối tượng thành mảng Object để nạp vào JTable
+    
     public Object[] toRowObject(int stt) {
         return new Object[]{
-            stt,                 // Số thứ tự
-            maNL,                // Mã nguyên liệu
-            tenNL,               // Tên nguyên liệu
-            donViTinh,           // Đơn vị tính
-            tonKhoHienTai,       // Tồn kho hiện tại (tổng)
-            tenKho,              // Tên kho chứa
-            maLo,                // Mã lô (Mã CTPN)
-            ngayNhapLo,          // Ngày nhập lô hàng
-            soLuongNhapLo,       // Số lượng lúc nhập
-            hanSuDung,           // Hạn sử dụng lô
-            trangThaiHan         // Trạng thái hạn (Còn hạn/Sắp hết hạn/Hết hạn)
+            stt,                 
+            maNL,                
+            tenNL,               
+            donViTinh,           
+            tonKhoHienTai,       
+            tenKho,              
+            maLo,                
+            ngayNhapLo,          
+            soLuongNhapLo,       
+            hanSuDung,          
+            trangThaiHan         
         };
     }
 

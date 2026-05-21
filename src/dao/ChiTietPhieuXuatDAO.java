@@ -14,8 +14,7 @@ public class ChiTietPhieuXuatDAO {
     
     public synchronized String generateNextMaCTPX() {
 
-        // ORDER BY LEN DESC rồi MaCTPX DESC → lấy số lớn nhất
-        // dù DB lẫn format cũ (CTPX01) và mới (CTPX0001)
+       
         String sql =
                 "SELECT TOP 1 MaCTPX " +
                 "FROM ChiTietPhieuXuat " +
@@ -41,9 +40,9 @@ public class ChiTietPhieuXuatDAO {
         return "CTPX0001";
     }
 
-    // =========================================================
+    
     // 2. THÊM CHI TIẾT (tự quản lý connection)
-    // =========================================================
+
 
    
     public boolean insert(ChiTietPhieuXuat ct) {
@@ -72,9 +71,8 @@ public class ChiTietPhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
-    // 3. THÊM CHI TIẾT TRONG TRANSACTION (caller quản lý conn)
-    // =========================================================
+    // 3. THÊM CHI TIẾT TRONG TRANSACTION 
+    
 
     
     public boolean insert(Connection conn, ChiTietPhieuXuat ct) throws SQLException {
@@ -88,7 +86,7 @@ public class ChiTietPhieuXuatDAO {
             setInsertParams(ps, ct);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            // Phân loại lỗi rõ ràng trước khi ném lại để caller xử lý
+            
             if (e.getMessage() != null && e.getMessage().contains("không đủ")) {
                 throw new SQLException("Tồn kho không đủ cho nguyên liệu: " + ct.getMaNL(), e);
             }
@@ -96,9 +94,9 @@ public class ChiTietPhieuXuatDAO {
         }
     }
 
-    // =========================================================
+    
     // 4. LẤY TOÀN BỘ CHI TIẾT PHIẾU XUẤT
-    // =========================================================
+
 
     public List<ChiTietPhieuXuat> getAll() {
 
@@ -124,9 +122,9 @@ public class ChiTietPhieuXuatDAO {
         return list;
     }
 
-    // =========================================================
+    
     // 5. LẤY CHI TIẾT THEO MÃ PHIẾU XUẤT
-    // =========================================================
+    
 
     public List<ChiTietPhieuXuat> getByMaPX(String maPX) {
 
@@ -153,10 +151,9 @@ public class ChiTietPhieuXuatDAO {
         return list;
     }
 
-    // =========================================================
+   
     // 6. TÌM THEO MÃ CHI TIẾT
-    // =========================================================
-
+   
     public ChiTietPhieuXuat findById(String maCTPX) {
 
         String sql =
@@ -180,10 +177,9 @@ public class ChiTietPhieuXuatDAO {
         return null;
     }
 
-    // =========================================================
+    
     // 7. CẬP NHẬT CHI TIẾT
-    // =========================================================
-
+   
     public boolean update(ChiTietPhieuXuat ct) {
 
         String sql =
@@ -214,9 +210,9 @@ public class ChiTietPhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
+
     // 8. XÓA THEO MÃ CHI TIẾT
-    // =========================================================
+    
 
     public boolean delete(String maCTPX) {
 
@@ -239,11 +235,7 @@ public class ChiTietPhieuXuatDAO {
 
     // =========================================================
     // 9. XÓA THEO MÃ PHIẾU XUẤT
-    // =========================================================
-
-    /**
-     * Trả về true kể cả khi không có dòng nào bị xóa (không phải lỗi).
-     */
+    
     public boolean deleteByMaPX(String maPX) {
 
         String sql = "DELETE FROM ChiTietPhieuXuat WHERE MaPX = ?";
@@ -253,7 +245,7 @@ public class ChiTietPhieuXuatDAO {
                 PreparedStatement ps = conn.prepareStatement(sql)
         ) {
             ps.setString(1, maPX);
-            ps.executeUpdate(); // không check > 0: xóa 0 dòng vẫn là thành công
+            ps.executeUpdate(); 
             return true;
 
         } catch (Exception e) {
@@ -264,9 +256,9 @@ public class ChiTietPhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
+    
     // 10. KIỂM TRA TỒN TẠI
-    // =========================================================
+    
 
     public boolean exists(String maCTPX) {
 
@@ -288,14 +280,9 @@ public class ChiTietPhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
+   
     // 11. TỔNG TIỀN THEO MÃ PHIẾU XUẤT
-    // =========================================================
-
-    /**
-     * Tính tổng tiền trực tiếp từ DB — dùng để đối chiếu với TongTien
-     * trên PhieuXuat sau khi trigger cập nhật.
-     */
+   
     public BigDecimal getTongTienByMaPX(String maPX) {
 
         String sql =
@@ -322,9 +309,9 @@ public class ChiTietPhieuXuatDAO {
         return BigDecimal.ZERO;
     }
 
-    // =========================================================
+   
     // 12. ĐẾM SỐ DÒNG
-    // =========================================================
+   
 
     public int count() {
 
@@ -344,11 +331,7 @@ public class ChiTietPhieuXuatDAO {
         return 0;
     }
 
-    // =========================================================
-    // PRIVATE HELPERS
-    // =========================================================
-
-    /** Dùng chung cho cả 2 overload insert() — tránh lặp code */
+    
     private void setInsertParams(PreparedStatement ps, ChiTietPhieuXuat ct) throws SQLException {
         ps.setString(1, ct.getMaCTPX());
         ps.setInt(2, ct.getSoLuong());
@@ -357,12 +340,12 @@ public class ChiTietPhieuXuatDAO {
         ps.setString(5, ct.getMaPX());
     }
 
-    /** Map ResultSet → ChiTietPhieuXuat (chỉ các cột từ bảng gốc) */
+    
     private ChiTietPhieuXuat mapResultSet(ResultSet rs) throws SQLException {
         ChiTietPhieuXuat ct = new ChiTietPhieuXuat();
         ct.setMaCTPX(rs.getString("MaCTPX"));
-        ct.setSoLuong(rs.getInt("SoLuong"));       // bypass validation — đọc từ DB
-        ct.setDonGia(rs.getBigDecimal("DonGia"));  // bypass validation — đọc từ DB
+        ct.setSoLuong(rs.getInt("SoLuong"));       
+        ct.setDonGia(rs.getBigDecimal("DonGia"));  
         ct.setMaNL(rs.getString("MaNL"));
         ct.setMaPX(rs.getString("MaPX"));
         return ct;

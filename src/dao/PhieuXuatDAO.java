@@ -8,35 +8,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO xử lý bảng PhieuXuat.
- *
- * CREATE TABLE PhieuXuat (
- *     MaPX      VARCHAR(20)   PRIMARY KEY,
- *     NgayXuat  DATE          DEFAULT GETDATE(),
- *     MaNV      VARCHAR(20),
- *     TongTien  DECIMAL(18,2) DEFAULT 0 CHECK (TongTien >= 0)
- * )
- *
- * Lưu ý: TongTien được trigger TRG_XuatKho tự cập nhật sau mỗi thao tác
- * trên ChiTietPhieuXuat — không cần truyền giá trị thực khi INSERT.
- */
+
+ 
 public class PhieuXuatDAO {
 
-    // =========================================================
+    
     // 1. TỰ ĐỘNG SINH MÃ PHIẾU XUẤT
-    // =========================================================
-
-    /**
-     * Sinh mã PX tiếp theo dạng PX0001, PX0002, ...
-     * Tương thích ngược với format cũ PX01, PX02 (dữ liệu mẫu).
-     * Dùng synchronized để tránh trùng mã trong môi trường đơn JVM.
-     * Khuyến nghị: thêm UNIQUE constraint ở DB để đảm bảo toàn vẹn.
-     */
     public synchronized String generateNextMaPX() {
 
-        // ORDER BY LEN DESC rồi MaPX DESC → lấy số lớn nhất
-        // dù DB lẫn format cũ (PX01) và mới (PX0001)
         String sql =
                 "SELECT TOP 1 MaPX " +
                 "FROM PhieuXuat " +
@@ -50,7 +29,6 @@ public class PhieuXuatDAO {
             if (rs.next()) {
                 String lastId = rs.getString("MaPX");
                 if (lastId != null && lastId.toUpperCase().startsWith("PX")) {
-                    // parseInt tự xử lý leading zeros: "01"→1, "0001"→1
                     int number = Integer.parseInt(lastId.substring(2));
                     return String.format("PX%04d", number + 1);
                 }
@@ -63,15 +41,9 @@ public class PhieuXuatDAO {
         return "PX0001";
     }
 
-    // =========================================================
-    // 2. THÊM PHIẾU XUẤT (DÙNG TRANSACTION — caller quản lý conn)
-    // =========================================================
-
-    /**
-     * INSERT phiếu xuất trong một transaction do caller kiểm soát.
-     * Chỉ insert MaPX, NgayXuat, MaNV — TongTien để DB tự DEFAULT 0,
-     * trigger sẽ cập nhật sau khi chi tiết được insert.
-     */
+   
+    // 2. THÊM PHIẾU XUẤT (DÙNG TRANSACTION )
+    
     public boolean insert(Connection conn, PhieuXuat px) throws SQLException {
 
         String sql =
@@ -82,10 +54,10 @@ public class PhieuXuatDAO {
 
             ps.setString(1, px.getMaPX());
 
-            // NgayXuat bắt buộc — không cho phép null
+            
             if (px.getNgayXuat() == null)
                 throw new IllegalArgumentException("NgayXuat không được null");
-            ps.setDate(2, px.getNgayXuat()); // java.sql.Date trực tiếp
+            ps.setDate(2, px.getNgayXuat()); 
 
             ps.setString(3, px.getMaNV());
 
@@ -93,10 +65,9 @@ public class PhieuXuatDAO {
         }
     }
 
-    // =========================================================
-    // 3. THÊM PHIẾU XUẤT ĐƠN LẺ (tự quản lý connection)
-    // =========================================================
-
+    
+    // 3. THÊM PHIẾU XUẤT ĐƠN LẺ 
+    
     public boolean insert(PhieuXuat px) {
         try (Connection conn = DBConnection.getConnection()) {
             return insert(conn, px);
@@ -107,15 +78,14 @@ public class PhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
+    
     // 4. LẤY TOÀN BỘ DANH SÁCH PHIẾU XUẤT
-    // =========================================================
-
+   
     public List<PhieuXuat> getAll() {
 
         List<PhieuXuat> list = new ArrayList<>();
 
-        // Dùng VW_PhieuXuat để lấy thêm TenNV mà không cần JOIN thủ công
+        
         String sql =
                 "SELECT MaPX, NgayXuat, MaNV, TenNV, TongTien " +
                 "FROM VW_PhieuXuat " +
@@ -137,10 +107,9 @@ public class PhieuXuatDAO {
         return list;
     }
 
-    // =========================================================
+    
     // 5. TÌM PHIẾU XUẤT THEO MÃ
-    // =========================================================
-
+  
     public PhieuXuat findById(String maPX) {
 
         String sql =
@@ -164,17 +133,11 @@ public class PhieuXuatDAO {
         return null;
     }
 
-    // =========================================================
     // 6. CẬP NHẬT PHIẾU XUẤT
-    // =========================================================
-
-    /**
-     * Chỉ cho phép cập nhật NgayXuat và MaNV.
-     * TongTien do trigger quản lý — không update thủ công.
-     */
+   
     public boolean update(PhieuXuat px) {
 
-        // NgayXuat bắt buộc — phiếu xuất phải có ngày
+        
         if (px.getNgayXuat() == null)
             throw new IllegalArgumentException("NgayXuat không được null khi update");
 
@@ -201,9 +164,9 @@ public class PhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
+    
     // 7. XÓA PHIẾU XUẤT
-    // =========================================================
+   
 
     public boolean delete(String maPX) {
 
@@ -224,10 +187,9 @@ public class PhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
+    
     // 8. KIỂM TRA MÃ TỒN TẠI
-    // =========================================================
-
+    
     public boolean exists(String maPX) {
 
         String sql = "SELECT COUNT(*) FROM PhieuXuat WHERE MaPX = ?";
@@ -248,13 +210,9 @@ public class PhieuXuatDAO {
         return false;
     }
 
-    // =========================================================
+   
     // 9. TÌM KIẾM PHIẾU XUẤT (theo mã, tên NV)
-    // =========================================================
-
-    /**
-     * Tìm kiếm qua VW_PhieuXuat để hỗ trợ tìm theo TenNV.
-     */
+    
     public List<PhieuXuat> search(String keyword) {
 
         List<PhieuXuat> list = new ArrayList<>();
@@ -284,10 +242,9 @@ public class PhieuXuatDAO {
         return list;
     }
 
-    // =========================================================
+    
     // 10. LẤY PHIẾU XUẤT THEO NHÂN VIÊN
-    // =========================================================
-
+   
     public List<PhieuXuat> getByNhanVien(String maNV) {
 
         List<PhieuXuat> list = new ArrayList<>();
@@ -314,10 +271,9 @@ public class PhieuXuatDAO {
         return list;
     }
 
-    // =========================================================
+   
     // 11. LẤY PHIẾU XUẤT THEO KHOẢNG NGÀY
-    // =========================================================
-
+  
     public List<PhieuXuat> getByDateRange(Date from, Date to) {
 
         List<PhieuXuat> list = new ArrayList<>();
@@ -345,9 +301,9 @@ public class PhieuXuatDAO {
         return list;
     }
 
-    // =========================================================
+   
     // 12. ĐẾM TỔNG SỐ PHIẾU XUẤT
-    // =========================================================
+    
 
     public int count() {
 
@@ -367,10 +323,9 @@ public class PhieuXuatDAO {
         return 0;
     }
 
-    // =========================================================
+   
     // 13. TỔNG TIỀN TOÀN BỘ PHIẾU XUẤT
-    // =========================================================
-
+   
     public BigDecimal getTotalAmount() {
 
         String sql = "SELECT SUM(TongTien) FROM PhieuXuat";
@@ -392,22 +347,22 @@ public class PhieuXuatDAO {
         return BigDecimal.ZERO;
     }
 
-    // =========================================================
+   
     // 14. MAP RESULTSET -> PHIEUXUAT
-    // =========================================================
+
 
     private PhieuXuat mapResultSet(ResultSet rs) throws SQLException {
 
         PhieuXuat px = new PhieuXuat();
 
         px.setMaPX(rs.getString("MaPX"));
-        px.setNgayXuat(rs.getDate("NgayXuat")); // java.sql.Date — khớp model
+        px.setNgayXuat(rs.getDate("NgayXuat")); 
         px.setMaNV(rs.getString("MaNV"));
         px.setTongTien(rs.getBigDecimal("TongTien"));
 
-        // TenNV chỉ có khi query từ VW_PhieuXuat
+       
         try { px.setTenNV(rs.getString("TenNV")); }
-        catch (SQLException ignored) { /* query từ bảng gốc, không có cột này */ }
+        catch (SQLException ignored) {  }
 
         return px;
     }

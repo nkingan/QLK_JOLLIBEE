@@ -10,18 +10,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO xử lý báo cáo Thống kê Tồn kho
- * Lấy dữ liệu trực tiếp từ VIEW VW_TonKho trong SQL Server
- */
 public class TonKhoDAO {
 
-    // =========================================================
-    // LẤY TOÀN BỘ DANH SÁCH TỒN KHO THEO LÔ (Dùng hiển thị lên Table báo cáo)
-    // =========================================================
     public List<TonKho> getAllTonKho() {
         List<TonKho> list = new ArrayList<>();
-        // Truy vấn trực tiếp từ View bạn đã tạo trong SQL
         String sql = "SELECT MaNL, TenNL, DonViTinh, TonKhoHienTai, MaKho, TenKho, MaLo, NgayNhapLo, SoLuongNhapLo, HanSuDung, TrangThaiHan FROM VW_TonKho";
 
         try (
@@ -52,9 +44,8 @@ public class TonKhoDAO {
         return list;
     }
 
-    // =========================================================
-    // LỌC TỒN KHO THEO TRẠNG THÁI HẠN (Hết hạn / Sắp hết hạn / Còn hạn)
-    // =========================================================
+    
+    // LỌC TỒN KHO THEO TRẠNG THÁI HẠN 
     public List<TonKho> getByTrangThaiHan(String trangThai) {
         List<TonKho> list = new ArrayList<>();
         String sql = "SELECT * FROM VW_TonKho WHERE TrangThaiHan = ?";
@@ -86,5 +77,11 @@ public class TonKhoDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+
+    public int getTongTonByMaNL(String maNL) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTongTonByMaNL'");
     }
 }
