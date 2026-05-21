@@ -81,7 +81,7 @@ public class TonKhoDAO {
 
 
     public int getTongTonByMaNL(String maNL) {
-        // TODO Auto-generated method stub
+       
         throw new UnsupportedOperationException("Unimplemented method 'getTongTonByMaNL'");
     }
 }
