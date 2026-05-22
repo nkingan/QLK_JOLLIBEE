@@ -1,6 +1,6 @@
 package gui;
 
-import bus.PhieuXuatBUS; 
+import dao.TonKhoDAO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -9,12 +9,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.sql.*;
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Vector;
 
-
-@SuppressWarnings("all")
 public class TonKhoPanel extends JPanel {
 
     private JTextField txtTimKiem;
@@ -24,6 +22,9 @@ public class TonKhoPanel extends JPanel {
     private JTable tableTonKho;
     private DefaultTableModel modelTonKho;
     private JLabel lblTongLoNL, lblCanhBaoHeThong;
+    
+    private TonKhoDAO tkDAO; 
+    private DecimalFormat currencyFormat = new DecimalFormat("#,##0");
 
     private final Color JB_RED = new Color(214, 24, 34);       
     private final Color JB_YELLOW = new Color(254, 192, 6);    
@@ -31,9 +32,8 @@ public class TonKhoPanel extends JPanel {
     private final Color TEXT_DARK = new Color(50, 50, 50);     
     private final Color BORDER_COLOR = new Color(218, 222, 229);
 
-    private DecimalFormat currencyFormat = new DecimalFormat("#,##0");
-
     public TonKhoPanel() {
+        this.tkDAO = new TonKhoDAO(); 
         initComponents();
         loadDataComboBoxKho(); 
         loadReportTonKho("", "Tất cả các kho"); 
@@ -47,9 +47,6 @@ public class TonKhoPanel extends JPanel {
         Font fontTitle = new Font("Segoe UI", Font.BOLD, 13);
         Font fontLabel = new Font("Segoe UI", Font.BOLD, 12);
 
-       
-        // 1. TOP PANEL: KHU VỰC BỘ LỌC TÌM KIẾM CÂN ĐỐI
-        
         JPanel filterPanel = new JPanel(new GridBagLayout());
         filterPanel.setBackground(Color.WHITE);
         filterPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -79,15 +76,12 @@ public class TonKhoPanel extends JPanel {
         btnGroup.add(btnLoc); btnGroup.add(btnLamMoi);
         gbc.gridx = 4; gbc.gridy = 0; gbc.weightx = 0; filterPanel.add(btnGroup, gbc);
 
-        // =========================================================
-        // 2. CENTER PANEL: LƯỚI GRID THEO DÕI LOGIC TRIGGER KHO
-        // =========================================================
         JPanel gridPanel = new JPanel(new BorderLayout());
         gridPanel.setBackground(Color.WHITE);
         
         TitledBorder borderTitle = BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(BORDER_COLOR), 
-                " BÁO CÁO TỒN KHO NGUYÊN LIỆU JOLLIBEE PHẠM NGỌC THẠCH ",
+                " BÁO CÁO TỒN KHO NGUYÊN LIỆU THỰC TẾ HỆ THỐNG JOLLIBEE PHẠM NGỌC THẠCH ",
                 TitledBorder.LEADING, TitledBorder.TOP, fontTitle, JB_RED
         );
         gridPanel.setBorder(BorderFactory.createCompoundBorder(borderTitle, new EmptyBorder(8, 8, 8, 8)));
@@ -95,7 +89,7 @@ public class TonKhoPanel extends JPanel {
         String[] headerColumns = {
             "Mã NL", "Tên Nguyên Liệu", "ĐVT", "Tồn Hiện Tại", 
             "Mã Kho", "Tên Kho", "Mã Lô Nhập", "Ngày Nhập Lô", 
-            "Số Lượng Nhập", "Hạn Sử Dụng", "Trạng Thế Hạn", "Đơn Giá Nhập", "Giá Trị Tồn Lô"
+            "Số Lượng Nhập", "Hạn Sử Dụng", "Trạng Thái Hạn", "Đơn Giá Nhập", "Giá Trị Tồn Lô"
         };
 
         modelTonKho = new DefaultTableModel(headerColumns, 0) {
@@ -121,9 +115,6 @@ public class TonKhoPanel extends JPanel {
 
         gridPanel.add(new JScrollPane(tableTonKho), BorderLayout.CENTER);
 
-       
-        // 3. BOTTOM PANEL
-      
         JPanel bottomPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -131,7 +122,7 @@ public class TonKhoPanel extends JPanel {
                 new EmptyBorder(12, 15, 12, 15)
         ));
 
-        lblTongLoNL = new JLabel("Tổng số dòng bản ghi: 0");
+        lblTongLoNL = new JLabel("Tổng số danh mục mặt hàng hiển thị: 0");
         lblTongLoNL.setFont(fontTitle);
         lblTongLoNL.setForeground(TEXT_DARK);
 
@@ -162,112 +153,60 @@ public class TonKhoPanel extends JPanel {
     private void loadDataComboBoxKho() {
         cbKho.removeAllItems();
         cbKho.addItem("Tất cả các kho");
-        
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=QuanLyKhoJollibee;encrypt=false;trustServerCertificate=true;";
-        String user = "sa"; 
-        String pass = "123456"; 
-
-        String sql = "SELECT MaKho, TenKho FROM Kho";
-        try (Connection conn = DriverManager.getConnection(url, user, pass);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                cbKho.addItem(rs.getString("MaKho") + " - " + rs.getString("TenKho"));
-            }
-        } catch (Exception e) {
-            System.err.println("Lỗi nạp danh sách kho lên ComboBox: " + e.getMessage());
+        List<String> khoList = tkDAO.getDanhSachKho();
+        for (String kho : khoList) {
+            cbKho.addItem(kho);
         }
     }
 
-   
     private void loadReportTonKho(String keyword, String selectedKho) {
         modelTonKho.setRowCount(0);
-
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=QuanLyKhoJollibee;encrypt=false;trustServerCertificate=true;";
-        String user = "sa";
-        String pass = "123456"; 
-
-   
-        StringBuilder sql = new StringBuilder(
-            "SELECT n.MaNL, n.TenNL, n.DonViTinh, n.SoLuong AS TonKhoHienTai, " +
-            "       n.MaKho, k.TenKho, c.MaCTPN AS MaLo, p.NgayNhap AS NgayNhapLo, " +
-            "       c.SoLuong AS SoLuongNhapLo, c.HanSuDung, " +
-            "       ISNULL(CASE " +
-            "           WHEN c.HanSuDung IS NULL THEN N'Chưa cập nhật' " +
-            "           WHEN c.HanSuDung < CAST(GETDATE() AS DATE) THEN N'Hết hạn' " +
-            "           WHEN c.HanSuDung <= DATEADD(DAY, 30, GETDATE()) THEN N'Sắp hết hạn' " +
-            "           ELSE N'Còn hạn' " +
-            "       END, N'Chưa cập nhật') AS TrangThaiHan, c.DonGia " +
-            "FROM ChiTietPhieuNhap c " +
-            "JOIN PhieuNhap p ON c.MaPN = p.MaPN " +
-            "RIGHT JOIN NguyenLieu n ON c.MaNL = n.MaNL " + // Giữ lại toàn bộ 23 mặt hàng gốc
-            "LEFT JOIN Kho k ON n.MaKho = k.MaKho " +
-            "WHERE n.TenNL LIKE ?"
-        );
-        
-        if (!selectedKho.equals("Tất cả các kho")) {
-            String maKho = selectedKho.split(" - ")[0].trim();
-            sql.append(" AND n.MaKho = '").append(maKho).append("'");
-        }
 
         int countRows = 0;
         BigDecimal tongGiaTriTaiSanKho = BigDecimal.ZERO;
         boolean coCanhBaoTon = false;
         boolean coCanhBaoHan = false;
 
-        try (Connection conn = DriverManager.getConnection(url, user, pass);
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) { 
+        // ĐÃ FIX: Đồng bộ gọi đúng tên phương thức viết liền mạch
+        List<Vector<Object>> dataFromDAO = tkDAO.getBaoCaoTonKho(keyword, selectedKho);
+
+        for (Vector<Object> rawRow : dataFromDAO) {
+            countRows++;
+            Vector<Object> displayRow = new Vector<>();
             
-            ps.setString(1, "%" + keyword + "%");
+            displayRow.add(rawRow.get(0)); 
+            displayRow.add(rawRow.get(1)); 
+            displayRow.add(rawRow.get(2)); 
+            
+            int tonKhoHienTai = (Integer) rawRow.get(3);
+            displayRow.add(tonKhoHienTai); 
+            
+            displayRow.add(rawRow.get(4)); 
+            displayRow.add(rawRow.get(5)); 
+            displayRow.add(rawRow.get(6)); 
+            
+            Object ngayNhap = rawRow.get(7);
+            displayRow.add(ngayNhap != null ? ngayNhap : "-");
+            
+            displayRow.add(rawRow.get(8)); 
+            
+            Object hsd = rawRow.get(9);
+            displayRow.add(hsd != null ? hsd : "-");
+            
+            String trangThaiHan = rawRow.get(10).toString();
+            displayRow.add(trangThaiHan); 
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    countRows++;
-                    Vector<Object> row = new Vector<>();
-                    row.add(rs.getString("MaNL"));
-                    row.add(rs.getString("TenNL"));
-                    row.add(rs.getString("DonViTinh"));
-                    
-                    int tonKhoHienTai = rs.getInt("TonKhoHienTai");
-                    row.add(tonKhoHienTai); 
-                    
-                    row.add(rs.getString("MaKho"));
-                    row.add(rs.getString("TenKho"));
-                    
-                    // Xử lý an toàn cho những mặt hàng chưa từng có lô nhập (Tránh văng lỗi Null)
-                    String maLo = rs.getString("MaLo");
-                    row.add(maLo != null ? maLo : "-");
-                    
-                    Date ngayNhap = rs.getDate("NgayNhapLo");
-                    row.add(ngayNhap != null ? ngayNhap : "-");
-                    
-                    row.add(maLo != null ? rs.getInt("SoLuongNhapLo") : 0);
-                    
-                    Date hsd = rs.getDate("HanSuDung");
-                    row.add(hsd != null ? hsd : "-");
-                    
-                    String trangThaiHan = rs.getString("TrangThaiHan");
-                    row.add(trangThaiHan);
+            BigDecimal donGia = (BigDecimal) rawRow.get(11);
+            BigDecimal giaTriTonLo = donGia.multiply(new BigDecimal(tonKhoHienTai));
+            tongGiaTriTaiSanKho = tongGiaTriTaiSanKho.add(giaTriTonLo);
 
-                    BigDecimal donGia = rs.getBigDecimal("DonGia");
-                    if (donGia == null) donGia = BigDecimal.ZERO;
-                    
-                    BigDecimal giaTriTonLo = donGia.multiply(new BigDecimal(tonKhoHienTai));
-                    tongGiaTriTaiSanKho = tongGiaTriTaiSanKho.add(giaTriTonLo);
+            displayRow.add(currencyFormat.format(donGia) + " đ");
+            displayRow.add(currencyFormat.format(giaTriTonLo) + " đ");
 
-                    row.add(currencyFormat.format(donGia) + " đ");
-                    row.add(currencyFormat.format(giaTriTonLo) + " đ");
+            if (tonKhoHienTai < 20) coCanhBaoTon = true;
+            if (trangThaiHan.equals("Hết hạn") || trangThaiHan.equals("Sắp hết hạn")) coCanhBaoHan = true;
 
-                    // Trigger 3: Nếu tổng lượng tồn trong kho dính định mức dưới 20 -> Kích hoạt cảnh báo chữ đỏ
-                    if (tonKhoHienTai < 20) coCanhBaoTon = true;
-                    if (trangThaiHan.equals("Hết hạn") || trangThaiHan.equals("Sắp hết hạn")) coCanhBaoHan = true;
-
-                    modelTonKho.addRow(row);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Lỗi nạp báo cáo tồn kho: " + e.getMessage());
-            e.printStackTrace();
+            modelTonKho.addRow(displayRow);
         }
 
         applyCustomTableRenderer();
@@ -275,10 +214,10 @@ public class TonKhoPanel extends JPanel {
         lblTongLoNL.setText("Tổng số danh mục mặt hàng hiển thị: " + countRows);
         
         if (coCanhBaoHan) {
-            lblCanhBaoHeThong.setText("⚠️ NGUY HIỂM: Có lô hàng ĐÃ HẾT HẠN hoặc SẮP HẾT HẠN! (Tổng vốn tài sản: " + currencyFormat.format(tongGiaTriTaiSanKho) + " đ)");
+            lblCanhBaoHeThong.setText("⚠️ NGUY HIỂM: Có lô hàng ĐÃ HẾT HẠN hoặc SẮP HẾT HẠN! (Tổng TS: " + currencyFormat.format(tongGiaTriTaiSanKho) + " đ)");
             lblCanhBaoHeThong.setForeground(JB_RED);
         } else if (coCanhBaoTon) {
-            lblCanhBaoHeThong.setText("⚠️ CẢNH BÁO: Phát hiện nguyên liệu dưới định mức 20! (Tổng vốn tài sản: " + currencyFormat.format(tongGiaTriTaiSanKho) + " đ)");
+            lblCanhBaoHeThong.setText("⚠️ CẢNH BÁO: Phát hiện nguyên liệu dưới định mức 20! (Tổng TS: " + currencyFormat.format(tongGiaTriTaiSanKho) + " đ)");
             lblCanhBaoHeThong.setForeground(JB_YELLOW);
         } else {
             lblCanhBaoHeThong.setText("🟢 Tồn kho an toàn. Tổng giá trị tài sản lưu kho: " + currencyFormat.format(tongGiaTriTaiSanKho) + " VNĐ");
