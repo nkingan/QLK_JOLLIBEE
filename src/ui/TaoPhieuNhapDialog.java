@@ -1,0 +1,484 @@
+package ui;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import dao.PhieuNhapDAO;
+import dao.ChiTietPhieuNhapDAO;
+import dao.NhaCungCapDAO;
+import dao.NguyenLieuDAO;
+import dao.NhanVienDAO;
+import model.PhieuNhap;
+import model.ChiTietPhieuNhap;
+import model.NhaCungCap;
+import model.NguyenLieu;
+import model.NhanVien;
+import model.TaiKhoan;
+
+public class TaoPhieuNhapDialog extends JDialog {
+
+    private JTextField txtMaPN;
+    private JTextField txtNgayNhap;
+    private JComboBox<String> cbNhaCungCap;
+    private JComboBox<String> cbNhanVien;
+    private JComboBox<String> cbNguyenLieu;
+    private JTextField txtSoLuong;
+    private JTextField txtDonGia;
+    private JTextField txtHanSuDung; // dd/MM/yyyy
+    
+    private JButton btnAddRow;
+    private JButton btnDeleteRow;
+    private JButton btnSave;
+    private JTable tableChiTiet;
+    private DefaultTableModel tableModel;
+    private JLabel lblTongTien;
+
+    private PhieuNhapDAO phieuNhapDAO;
+    private ChiTietPhieuNhapDAO ctPhieuNhapDAO;
+    private NhaCungCapDAO nhaCungCapDAO;
+    private NguyenLieuDAO nguyenLieuDAO;
+    private NhanVienDAO nhanVienDAO;
+    
+    private String viewModeMaPN;
+    private boolean isViewMode = false;
+    private TaiKhoan currentUser;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+    // Chế độ Tạo mới
+    public TaoPhieuNhapDialog(Frame owner, TaiKhoan user) {
+        super(owner, "Tạo Phiếu Nhập Kho Mới - Jollibee", true);
+        this.currentUser = user;
+        this.isViewMode = false;
+        initServices();
+        initUI();
+        loadComboboxData();
+        generateAutoMaPN();
+        txtNgayNhap.setText(sdf.format(new Date()));
+    }
+
+    // Chế độ Xem chi tiết
+    public TaoPhieuNhapDialog(Frame owner, String maPN) {
+        super(owner, "Chi Tiết Phiếu Nhập Kho: " + maPN, true);
+        this.viewModeMaPN = maPN;
+        this.isViewMode = true;
+        initServices();
+        initUI();
+        loadComboboxData();
+        loadDataViewMode();
+    }
+
+    private void initServices() {
+        this.phieuNhapDAO = new PhieuNhapDAO();
+        this.ctPhieuNhapDAO = new ChiTietPhieuNhapDAO();
+        this.nhaCungCapDAO = new NhaCungCapDAO();
+        this.nguyenLieuDAO = new NguyenLieuDAO();
+        this.nhanVienDAO = new NhanVienDAO();
+    }
+
+    private void initUI() {
+        setSize(950, 600);
+        setLocationRelativeTo(getOwner());
+        setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(new Color(255, 252, 245));
+
+        JPanel pnlHeader = new JPanel(new GridBagLayout());
+        pnlHeader.setBorder(BorderFactory.createTitledBorder("Thông tin chứng từ nhập kho"));
+        pnlHeader.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Row 0
+        gbc.gridx = 0; gbc.gridy = 0;
+        pnlHeader.add(new JLabel("Mã phiếu nhập:"), gbc);
+        gbc.gridx = 1;
+        txtMaPN = new JTextField(12);
+        txtMaPN.setEditable(false);
+        pnlHeader.add(txtMaPN, gbc);
+
+        gbc.gridx = 2;
+        pnlHeader.add(new JLabel("Ngày nhập (dd/MM/yyyy):"), gbc);
+        gbc.gridx = 3;
+        txtNgayNhap = new JTextField(12);
+        pnlHeader.add(txtNgayNhap, gbc);
+
+        // Row 1
+        gbc.gridx = 0; gbc.gridy = 1;
+        pnlHeader.add(new JLabel("Nhà cung cấp:"), gbc);
+        gbc.gridx = 1;
+        cbNhaCungCap = new JComboBox<>();
+        pnlHeader.add(cbNhaCungCap, gbc);
+
+        gbc.gridx = 2;
+        pnlHeader.add(new JLabel("Nhân viên lập:"), gbc);
+        gbc.gridx = 3;
+        cbNhanVien = new JComboBox<>();
+        pnlHeader.add(cbNhanVien, gbc);
+
+        // Row 2
+        gbc.gridx = 0; gbc.gridy = 2;
+        pnlHeader.add(new JLabel("Chọn nguyên liệu:"), gbc);
+        gbc.gridx = 1;
+        cbNguyenLieu = new JComboBox<>();
+        pnlHeader.add(cbNguyenLieu, gbc);
+
+        gbc.gridx = 2;
+        pnlHeader.add(new JLabel("SL / Đơn giá / Hạn SD:"), gbc);
+        gbc.gridx = 3;
+        JPanel pnlInputs = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlInputs.setOpaque(false);
+        pnlInputs.add(new JLabel("SL:"));
+        txtSoLuong = new JTextField("1", 4);
+        pnlInputs.add(txtSoLuong);
+        pnlInputs.add(new JLabel("Giá:"));
+        txtDonGia = new JTextField("50000", 6);
+        pnlInputs.add(txtDonGia);
+        pnlInputs.add(new JLabel("HSD:"));
+        txtHanSuDung = new JTextField("", 8); // dd/MM/yyyy
+        pnlInputs.add(txtHanSuDung);
+        pnlHeader.add(pnlInputs, gbc);
+
+        add(pnlHeader, BorderLayout.NORTH);
+
+        String[] columns = {"Mã NL", "Tên Nguyên Liệu", "Số Lượng", "Đơn Giá (VNĐ)", "Hạn Sử Dụng", "Thành Tiền (VNĐ)"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        tableChiTiet = new JTable(tableModel);
+        tableChiTiet.setRowHeight(25);
+        tableChiTiet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        tableChiTiet.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setBackground(new Color(139, 69, 19));
+                setForeground(Color.WHITE);
+                setFont(new Font("Segoe UI", Font.BOLD, 13));
+                setHorizontalAlignment(JLabel.CENTER);
+                setOpaque(true);
+                return this;
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(tableChiTiet);
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        add(scrollPane, BorderLayout.CENTER);
+
+        JPanel pnlSouth = new JPanel(new BorderLayout(10, 10));
+        pnlSouth.setOpaque(false);
+        pnlSouth.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+
+        lblTongTien = new JLabel("TỔNG TIỀN PHIẾU: 0 VNĐ");
+        lblTongTien.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblTongTien.setForeground(new Color(192, 0, 0));
+        pnlSouth.add(lblTongTien, BorderLayout.WEST);
+
+        JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlButtons.setOpaque(false);
+
+        btnAddRow = new JButton("+ Thêm dòng");
+        btnDeleteRow = new JButton("- Xóa dòng");
+        btnSave = new JButton("✓ Xác nhận & Lưu Kho");
+
+        btnSave.setBackground(new Color(224, 31, 42));
+        btnSave.setForeground(Color.WHITE);
+        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 12));
+
+        pnlButtons.add(btnAddRow);
+        pnlButtons.add(btnDeleteRow);
+        pnlButtons.add(btnSave);
+        pnlSouth.add(pnlButtons, BorderLayout.EAST);
+
+        add(pnlSouth, BorderLayout.SOUTH);
+
+        btnAddRow.addActionListener(e -> performAddMaterialRow());
+        btnDeleteRow.addActionListener(e -> performDeleteSelectedRow());
+        btnSave.addActionListener(e -> performSaveToDatabase());
+    }
+
+    private void loadComboboxData() {
+        // 1. Load NCC
+        cbNhaCungCap.removeAllItems();
+        List<NhaCungCap> nccList = nhaCungCapDAO.getAllNhaCungCap();
+        if (nccList != null) {
+            for (NhaCungCap ncc : nccList) {
+                cbNhaCungCap.addItem(ncc.getMaNCC() + " | " + ncc.getTenNCC());
+            }
+        }
+
+        // 2. Load Nguyen Lieu
+        cbNguyenLieu.removeAllItems();
+        List<NguyenLieu> nlList = nguyenLieuDAO.getAllNguyenLieu();
+        if (nlList != null) {
+            for (NguyenLieu nl : nlList) {
+                cbNguyenLieu.addItem(nl.getMaNL() + " | " + nl.getTenNL());
+            }
+        }
+
+        // 3. Load Nhan Vien
+        cbNhanVien.removeAllItems();
+        List<NhanVien> nvList = nhanVienDAO.getAllNhanVien();
+        if (nvList != null) {
+            for (NhanVien nv : nvList) {
+                cbNhanVien.addItem(nv.getMaNV() + " | " + nv.getTenNV());
+            }
+        }
+
+        // Select current logged in employee by default if matching
+        if (currentUser != null && currentUser.getMaNV() != null) {
+            for (int i = 0; i < cbNhanVien.getItemCount(); i++) {
+                if (cbNhanVien.getItemAt(i).startsWith(currentUser.getMaNV())) {
+                    cbNhanVien.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void generateAutoMaPN() {
+        if (!isViewMode && phieuNhapDAO != null) {
+            String nextCode = phieuNhapDAO.generateNextPhieuNhapCode();
+            if (nextCode != null) {
+                txtMaPN.setText(nextCode);
+            } else {
+                txtMaPN.setText("PN001");
+            }
+        }
+    }
+
+    private void loadDataViewMode() {
+        txtNgayNhap.setEditable(false);
+        cbNhaCungCap.setEnabled(false);
+        cbNhanVien.setEnabled(false);
+        cbNguyenLieu.setEnabled(false);
+        txtSoLuong.setEditable(false);
+        txtDonGia.setEditable(false);
+        txtHanSuDung.setEditable(false);
+        
+        btnAddRow.setEnabled(false);
+        btnDeleteRow.setEnabled(false);
+        btnSave.setEnabled(false);
+
+        if (viewModeMaPN != null) {
+            txtMaPN.setText(viewModeMaPN);
+        }
+
+        List<ChiTietPhieuNhap> listCT = ctPhieuNhapDAO.getChiTietPhieuNhapByMaPN(viewModeMaPN);
+        BigDecimal totalSum = BigDecimal.ZERO;
+        
+        tableModel.setRowCount(0);
+        if (listCT != null) {
+            for (ChiTietPhieuNhap ct : listCT) {
+                String donGiaStr = (ct.getDonGia() != null) ? String.format("%,.0f", ct.getDonGia().doubleValue()) : "0";
+                String thanhTienStr = (ct.getThanhTien() != null) ? String.format("%,.0f", ct.getThanhTien().doubleValue()) : "0";
+                String hsdStr = (ct.getHanSuDung() != null) ? sdf.format(ct.getHanSuDung()) : "Không có";
+
+                tableModel.addRow(new Object[]{
+                    ct.getMaNL(),
+                    (ct.getTenNL() != null) ? ct.getTenNL() : "Nguyên liệu",
+                    ct.getSoLuong(),
+                    donGiaStr,
+                    hsdStr,
+                    thanhTienStr
+                });
+                
+                if (ct.getThanhTien() != null) {
+                    totalSum = totalSum.add(ct.getThanhTien());
+                }
+            }
+        }
+        lblTongTien.setText("TỔNG TIỀN PHIẾU: " + String.format("%,.0f", totalSum.doubleValue()) + " VNĐ");
+        
+        // Load additional info (NgayNhap, NhanVien, NCC)
+        List<PhieuNhap> all = phieuNhapDAO.getAllPhieuNhap();
+        for (PhieuNhap pn : all) {
+            if (pn.getMaPN().equals(viewModeMaPN)) {
+                txtNgayNhap.setText(pn.getNgayNhap() != null ? sdf.format(pn.getNgayNhap()) : "");
+                for (int i = 0; i < cbNhaCungCap.getItemCount(); i++) {
+                    if (cbNhaCungCap.getItemAt(i).contains(pn.getTenNCC())) {
+                        cbNhaCungCap.setSelectedIndex(i);
+                        break;
+                    }
+                }
+                for (int i = 0; i < cbNhanVien.getItemCount(); i++) {
+                    if (cbNhanVien.getItemAt(i).contains(pn.getTenNV())) {
+                        cbNhanVien.setSelectedIndex(i);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    private void performAddMaterialRow() {
+        try {
+            if (cbNguyenLieu.getSelectedItem() == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng thêm nguyên liệu vào kho trước!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String selectedNL = (String) cbNguyenLieu.getSelectedItem();
+            String maNL = selectedNL.split(" \\| ")[0];
+            String tenNL = selectedNL.split(" \\| ")[1];
+            
+            int soLuong = Integer.parseInt(txtSoLuong.getText().trim());
+            double donGia = Double.parseDouble(txtDonGia.getText().trim());
+            String hsdStr = txtHanSuDung.getText().trim();
+            
+            if (soLuong <= 0 || donGia <= 0) {
+                JOptionPane.showMessageDialog(this, "Số lượng và đơn giá nhập vào phải lớn hơn 0!", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Check HSD format if provided
+            if (!hsdStr.isEmpty()) {
+                try {
+                    sdf.parse(hsdStr);
+                } catch (ParseException ex) {
+                    JOptionPane.showMessageDialog(this, "Hạn sử dụng không đúng định dạng dd/MM/yyyy!", "Định dạng ngày sai", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            } else {
+                hsdStr = "Không có";
+            }
+
+            double thanhTien = soLuong * donGia;
+
+            // If already exists, update row
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                if (tableModel.getValueAt(i, 0).toString().equals(maNL)) {
+                    int currentSL = (int) tableModel.getValueAt(i, 2);
+                    int newSL = currentSL + soLuong;
+                    double newThanhTien = newSL * donGia;
+                    
+                    tableModel.setValueAt(newSL, i, 2);
+                    tableModel.setValueAt(String.format("%,.0f", donGia), i, 3);
+                    tableModel.setValueAt(hsdStr, i, 4);
+                    tableModel.setValueAt(String.format("%,.0f", newThanhTien), i, 5);
+                    
+                    updateTotalSumLabel();
+                    return;
+                }
+            }
+
+            tableModel.addRow(new Object[]{
+                maNL,
+                tenNL,
+                soLuong,
+                String.format("%,.0f", donGia),
+                hsdStr,
+                String.format("%,.0f", thanhTien)
+            });
+
+            updateTotalSumLabel();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập định dạng số hợp lệ!", "Sai định dạng số", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void performDeleteSelectedRow() {
+        int selectedRow = tableChiTiet.getSelectedRow();
+        if (selectedRow >= 0) {
+            tableModel.removeRow(selectedRow);
+            updateTotalSumLabel();
+        } else {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng trên bảng để tiến hành xóa vật tư!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void updateTotalSumLabel() {
+        double sum = 0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String thanhTienStr = tableModel.getValueAt(i, 5).toString().replace(",", "");
+            sum += Double.parseDouble(thanhTienStr);
+        }
+        lblTongTien.setText("TỔNG TIỀN PHIẾU: " + String.format("%,.0f", sum) + " VNĐ");
+    }
+
+    private void performSaveToDatabase() {
+        if (tableModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Phiếu nhập kho trống rỗng! Không thể lưu hóa đơn.", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String ngayNhapStr = txtNgayNhap.getText().trim();
+        Date ngayNhap;
+        try {
+            ngayNhap = sdf.parse(ngayNhapStr);
+        } catch (ParseException ex) {
+            JOptionPane.showMessageDialog(this, "Ngày nhập không đúng định dạng dd/MM/yyyy!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        PhieuNhap pn = new PhieuNhap();
+        pn.setMaPN(txtMaPN.getText().trim());
+        pn.setNgayNhap(ngayNhap);
+        
+        String selectedNCC = (String) cbNhaCungCap.getSelectedItem();
+        pn.setMaNCC(selectedNCC.split(" \\| ")[0]);
+
+        String selectedNV = (String) cbNhanVien.getSelectedItem();
+        pn.setMaNV(selectedNV.split(" \\| ")[0]);
+
+        List<ChiTietPhieuNhap> listCT = new ArrayList<>();
+        BigDecimal totalMoney = BigDecimal.ZERO;
+
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            ChiTietPhieuNhap ct = new ChiTietPhieuNhap();
+            
+            // Format auto-generated MaCTPN: PN001_01, PN001_02,...
+            String maCTPN = pn.getMaPN() + "_" + String.format("%02d", i + 1);
+            ct.setMaCTPN(maCTPN);
+            ct.setMaPN(pn.getMaPN());
+            ct.setMaNL(tableModel.getValueAt(i, 0).toString());
+            
+            int soLuong = (int) tableModel.getValueAt(i, 2);
+            ct.setSoLuong(soLuong);
+            
+            String giaStr = tableModel.getValueAt(i, 3).toString().replace(",", "");
+            BigDecimal donGia = new BigDecimal(giaStr);
+            ct.setDonGia(donGia);
+            
+            String hsdStr = tableModel.getValueAt(i, 4).toString();
+            if (!hsdStr.equals("Không có")) {
+                try {
+                    ct.setHanSuDung(sdf.parse(hsdStr));
+                } catch (ParseException e) {
+                    ct.setHanSuDung(null);
+                }
+            } else {
+                ct.setHanSuDung(null);
+            }
+
+            BigDecimal thanhTien = donGia.multiply(new BigDecimal(soLuong));
+            ct.setThanhTien(thanhTien);
+
+            totalMoney = totalMoney.add(thanhTien);
+            listCT.add(ct);
+        }
+        pn.setTongTien(totalMoney);
+
+        boolean result = phieuNhapDAO.savePhieuNhapTransaction(pn, listCT);
+        
+        if (result) {
+            JOptionPane.showMessageDialog(this, "Ghi nhận phiếu nhập kho thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Lưu phiếu nhập thất bại!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}

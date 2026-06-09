@@ -1,0 +1,16 @@
+# Bỏ qua các file biên dịch của Java
+*.class
+*.bluej
+*.pkg
+
+# Bỏ qua các thư mục tự sinh khi chạy/build
+bin/
+build/
+dist/
+nbproject/private/
+
+# Bỏ qua file cấu hình riêng của VS Code hoặc NetBeans
+.vscode/
+.settings/
+.classpath
+.project
