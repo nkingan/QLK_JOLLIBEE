@@ -14,7 +14,7 @@ public class LoginDialog extends JDialog {
     // Bảng màu thương hiệu Jollibee
     private final Color jollibeeRed = new Color(227, 29, 43);      // #E31D2B
     private final Color jollibeeYellow = new Color(255, 210, 0);   // #FFD200
-    private final Color creamWhite = new Color(255, 253, 240);     // Nền kem nhẹ
+    private final Color creamWhite = new Color(255, 253, 240);    
     private final Color darkCharcoal = new Color(50, 50, 50);
     private final Color linkColor = new Color(0, 102, 204);
     private final Color hoverRed = new Color(245, 54, 68);
