@@ -1,145 +1,183 @@
-// package dao;
-
-// import model.PhieuXuat;
-// import util.DBConnection;
-
-// import java.sql.*;
-// import java.util.*;
-
-// public class PhieuXuatDAO implements CrudDAO<PhieuXuat> {
-
-//     public void insert(PhieuXuat px) {
-//         String sql = "INSERT INTO PhieuXuat VALUES (?, ?, ?)";
-
-//         try (Connection conn = DBConnection.getConnection();
-//              PreparedStatement ps = conn.prepareStatement(sql)) {
-
-//             ps.setString(1, px.getMaPX());
-//             ps.setString(2, px.getMaNV());
-//             ps.setDate(3, new java.sql.Date(px.getNgayXuat().getTime()));
-
-//             ps.executeUpdate();
-//         } catch (Exception e) { e.printStackTrace(); }
-//     }
-
-//     public List<PhieuXuat> getAll() { return new ArrayList<>(); }
-//     public void update(PhieuXuat t) {}
-//     public void delete(String id) {}
-//     public PhieuXuat findById(String id) { return null; }
-// }
 package dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import model.CTPhieuXuat; 
 import model.PhieuXuat;
-import model.ChiTietPhieuXuat;
 import util.DBConnection;
-import java.sql.*;
-import java.util.*;
-
 public class PhieuXuatDAO {
 
-    public List<PhieuXuat> getAll() {
-        List<PhieuXuat> list = new ArrayList<>();
+    // --- Tự động sinh mã phiếu xuất (Ví dụ: PX01, PX02...) ---
+    public synchronized String generateNextPhieuXuatCode() {
+        String latestMaPX = null;
+        // Khớp với kiểu sắp xếp chuỗi mã của hệ thống
+        String sql = "SELECT TOP 1 MaPX FROM PhieuXuat ORDER BY LEN(MaPX) DESC, MaPX DESC";
+
         try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT * FROM PhieuXuat ORDER BY NgayXuat DESC")) {
-            while (rs.next()) {
-                list.add(new PhieuXuat(
-                    rs.getString("MaPX"),
-                    rs.getString("NgayXuat"),
-                    rs.getString("MaNV"),
-                    rs.getDouble("TongTien")
-                ));
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) {
+                latestMaPX = rs.getString("MaPX");
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
-    }
-
-    public void insert(PhieuXuat px) {
-        String sql = "INSERT INTO PhieuXuat (MaPX,NgayXuat,MaNV,TongTien) VALUES (?,?,?,?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, px.getMaXuat());
-            ps.setString(2, px.getNgayXuat());
-            ps.setString(3, px.getMaNV());
-            ps.setDouble(4, px.getTongTien());
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public void delete(String maPX) {
-        try (Connection conn = DBConnection.getConnection()) {
-            PreparedStatement ps1 = conn.prepareStatement("DELETE FROM ChiTietPhieuXuat WHERE MaPX=?");
-            ps1.setString(1, maPX); ps1.executeUpdate();
-            PreparedStatement ps2 = conn.prepareStatement("DELETE FROM PhieuXuat WHERE MaPX=?");
-            ps2.setString(1, maPX); ps2.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public boolean existsById(String maPX) {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT 1 FROM PhieuXuat WHERE MaPX=?")) {
-            ps.setString(1, maPX);
-            return ps.executeQuery().next();
-        } catch (Exception e) { e.printStackTrace(); }
-        return false;
-    }
-
-    public List<ChiTietPhieuXuat> getChiTiet(String maPX) {
-        List<ChiTietPhieuXuat> list = new ArrayList<>();
-        String sql = "SELECT * FROM ChiTietPhieuXuat WHERE MaPX=?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maPX);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new ChiTietPhieuXuat(
-                    rs.getString("MaCTPX"),
-                    rs.getInt("SoLuong"),
-                    rs.getString("MaNL"),
-                    rs.getDouble("DonGia"),
-                    rs.getString("MaPX")
-                ));
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
-    }
-
-    // Insert chi tiết — trigger DB sẽ tự trừ kho & cộng tổng tiền
-    public void insertChiTiet(ChiTietPhieuXuat ct) throws SQLException {
-        String sql = "INSERT INTO ChiTietPhieuXuat (MaCTPX,SoLuong,MaNL,DonGia,MaPX) VALUES (?,?,?,?,?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, ct.getMaCTPX());
-            ps.setInt(2, ct.getSoLuong());
-            ps.setString(3, ct.getMaNL());
-            ps.setDouble(4, ct.getDonGia());
-            ps.setString(5, ct.getMaPX());
-            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "PX01"; // Nếu lỗi hoặc chưa có dữ liệu, trả về mã đầu tiên
         }
-        // SQLException được ném ra để GUI bắt thông báo "Không đủ hàng trong kho"
+
+        String prefix = "PX";
+        int lastNumber = 0;
+        if (latestMaPX != null && latestMaPX.startsWith(prefix)) {
+            try {
+                String numberPart = latestMaPX.substring(prefix.length());
+                lastNumber = Integer.parseInt(numberPart);
+            } catch (NumberFormatException e) {
+                lastNumber = 0;
+            }
+        }
+        return prefix + (lastNumber + 1); 
     }
 
-    public String genMaPX() {
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT MAX(MaPX) FROM PhieuXuat")) {
-            if (rs.next() && rs.getString(1) != null) {
-                int num = Integer.parseInt(rs.getString(1).replace("PX", "")) + 1;
-                return String.format("PX%02d", num);
+    // --- Lưu Transaction Phiếu Xuất Kho ---
+    public boolean savePhieuXuatTransaction(PhieuXuat phieuXuat, List<CTPhieuXuat> chiTietList) {
+        Connection conn = null;
+        boolean success = false;
+
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); // Chạy chế độ an toàn Transaction
+
+            // 1. Thêm thông tin phiếu xuất chung
+            String sqlHeader = "INSERT INTO PhieuXuat (MaPX, NgayXuat, MaNV, TongTien) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pst = conn.prepareStatement(sqlHeader)) {
+                pst.setString(1, phieuXuat.getMaPX());
+                pst.setDate(2, new java.sql.Date(phieuXuat.getNgayXuat().getTime()));
+                pst.setString(3, phieuXuat.getMaNV());
+                pst.setDouble(4, 0); // Ban đầu truyền 0, Trigger SQL tự động tính tổng tiền dựa vào chi tiết
+                
+                int rows = pst.executeUpdate();
+                if (rows <= 0) {
+                    conn.rollback();
+                    return false;
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return "PX01";
+
+            // 2. Thêm danh sách chi tiết nguyên liệu xuất
+            // Lưu ý: SQL của bạn đã có Trigger TRG_XuatKho tự động trừ kho nguyên liệu (NguyenLieu.SoLuong) 
+            // nên code Java KHÔNG cần gọi hàm trừ kho thủ công nữa! Rất tiện lợi.
+            String sqlDetail = "INSERT INTO ChiTietPhieuXuat (MaCTPX, SoLuong, DonGia, MaNL, MaPX) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement pstDetail = conn.prepareStatement(sqlDetail)) {
+                int index = 1;
+                for (CTPhieuXuat ct : chiTietList) {
+                    // Tự sinh mã chi tiết phiếu xuất ngẫu nhiên hoặc theo số thứ tự để tránh trùng PK MaCTPX
+                    String maCTPX = phieuXuat.getMaPX() + "_CT" + (index++);
+                    
+                    pstDetail.setString(1, maCTPX);
+                    pstDetail.setInt(2, ct.getSoLuong());
+                    pstDetail.setDouble(3, ct.getDonGia());
+                    pstDetail.setString(4, ct.getMaNL()); // Khớp với MaNL trong SQL của bạn
+                    pstDetail.setString(5, phieuXuat.getMaPX());
+                    pstDetail.addBatch();
+                }
+                pstDetail.executeBatch();
+            }
+
+            conn.commit(); 
+            success = true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+            // In lỗi ra màn hình (Ví dụ: Lỗi từ Trigger thông báo không đủ hàng tồn kho)
+            System.err.println("Lỗi Transaction Xuất Kho: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
+        return success;
     }
 
-    public String genMaCTPX() {
+    // --- Lấy toàn bộ danh sách phiếu xuất hiển thị lên JTable ---
+    public List<PhieuXuat> getAllPhieuXuat() {
+        List<PhieuXuat> list = new ArrayList<>();
+        // Tận dụng luôn View VW_PhieuXuat bạn đã viết sẵn trong SQL, đỡ phải ghi lệnh JOIN phức tạp!
+        String sql = "SELECT * FROM VW_PhieuXuat";
+
         try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT MAX(MaCTPX) FROM ChiTietPhieuXuat")) {
-            if (rs.next() && rs.getString(1) != null) {
-                int num = Integer.parseInt(rs.getString(1).replace("CTPX", "")) + 1;
-                return String.format("CTPX%02d", num);
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                PhieuXuat px = new PhieuXuat();
+                px.setMaPX(rs.getString("MaPX"));
+                px.setNgayXuat(rs.getDate("NgayXuat"));
+                px.setTenNV(rs.getString("TenNV")); // Lấy từ View
+                px.setTongTien(rs.getDouble("TongTien"));
+                list.add(px);
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return "CTPX01";
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return list;
+    }
+
+    // --- Tìm kiếm phiếu xuất kho ---
+    public List<PhieuXuat> searchPhieuXuat(String criteria, String searchTerm) {
+        List<PhieuXuat> list = new ArrayList<>();
+        String sql = "SELECT * FROM VW_PhieuXuat WHERE ";
+
+        switch (criteria) {
+            case "Mã PX":
+                sql += "MaPX LIKE ?";
+                searchTerm = "%" + searchTerm + "%";
+                break;
+            case "Tên NV":
+                sql += "TenNV LIKE ?";
+                searchTerm = "%" + searchTerm + "%";
+                break;
+            case "Ngày xuất":
+                sql += "NgayXuat = ?";
+                break;
+            default:
+                return list;
+        }
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (criteria.equals("Ngày xuất")) {
+                try {
+                    java.util.Date date = new SimpleDateFormat("yyyy-MM-dd").parse(searchTerm);
+                    pstmt.setDate(1, new java.sql.Date(date.getTime()));
+                } catch (ParseException e) {
+                    return list;
+                }
+            } else {
+                pstmt.setString(1, searchTerm);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    PhieuXuat px = new PhieuXuat();
+                    px.setMaPX(rs.getString("MaPX"));
+                    px.setNgayXuat(rs.getDate("NgayXuat"));
+                    px.setTenNV(rs.getString("TenNV"));
+                    px.setTongTien(rs.getDouble("TongTien"));
+                    list.add(px);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
