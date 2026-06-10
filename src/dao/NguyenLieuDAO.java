@@ -1,147 +1,398 @@
-// package dao;
-
-// import util.DBConnection;
-// import java.sql.*;
-// import java.util.*;
-
-// public class NguyenLieuDAO {
-
-//     public List<Vector> getAll() {
-//         List<Vector> list = new ArrayList<>();
-//         String sql = "SELECT * FROM NguyenLieu";
-
-//         try (Connection conn = DBConnection.getConnection();
-//              Statement st = conn.createStatement();
-//              ResultSet rs = st.executeQuery(sql)) {
-
-//             while (rs.next()) {
-//                 Vector row = new Vector();
-//                 row.add(rs.getString("MaNL"));
-//                 row.add(rs.getString("TenNL"));
-//                 row.add(rs.getString("DonViTinh"));
-//                 row.add(rs.getInt("SoLuong"));
-//                 row.add(rs.getString("MaKho"));
-//                 list.add(row);
-//             }
-
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//         }
-//         return list;
-//     }
-
-//     public void insertOrUpdate(String id, String name, String unit, int qty, String maKho) {
-//         try (Connection conn = DBConnection.getConnection()) {
-
-//             String check = "SELECT SoLuong FROM NguyenLieu WHERE MaNL=?";
-//             PreparedStatement ps = conn.prepareStatement(check);
-//             ps.setString(1, id);
-//             ResultSet rs = ps.executeQuery();
-
-//             if (rs.next()) {
-//                 int newQty = rs.getInt("SoLuong") + qty;
-
-//                 String update = "UPDATE NguyenLieu SET SoLuong=?, TenNL=?, DonViTinh=?, MaKho=? WHERE MaNL=?";
-//                 ps = conn.prepareStatement(update);
-//                 ps.setInt(1, newQty);
-//                 ps.setString(2, name);
-//                 ps.setString(3, unit);
-//                 ps.setString(4, maKho);
-//                 ps.setString(5, id);
-//                 ps.executeUpdate();
-//             } else {
-//                 String insert = "INSERT INTO NguyenLieu VALUES (?,?,?,?,?)";
-//                 ps = conn.prepareStatement(insert);
-//                 ps.setString(1, id);
-//                 ps.setString(2, name);
-//                 ps.setString(3, unit);
-//                 ps.setInt(4, qty);
-//                 ps.setString(5, maKho);
-//                 ps.executeUpdate();
-//             }
-
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//         }
-//     }
-
-//     public void delete(String id) {
-//         try (Connection conn = DBConnection.getConnection();
-//              PreparedStatement ps = conn.prepareStatement("DELETE FROM NguyenLieu WHERE MaNL=?")) {
-//             ps.setString(1, id);
-//             ps.executeUpdate();
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//         }
-//     }
-// }
 package dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import model.NguyenLieu;
+import model.TonKhoModel;
 import util.DBConnection;
-import java.sql.*;
-import java.util.*;
 
 public class NguyenLieuDAO {
 
-    public List<NguyenLieu> getAll() {
-        List<NguyenLieu> list = new ArrayList<>();
+    /**
+     * Thêm mới một bản ghi nguyên liệu vào cơ sở dữ liệu.
+     *
+     * @param nguyenLieu Đối tượng nguyên liệu cần thêm.
+     * @return true nếu thêm thành công, false nếu thất bại.
+     */
+    public boolean addNguyenLieu(NguyenLieu nguyenLieu) {
+        String sql = "INSERT INTO NguyenLieu (MaNL, TenNL, MaKho, SoLuong, DonViTinh, Anh) VALUES (?, ?, ?, ?, ?, ?)";
+        
         try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT * FROM NguyenLieu")) {
-            while (rs.next()) {
-                list.add(new NguyenLieu(
-                    rs.getString("MaNL"),
-                    rs.getString("TenNL"),
-                    rs.getString("DonViTinh"),
-                    rs.getInt("SoLuong"),
-                    rs.getString("MaKho")
-                ));
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, nguyenLieu.getMaNL());
+            pstmt.setString(2, nguyenLieu.getTenNL());
+            pstmt.setString(3, nguyenLieu.getMaKho());
+            pstmt.setInt(4, nguyenLieu.getSoluong());
+            pstmt.setString(5, nguyenLieu.getDonvi());
+            pstmt.setString(6, nguyenLieu.getAnh());
+
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Lỗi CSDL khi thêm nguyên liệu:");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Cập nhật thông tin của một nguyên liệu đã tồn tại dựa trên Mã Nguyên Liệu (MaNL).
+     *
+     * @param nguyenLieu Đối tượng chứa thông tin mới cần cập nhật.
+     * @return true nếu cập nhật thành công, false nếu thất bại.
+     */
+    public boolean updateNguyenLieu(NguyenLieu nguyenLieu) {
+        String sql = "UPDATE NguyenLieu SET TenNL = ?, MaKho = ?, SoLuong = ?, DonViTinh = ?, Anh = ? WHERE MaNL = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, nguyenLieu.getTenNL());
+            pstmt.setString(2, nguyenLieu.getMaKho());
+            pstmt.setInt(3, nguyenLieu.getSoluong());
+            pstmt.setString(4, nguyenLieu.getDonvi());
+            pstmt.setString(5, nguyenLieu.getAnh());
+            pstmt.setString(6, nguyenLieu.getMaNL());
+
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Lỗi CSDL khi cập nhật nguyên liệu:");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Lấy mã nguyên liệu cuối cùng hiện có trong cơ sở dữ liệu.
+     *
+     * @return Chuỗi mã nguyên liệu cuối cùng, hoặc null nếu bảng trống.
+     */
+    public String getLastIngredientId() {
+        String lastId = null;
+        String query = "SELECT TOP 1 MaNL FROM NguyenLieu ORDER BY MaNL DESC";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            if (rs.next()) {
+                lastId = rs.getString("MaNL");
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi lấy mã nguyên liệu cuối cùng: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lastId;
+    }
+
+    /**
+     * Xóa một bản ghi nguyên liệu ra khỏi cơ sở dữ liệu dựa vào mã khóa chính.
+     *
+     * @param maNL Mã nguyên liệu cần xóa.
+     * @return true nếu xóa thành công, false nếu thất bại.
+     */
+    public boolean deleteNguyenLieu(String maNL) {
+        String sql = "DELETE FROM NguyenLieu WHERE MaNL = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, maNL);
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Lỗi CSDL khi xóa nguyên liệu (Có thể do ràng buộc khóa ngoại):");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Lấy toàn bộ danh sách nguyên liệu hiện có trong bảng.
+     *
+     * @return Danh sách chứa các đối tượng NguyenLieu.
+     */
+    public List<NguyenLieu> getAllNguyenLieu() {
+    List<NguyenLieu> danhSachNguyenLieu = new ArrayList<>();
+
+    String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh FROM NguyenLieu";
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+
+        while (rs.next()) {
+            NguyenLieu nl = new NguyenLieu();
+
+            nl.setMaNL(rs.getString("MaNL"));
+            nl.setTenNL(rs.getString("TenNL"));
+            nl.setMaKho(rs.getString("MaKho"));
+            nl.setSoluong(rs.getInt("SoLuong"));
+            nl.setDonvi(rs.getString("DonViTinh"));
+
+            danhSachNguyenLieu.add(nl);
+        }
+
+    } catch (SQLException e) {
+        System.err.println("Lỗi khi tải danh sách nguyên liệu:");
+        e.printStackTrace();
+    }
+
+    return danhSachNguyenLieu;
+}
+
+    /**
+     * Tìm kiếm thông tin chi tiết của một nguyên liệu cụ thể bằng Mã Nguyên Liệu.
+     *
+     * @param maNL Mã nguyên liệu cần tìm kiếm.
+     * @return Đối tượng NguyenLieu hoặc null nếu không tồn tại.
+     */
+    public NguyenLieu getNguyenLieuById(String maNL) {
+        NguyenLieu nl = null;
+        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh FROM NguyenLieu WHERE MaNL = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, maNL);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    nl = new NguyenLieu();
+                    nl.setMaNL(rs.getString("MaNL"));
+                    nl.setTenNL(rs.getString("TenNL"));
+                    nl.setMaKho(rs.getString("MaKho"));
+                    nl.setSoluong(rs.getInt("SoLuong"));
+                    nl.setDonvi(rs.getString("DonViTinh"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi tìm kiếm nguyên liệu theo mã khóa chính:");
+            e.printStackTrace();
+        }
+        return nl;
+    }
+
+    // --- QUẢN LÝ TỒN KHO NGUYÊN LIỆU (Nhập / Xuất / Cảnh báo) ---
+    
+    /**
+     * Thay đổi số lượng tồn kho của nguyên liệu ngay trong một Transaction chung.
+     */
+    public void updateStockQuantity(Connection conn, String maNL, int quantityChange) throws SQLException {
+        String sql = "UPDATE NguyenLieu SET SoLuong = SoLuong + ? WHERE MaNL = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, quantityChange);
+            pstmt.setString(2, maNL);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                System.err.println("Cảnh báo kho: Không tìm thấy nguyên liệu để cập nhật số lượng tồn (MaNL: " + maNL + ").");
+            }
+        }
+    }
+
+    /**
+     * Lấy số lượng hàng tồn hiện tại của một nguyên liệu.
+     *
+     * @param maNL Mã nguyên liệu cần kiểm tra.
+     * @return Số lượng tồn trong kho.
+     */
+    public int getStockQuantity(String maNL) {
+        int stock = 0;
+        String sql = "SELECT SoLuong FROM NguyenLieu WHERE MaNL = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, maNL);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    stock = rs.getInt("SoLuong");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi truy vấn số lượng tồn kho nguyên liệu:");
+            e.printStackTrace();
+        }
+        return stock;
+    }
+
+    /**
+     * Lấy danh sách các nguyên liệu sắp hết hàng dựa trên một hạn mức chỉ định.
+     */
+    public List<NguyenLieu> getLowStockProducts(int threshold) {
+        List<NguyenLieu> lowStockList = new ArrayList<>();
+        String sql = "SELECT MaNL, TenNL, SoLuong, DonViTinh, MaKho, Gianhap, Anh FROM NguyenLieu WHERE SoLuong <= ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, threshold);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    NguyenLieu nl = new NguyenLieu();
+                    nl.setMaNL(rs.getString("MaNL"));
+                    nl.setTenNL(rs.getString("TenNL"));
+                    nl.setSoluong(rs.getInt("SoLuong"));
+                    nl.setDonvi(rs.getString("DonViTinh"));
+                    nl.setMaKho(rs.getString("MaKho"));
+                    lowStockList.add(nl);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi tải dữ liệu nguyên liệu sắp hết kho:");
+            e.printStackTrace();
+        }
+        return lowStockList;
+    }
+
+    public int getLowStockCount(int threshold) {
+        return getLowStockProducts(threshold).size();
+    }
+
+    // --- BỘ CÁC PHƯƠNG THỨC TÌM KIẾM NÂNG CAO VÀ PHÂN LOẠI ---
+
+    /**
+     * Phương thức tìm kiếm tổng hợp đa năng dựa trên tiêu chí lựa chọn từ ComboBox.
+     */
+    public List<NguyenLieu> searchNguyenLieu(String criteria, String searchTerm) {
+        List<NguyenLieu> nguyenLieuList = new ArrayList<>();
+        String sql = "SELECT nl.MaNL, nl.TenNL, nl.MaKho, nl.Gianhap, nl.SoLuong, nl.DonViTinh, nl.Anh " +
+                     "FROM NguyenLieu nl " +
+                     "WHERE ";
+
+        switch (criteria) {
+            case "Tên NL":
+                sql += "nl.TenNL LIKE ?";
+                searchTerm = "%" + searchTerm + "%";
+                break;
+            case "Mã NL":
+                sql += "nl.MaNL LIKE ?";
+                searchTerm = "%" + searchTerm + "%";
+                break;
+            case "Mã Kho":
+                sql += "nl.MaKho LIKE ?";
+                searchTerm = "%" + searchTerm + "%";
+                break;
+            default:
+                System.err.println("Tiêu chí tìm kiếm truyền vào sai định dạng: " + criteria);
+                return nguyenLieuList;
+        }
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, searchTerm);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    NguyenLieu nl = new NguyenLieu();
+                    nl.setMaNL(rs.getString("MaNL"));
+                    nl.setTenNL(rs.getString("TenNL"));
+                    nl.setMaKho(rs.getString("MaKho"));
+                    nl.setSoluong(rs.getInt("SoLuong"));
+                    nl.setDonvi(rs.getString("DonViTinh"));
+
+                    nguyenLieuList.add(nl);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi xảy ra trong quá trình thực thi tìm kiếm đa năng:");
+            e.printStackTrace();
+        }
+
+        return nguyenLieuList;
+    }
+
+    /**
+     * Tìm kiếm nhanh nguyên liệu theo tên.
+     */
+    public List<NguyenLieu> searchNguyenLieuByName(String tenNL) {
+        List<NguyenLieu> danhSach = new ArrayList<>();
+        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh FROM NguyenLieu WHERE TenNL LIKE ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, "%" + tenNL + "%");
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    NguyenLieu nl = new NguyenLieu();
+                    nl.setMaNL(rs.getString("MaNL"));
+                    nl.setTenNL(rs.getString("TenNL"));
+                    nl.setMaKho(rs.getString("MaKho"));
+                    nl.setSoluong(rs.getInt("SoLuong"));
+                    nl.setDonvi(rs.getString("DonViTinh"));
+                    danhSach.add(nl);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi tìm kiếm nhanh nguyên liệu theo chuỗi tên:");
+            e.printStackTrace();
+        }
+        return danhSach;
+    }
+
+    /**
+     * Lọc danh sách nguyên liệu thuộc về một kho nhất định.
+     */
+    public List<NguyenLieu> getNguyenLieuByKho(String maKho) {
+        List<NguyenLieu> nguyenLieuList = new ArrayList<>();
+        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh FROM NguyenLieu WHERE MaKho = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, maKho);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    NguyenLieu nl = new NguyenLieu();
+                    nl.setMaNL(rs.getString("MaNL"));
+                    nl.setTenNL(rs.getString("TenNL"));
+                    nl.setMaKho(rs.getString("MaKho"));
+                    nl.setSoluong(rs.getInt("SoLuong"));
+                    nl.setDonvi(rs.getString("DonViTinh"));
+                    nguyenLieuList.add(nl);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi lọc danh sách nguyên liệu theo Mã kho:");
+            e.printStackTrace();
+        }
+        return nguyenLieuList;
+    }
+
+    public List<TonKhoModel> getDanhSachTonKho() {
+        List<TonKhoModel> list = new ArrayList<>();
+        String sql = "SELECT * FROM VW_TonKho"; 
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+            
+            while (rs.next()) {
+                TonKhoModel tk = new TonKhoModel();
+                tk.setMaNL(rs.getString("MaNL"));
+                tk.setTenNL(rs.getString("TenNL"));
+                tk.setTonKhoHienTai(rs.getInt("TonKhoHienTai"));
+                tk.setTrangThaiHan(rs.getString("TrangThaiHan"));
+                list.add(tk);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
-    }
-
-    public void insert(NguyenLieu nl) {
-        String sql = "INSERT INTO NguyenLieu (MaNL,TenNL,DonViTinh,SoLuong,MaKho) VALUES (?,?,?,?,?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, nl.getMaNL());
-            ps.setString(2, nl.getTenNL());
-            ps.setString(3, nl.getDonViTinh());
-            ps.setInt(4, nl.getSoLuong());
-            ps.setString(5, nl.getMaKho());
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public void update(NguyenLieu nl) {
-        String sql = "UPDATE NguyenLieu SET TenNL=?,DonViTinh=?,SoLuong=?,MaKho=? WHERE MaNL=?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, nl.getTenNL());
-            ps.setString(2, nl.getDonViTinh());
-            ps.setInt(3, nl.getSoLuong());
-            ps.setString(4, nl.getMaKho());
-            ps.setString(5, nl.getMaNL());
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public void delete(String maNL) {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM NguyenLieu WHERE MaNL=?")) {
-            ps.setString(1, maNL);
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public boolean existsById(String maNL) {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT 1 FROM NguyenLieu WHERE MaNL=?")) {
-            ps.setString(1, maNL);
-            return ps.executeQuery().next();
-        } catch (Exception e) { e.printStackTrace(); }
-        return false;
     }
 }
