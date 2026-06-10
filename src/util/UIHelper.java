@@ -17,7 +17,7 @@ public class UIHelper {
      */
     public static void autoResizeColumnWidths(JTable table) {
         // Tắt chế độ tự co giãn cột tự động của JTable để thanh cuộn ngang xuất hiện nếu cần
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+       
         
         TableColumnModel columnModel = table.getColumnModel();
         for (int col = 0; col < table.getColumnCount(); col++) {
@@ -48,5 +48,6 @@ public class UIHelper {
             width = Math.min(width, 500); 
             tableColumn.setPreferredWidth(width);
         }
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
     }
 }
