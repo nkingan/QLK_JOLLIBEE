@@ -19,7 +19,7 @@ public class NguyenLieuDAO {
      * @return true nếu thêm thành công, false nếu thất bại.
      */
     public boolean addNguyenLieu(NguyenLieu nguyenLieu) {
-        String sql = "INSERT INTO NguyenLieu (MaNL, TenNL, MaKho, SoLuong, DonViTinh, Anh) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO NguyenLieu (MaNL, TenNL, MaKho, SoLuong, DonViTinh) VALUES (?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -29,7 +29,6 @@ public class NguyenLieuDAO {
             pstmt.setString(3, nguyenLieu.getMaKho());
             pstmt.setInt(4, nguyenLieu.getSoluong());
             pstmt.setString(5, nguyenLieu.getDonvi());
-            pstmt.setString(6, nguyenLieu.getAnh());
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -48,7 +47,7 @@ public class NguyenLieuDAO {
      * @return true nếu cập nhật thành công, false nếu thất bại.
      */
     public boolean updateNguyenLieu(NguyenLieu nguyenLieu) {
-        String sql = "UPDATE NguyenLieu SET TenNL = ?, MaKho = ?, SoLuong = ?, DonViTinh = ?, Anh = ? WHERE MaNL = ?";
+        String sql = "UPDATE NguyenLieu SET TenNL = ?, MaKho = ?, SoLuong = ?, DonViTinh = ? WHERE MaNL = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -57,8 +56,7 @@ public class NguyenLieuDAO {
             pstmt.setString(2, nguyenLieu.getMaKho());
             pstmt.setInt(3, nguyenLieu.getSoluong());
             pstmt.setString(4, nguyenLieu.getDonvi());
-            pstmt.setString(5, nguyenLieu.getAnh());
-            pstmt.setString(6, nguyenLieu.getMaNL());
+            pstmt.setString(5, nguyenLieu.getMaNL());
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -122,7 +120,7 @@ public class NguyenLieuDAO {
     public List<NguyenLieu> getAllNguyenLieu() {
     List<NguyenLieu> danhSachNguyenLieu = new ArrayList<>();
 
-    String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap, Anh FROM NguyenLieu";
+    String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap FROM NguyenLieu";
 
     try (Connection conn = DBConnection.getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -137,7 +135,6 @@ public class NguyenLieuDAO {
             nl.setSoluong(rs.getInt("SoLuong"));
             nl.setDonvi(rs.getString("DonViTinh"));
             nl.setGianhap(rs.getInt("Gianhap"));
-            nl.setAnh(rs.getString("Anh"));
 
             danhSachNguyenLieu.add(nl);
         }
@@ -158,7 +155,7 @@ public class NguyenLieuDAO {
      */
     public NguyenLieu getNguyenLieuById(String maNL) {
         NguyenLieu nl = null;
-        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap, Anh FROM NguyenLieu WHERE MaNL = ?";
+        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap FROM NguyenLieu WHERE MaNL = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -174,7 +171,6 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
-                    nl.setAnh(rs.getString("Anh"));
                 }
             }
         } catch (SQLException e) {
@@ -235,7 +231,7 @@ public class NguyenLieuDAO {
      */
     public List<NguyenLieu> getLowStockProducts(int threshold) {
         List<NguyenLieu> lowStockList = new ArrayList<>();
-        String sql = "SELECT MaNL, TenNL, SoLuong, DonViTinh, MaKho, Gianhap, Anh FROM NguyenLieu WHERE SoLuong <= ?";
+        String sql = "SELECT MaNL, TenNL, SoLuong, DonViTinh, MaKho, Gianhap FROM NguyenLieu WHERE SoLuong <= ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -250,7 +246,6 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
-                    nl.setAnh(rs.getString("Anh"));
                     nl.setMaKho(rs.getString("MaKho"));
                     lowStockList.add(nl);
                 }
@@ -274,7 +269,7 @@ public class NguyenLieuDAO {
      */
     public List<NguyenLieu> searchNguyenLieu(String criteria, String searchTerm) {
         List<NguyenLieu> nguyenLieuList = new ArrayList<>();
-        String sql = "SELECT nl.MaNL, nl.TenNL, nl.MaKho, nl.SoLuong, nl.DonViTinh, nl.Gianhap, nl.Anh " +
+        String sql = "SELECT nl.MaNL, nl.TenNL, nl.MaKho, nl.SoLuong, nl.DonViTinh, nl.Gianhap " +
                      "FROM NguyenLieu nl " +
                      "WHERE ";
 
@@ -309,7 +304,6 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
-                    nl.setAnh(rs.getString("Anh"));
 
                     nguyenLieuList.add(nl);
                 }
@@ -327,7 +321,7 @@ public class NguyenLieuDAO {
      */
     public List<NguyenLieu> searchNguyenLieuByName(String tenNL) {
         List<NguyenLieu> danhSach = new ArrayList<>();
-        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap, Anh FROM NguyenLieu WHERE TenNL LIKE ?";
+        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap FROM NguyenLieu WHERE TenNL LIKE ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -343,7 +337,6 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
-                    nl.setAnh(rs.getString("Anh"));
                     danhSach.add(nl);
                 }
             }
@@ -359,7 +352,7 @@ public class NguyenLieuDAO {
      */
     public List<NguyenLieu> getNguyenLieuByKho(String maKho) {
         List<NguyenLieu> nguyenLieuList = new ArrayList<>();
-        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap, Anh FROM NguyenLieu WHERE MaKho = ?";
+        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap FROM NguyenLieu WHERE MaKho = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -375,7 +368,6 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
-                    nl.setAnh(rs.getString("Anh"));
                     nguyenLieuList.add(nl);
                 }
             }

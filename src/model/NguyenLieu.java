@@ -200,14 +200,13 @@ public class NguyenLieu {
     private int gianhap;     // Giá nhập vào trên một đơn vị tính
     private int soluong;     // Số lượng tồn kho hiện tại trong hệ thống
     private String donvi;    // Đơn vị tính (VD: Kg, Lít, Chai, Bao...)
-    private String anh;      // Đường dẫn hoặc tên file ảnh của nguyên liệu
 
     // 1. Hàm khởi tạo không tham số
     public NguyenLieu() {
     }
 
     // 2. KHỞI TẠO ĐẶC BIỆT (5 THAM SỐ): Sửa lỗi đỏ lòm cho file MainGUI.java hiện tại
-    // Các trường không có trên giao diện như maloai, gianhap, anh sẽ được gán mặc định hoặc để null
+    // Các trường không có trên giao diện như maloai, gianhap sẽ được gán mặc định hoặc để null
     public NguyenLieu(String maNL, String tenNL, String donvi, int soluong, String maKho) {
         this.maNL = maNL;
         this.tenNL = tenNL;
@@ -215,18 +214,16 @@ public class NguyenLieu {
         this.soluong = soluong;
         this.maKho = maKho; // Tạm thời map mã kho vào biến maKho nếu bạn muốn tận dụng trường này
         this.gianhap = 0;    // Giá nhập mặc định bằng 0
-        this.anh = "";       // Ảnh mặc định trống
     }
 
-    // 3. Hàm khởi tạo đầy đủ 7 tham số cũ của bạn
-    public NguyenLieu(String maNL, String tenNL, String maKho, int gianhap, int soluong, String donvi, String anh) {
+    // 3. Hàm khởi tạo đầy đủ 6 tham số (không có ảnh)
+    public NguyenLieu(String maNL, String tenNL, String maKho, int gianhap, int soluong, String donvi) {
         this.maNL = maNL;
         this.tenNL = tenNL;
         this.maKho = maKho;
         this.gianhap = gianhap;
         this.soluong = soluong;
         this.donvi = donvi;
-        this.anh = anh;
     }
 
     // --- Hệ thống Getter và Setter ---
@@ -278,14 +275,6 @@ public class NguyenLieu {
         this.donvi = donvi;
     }
 
-    public String getAnh() {
-        return anh;
-    }
-
-    public void setAnh(String anh) {
-        this.anh = anh;
-    }
-
     @Override
     public String toString() {
         return "NguyenLieu{" +
@@ -295,7 +284,6 @@ public class NguyenLieu {
                 ", gianhap=" + gianhap +
                 ", soluong=" + soluong +
                 ", donvi='" + donvi + '\'' +
-                ", anh='" + anh + '\'' +
                 '}';
     }
 }

@@ -24,14 +24,14 @@ public class SchemaMigrate {
                     "END";
                 stmt.execute(addGiaNhapSql);
 
-                // Thêm cột Anh nếu thiếu
-                String addAnhSql = 
-                    "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('NguyenLieu') AND name = 'Anh') " +
+                // Xóa cột Anh nếu tồn tại (dự án không dùng dữ liệu ảnh)
+                String dropAnhSql = 
+                    "IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('NguyenLieu') AND name = 'Anh') " +
                     "BEGIN " +
-                    "    ALTER TABLE NguyenLieu ADD Anh varchar(255) NULL; " +
-                    "    PRINT 'Đã thêm cột Anh vào bảng NguyenLieu'; " +
+                    "    ALTER TABLE NguyenLieu DROP COLUMN Anh; " +
+                    "    PRINT 'Đã xóa cột Anh khỏi bảng NguyenLieu'; " +
                     "END";
-                stmt.execute(addAnhSql);
+                stmt.execute(dropAnhSql);
 
                 // 2. Cập nhật bảng Kho
                 System.out.println("Đang kiểm tra và cập nhật bảng Kho...");
