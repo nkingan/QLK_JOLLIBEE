@@ -98,42 +98,42 @@ public class TaoPhieuNhapDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Row 0
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.0;
         pnlHeader.add(new JLabel("Mã phiếu nhập:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 1; gbc.weightx = 1.0;
         txtMaPN = new JTextField(12);
         txtMaPN.setEditable(false);
         pnlHeader.add(txtMaPN, gbc);
 
-        gbc.gridx = 2;
+        gbc.gridx = 2; gbc.weightx = 0.0;
         pnlHeader.add(new JLabel("Ngày nhập (dd/MM/yyyy):"), gbc);
-        gbc.gridx = 3;
+        gbc.gridx = 3; gbc.weightx = 1.0;
         txtNgayNhap = new JTextField(12);
         pnlHeader.add(txtNgayNhap, gbc);
 
         // Row 1
-        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.0;
         pnlHeader.add(new JLabel("Nhà cung cấp:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 1; gbc.weightx = 1.0;
         cbNhaCungCap = new JComboBox<>();
         pnlHeader.add(cbNhaCungCap, gbc);
 
-        gbc.gridx = 2;
+        gbc.gridx = 2; gbc.weightx = 0.0;
         pnlHeader.add(new JLabel("Nhân viên lập:"), gbc);
-        gbc.gridx = 3;
+        gbc.gridx = 3; gbc.weightx = 1.0;
         cbNhanVien = new JComboBox<>();
         pnlHeader.add(cbNhanVien, gbc);
 
         // Row 2
-        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.0;
         pnlHeader.add(new JLabel("Chọn nguyên liệu:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 1; gbc.weightx = 1.0;
         cbNguyenLieu = new JComboBox<>();
         pnlHeader.add(cbNguyenLieu, gbc);
 
-        gbc.gridx = 2;
+        gbc.gridx = 2; gbc.weightx = 0.0;
         pnlHeader.add(new JLabel("SL / Đơn giá / Hạn SD:"), gbc);
-        gbc.gridx = 3;
+        gbc.gridx = 3; gbc.weightx = 1.0;
         JPanel pnlInputs = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         pnlInputs.setOpaque(false);
         pnlInputs.add(new JLabel("SL:"));
@@ -149,7 +149,7 @@ public class TaoPhieuNhapDialog extends JDialog {
 
         add(pnlHeader, BorderLayout.NORTH);
 
-        String[] columns = {"Mã NL", "Tên Nguyên Liệu", "Số Lượng", "Đơn Giá (VNĐ)", "Hạn Sử Dụng", "Thành Tiền (VNĐ)"};
+        String[] columns = {"Mã CTPN", "Mã NL", "Tên Nguyên Liệu", "Số Lượng", "Đơn Giá (VNĐ)", "Hạn Sử Dụng", "Thành Tiền (VNĐ)"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -190,6 +190,15 @@ public class TaoPhieuNhapDialog extends JDialog {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
+        JButton btnExportExcel = new JButton("📊 Xuất Excel");
+        btnExportExcel.setBackground(new Color(40, 167, 69));
+        btnExportExcel.setForeground(Color.WHITE);
+        btnExportExcel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnExportExcel.setFocusPainted(false);
+        btnExportExcel.setBorderPainted(false);
+        btnExportExcel.putClientProperty("JButton.buttonType", "roundRect");
+        btnExportExcel.addActionListener(e -> performExportExcel());
+
         btnAddRow = new JButton("+ Thêm dòng");
         btnDeleteRow = new JButton("- Xóa dòng");
         btnSave = new JButton("✓ Xác nhận & Lưu Kho");
@@ -209,6 +218,7 @@ public class TaoPhieuNhapDialog extends JDialog {
         btnSave.setBorderPainted(false);
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
 
+        pnlButtons.add(btnExportExcel);
         pnlButtons.add(btnAddRow);
         pnlButtons.add(btnDeleteRow);
         pnlButtons.add(btnSave);
@@ -299,6 +309,7 @@ public class TaoPhieuNhapDialog extends JDialog {
                 String hsdStr = (ct.getHanSuDung() != null) ? sdf.format(ct.getHanSuDung()) : "Không có";
 
                 tableModel.addRow(new Object[]{
+                    ct.getMaCTPN(),
                     ct.getMaNL(),
                     (ct.getTenNL() != null) ? ct.getTenNL() : "Nguyên liệu",
                     ct.getSoLuong(),
@@ -374,15 +385,15 @@ public class TaoPhieuNhapDialog extends JDialog {
 
             // If already exists, update row
             for (int i = 0; i < tableModel.getRowCount(); i++) {
-                if (tableModel.getValueAt(i, 0).toString().equals(maNL)) {
-                    int currentSL = (int) tableModel.getValueAt(i, 2);
+                if (tableModel.getValueAt(i, 1).toString().equals(maNL)) {
+                    int currentSL = (int) tableModel.getValueAt(i, 3);
                     int newSL = currentSL + soLuong;
                     double newThanhTien = newSL * donGia;
                     
-                    tableModel.setValueAt(newSL, i, 2);
-                    tableModel.setValueAt(String.format("%,.0f", donGia), i, 3);
-                    tableModel.setValueAt(hsdStr, i, 4);
-                    tableModel.setValueAt(String.format("%,.0f", newThanhTien), i, 5);
+                    tableModel.setValueAt(newSL, i, 3);
+                    tableModel.setValueAt(String.format("%,.0f", donGia), i, 4);
+                    tableModel.setValueAt(hsdStr, i, 5);
+                    tableModel.setValueAt(String.format("%,.0f", newThanhTien), i, 6);
                     
                     updateTotalSumLabel();
                     return;
@@ -390,6 +401,7 @@ public class TaoPhieuNhapDialog extends JDialog {
             }
 
             tableModel.addRow(new Object[]{
+                "", // Will be populated dynamically by resequenceMaCTPN
                 maNL,
                 tenNL,
                 soLuong,
@@ -398,6 +410,7 @@ public class TaoPhieuNhapDialog extends JDialog {
                 String.format("%,.0f", thanhTien)
             });
 
+            resequenceMaCTPN();
             updateTotalSumLabel();
             // Tự động giãn cột bảng chi tiết phiếu nhập sau khi thêm hàng mới
             util.UIHelper.autoResizeColumnWidths(tableChiTiet);
@@ -411,6 +424,7 @@ public class TaoPhieuNhapDialog extends JDialog {
         if (selectedRow >= 0) {
             int modelRow = tableChiTiet.convertRowIndexToModel(selectedRow);
             tableModel.removeRow(modelRow);
+            resequenceMaCTPN();
             updateTotalSumLabel();
             // Tự động giãn cột bảng chi tiết phiếu nhập sau khi xóa hàng
             util.UIHelper.autoResizeColumnWidths(tableChiTiet);
@@ -422,10 +436,18 @@ public class TaoPhieuNhapDialog extends JDialog {
     private void updateTotalSumLabel() {
         double sum = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String thanhTienStr = tableModel.getValueAt(i, 5).toString().replace(",", "");
+            String thanhTienStr = tableModel.getValueAt(i, 6).toString().replace(",", "");
             sum += Double.parseDouble(thanhTienStr);
         }
         lblTongTien.setText("TỔNG TIỀN PHIẾU: " + String.format("%,.0f", sum) + " VNĐ");
+    }
+
+    private void resequenceMaCTPN() {
+        String maPN = txtMaPN.getText().trim();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String newMaCTPN = maPN + "_" + String.format("%02d", i + 1);
+            tableModel.setValueAt(newMaCTPN, i, 0);
+        }
     }
 
     private void performSaveToDatabase() {
@@ -460,19 +482,19 @@ public class TaoPhieuNhapDialog extends JDialog {
             ChiTietPhieuNhap ct = new ChiTietPhieuNhap();
             
             // Format auto-generated MaCTPN: PN001_01, PN001_02,...
-            String maCTPN = pn.getMaPN() + "_" + String.format("%02d", i + 1);
+            String maCTPN = tableModel.getValueAt(i, 0).toString();
             ct.setMaCTPN(maCTPN);
             ct.setMaPN(pn.getMaPN());
-            ct.setMaNL(tableModel.getValueAt(i, 0).toString());
+            ct.setMaNL(tableModel.getValueAt(i, 1).toString());
             
-            int soLuong = (int) tableModel.getValueAt(i, 2);
+            int soLuong = (int) tableModel.getValueAt(i, 3);
             ct.setSoLuong(soLuong);
             
-            String giaStr = tableModel.getValueAt(i, 3).toString().replace(",", "");
+            String giaStr = tableModel.getValueAt(i, 4).toString().replace(",", "");
             BigDecimal donGia = new BigDecimal(giaStr);
             ct.setDonGia(donGia);
             
-            String hsdStr = tableModel.getValueAt(i, 4).toString();
+            String hsdStr = tableModel.getValueAt(i, 5).toString();
             if (!hsdStr.equals("Không có")) {
                 try {
                     ct.setHanSuDung(sdf.parse(hsdStr));
@@ -498,6 +520,64 @@ public class TaoPhieuNhapDialog extends JDialog {
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Lưu phiếu nhập thất bại!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void performExportExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Lưu file Excel (CSV)");
+        fileChooser.setSelectedFile(new java.io.File("PhieuNhap_" + txtMaPN.getText().trim() + ".csv"));
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            java.io.File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+            if (!filePath.toLowerCase().endsWith(".csv")) {
+                filePath += ".csv";
+            }
+            
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(filePath);
+                 java.io.OutputStreamWriter osw = new java.io.OutputStreamWriter(fos, java.nio.charset.StandardCharsets.UTF_8)) {
+                
+                // Write UTF-8 BOM
+                fos.write(0xEF);
+                fos.write(0xBB);
+                fos.write(0xBF);
+                
+                // Title
+                osw.write("CHI TIẾT PHIẾU NHẬP KHO\n");
+                osw.write("Mã phiếu nhập," + txtMaPN.getText().trim() + "\n");
+                osw.write("Ngày nhập," + txtNgayNhap.getText().trim() + "\n");
+                
+                String ncc = cbNhaCungCap.getSelectedItem() != null ? cbNhaCungCap.getSelectedItem().toString() : "";
+                osw.write("Nhà cung cấp,\"" + ncc.replace("\"", "\"\"") + "\"\n");
+                
+                String nv = cbNhanVien.getSelectedItem() != null ? cbNhanVien.getSelectedItem().toString() : "";
+                osw.write("Nhân viên lập,\"" + nv.replace("\"", "\"\"") + "\"\n");
+                
+                osw.write("Tổng tiền phiếu,\"" + lblTongTien.getText().replace("TỔNG TIỀN PHIẾU: ", "").replace(" VNĐ", "") + "\"\n\n");
+                
+                // Table Header
+                osw.write("Mã CTPN,Mã NL,Tên Nguyên Liệu,Số Lượng,Đơn Giá (VNĐ),Hạn Sử Dụng,Thành Tiền (VNĐ)\n");
+                
+                // Rows
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    String maCTPN = tableModel.getValueAt(i, 0).toString();
+                    String maNL = tableModel.getValueAt(i, 1).toString();
+                    String tenNL = tableModel.getValueAt(i, 2).toString();
+                    String soLuong = tableModel.getValueAt(i, 3).toString();
+                    String donGia = tableModel.getValueAt(i, 4).toString().replace(",", "");
+                    String hsd = tableModel.getValueAt(i, 5).toString();
+                    String thanhTien = tableModel.getValueAt(i, 6).toString().replace(",", "");
+                    
+                    osw.write(String.format("%s,%s,\"%s\",%s,%s,%s,%s\n", 
+                        maCTPN, maNL, tenNL.replace("\"", "\"\""), soLuong, donGia, hsd, thanhTien));
+                }
+                
+                JOptionPane.showMessageDialog(this, "Xuất file Excel (CSV) thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi xuất file: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ src/dao/PhieuXuatDAO.java
 src/dao/ReportDAO.java
 src/dao/TaiKhoanDAO.java
 src/model/Auth.java
+src/model/CanhBaoTonKhoModel.java
 src/model/ChiTietPhieuNhap.java
 src/model/CTPhieuXuat.java
 src/model/HaoHut.java
@@ -22,6 +23,7 @@ src/model/PhieuNhap.java
 src/model/PhieuXuat.java
 src/model/TaiKhoan.java
 src/model/TonKhoModel.java
+src/service/NguyenLieuService.java
 src/ui/BaoCaoHaoHutUI.java
 src/ui/KiemKeUI.java
 src/ui/LoginDialog.java
@@ -42,3 +44,4 @@ src/util/DBConnection.java
 src/util/DbMigrate.java
 src/util/DbTester.java
 src/util/SchemaMigrate.java
+src/util/UIHelper.java
