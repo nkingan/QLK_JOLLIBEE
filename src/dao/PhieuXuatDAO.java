@@ -1,183 +1,183 @@
 package dao;
 
-import model.PhieuXuat;
-import util.DBConnection;
-import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-
-@SuppressWarnings("all")
+import model.CTPhieuXuat; 
+import model.PhieuXuat;
+import util.DBConnection;
 public class PhieuXuatDAO {
 
-    // 1. TỰ ĐỘNG SINH MÃ
-    public synchronized String generateNextMaPX() {
-        String sql = "SELECT TOP 1 MaPX FROM PhieuXuat ORDER BY MaPX DESC";
+    // --- Tự động sinh mã phiếu xuất (Ví dụ: PX01, PX02...) ---
+    public synchronized String generateNextPhieuXuatCode() {
+        String latestMaPX = null;
+        // Khớp với kiểu sắp xếp chuỗi mã của hệ thống
+        String sql = "SELECT TOP 1 MaPX FROM PhieuXuat ORDER BY LEN(MaPX) DESC, MaPX DESC";
+
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
             if (rs.next()) {
-                String lastId = rs.getString("MaPX");
-                int number = Integer.parseInt(lastId.substring(2));
-                return String.format("PX%04d", number + 1);
+                latestMaPX = rs.getString("MaPX");
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return "PX0001";
-    }
-
-    // 2. THÊM PHIẾU XUẤT (Dùng cho Transaction)
-    public boolean insert(Connection conn, PhieuXuat px) throws SQLException {
-        String sql = "INSERT INTO PhieuXuat (MaPX, NgayXuat, MaNV, TongTien) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, px.getMaPX());
-            ps.setDate(2, px.getNgayXuat());
-            ps.setString(3, px.getMaNV());
-            ps.setBigDecimal(4, px.getTongTien() != null ? px.getTongTien() : BigDecimal.ZERO);
-            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "PX01"; // Nếu lỗi hoặc chưa có dữ liệu, trả về mã đầu tiên
         }
-    }
 
-    // 3. THÊM PHIẾU XUẤT ĐƠN LẺ
-    public boolean insert(PhieuXuat px) {
-        try (Connection conn = DBConnection.getConnection()) {
-            return insert(conn, px);
-        } catch (Exception e) { e.printStackTrace(); }
-        return false;
-    }
-
-    // 4. LẤY TẤT CẢ
-    public List<PhieuXuat> getAll() {
-        List<PhieuXuat> list = new ArrayList<>();
-        String sql = "SELECT * FROM VW_PhieuXuat ORDER BY NgayXuat DESC";
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) list.add(mapResultSet(rs));
-        } catch (SQLException e) { e.printStackTrace(); }
-        return list;
-    }
-
-    // 5. TÌM THEO MÃ
-    public PhieuXuat findById(String maPX) {
-        String sql = "SELECT * FROM VW_PhieuXuat WHERE MaPX = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maPX);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapResultSet(rs);
+        String prefix = "PX";
+        int lastNumber = 0;
+        if (latestMaPX != null && latestMaPX.startsWith(prefix)) {
+            try {
+                String numberPart = latestMaPX.substring(prefix.length());
+                lastNumber = Integer.parseInt(numberPart);
+            } catch (NumberFormatException e) {
+                lastNumber = 0;
             }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return null;
-    }
-
-    // 6. CẬP NHẬT
-    public boolean update(PhieuXuat px) {
-        String sql = "UPDATE PhieuXuat SET NgayXuat = ?, MaNV = ? WHERE MaPX = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, px.getNgayXuat());
-            ps.setString(2, px.getMaNV());
-            ps.setString(3, px.getMaPX());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); }
-        return false;
-    }
-
-    // 7. XÓA
-    public boolean delete(String maPX) throws SQLException {
-        String sql = "DELETE FROM PhieuXuat WHERE MaPX = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maPX);
-            return ps.executeUpdate() > 0;
         }
+        return prefix + (lastNumber + 1); 
     }
 
-    // 8. KIỂM TRA TỒN TẠI
-    public boolean exists(String maPX) {
-        String sql = "SELECT COUNT(*) FROM PhieuXuat WHERE MaPX = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maPX);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1) > 0;
-        } catch (SQLException e) { e.printStackTrace(); }
-        return false;
+    // --- Lưu Transaction Phiếu Xuất Kho ---
+    public boolean savePhieuXuatTransaction(PhieuXuat phieuXuat, List<CTPhieuXuat> chiTietList) {
+        Connection conn = null;
+        boolean success = false;
+
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); // Chạy chế độ an toàn Transaction
+
+            // 1. Thêm thông tin phiếu xuất chung
+            String sqlHeader = "INSERT INTO PhieuXuat (MaPX, NgayXuat, MaNV, TongTien) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pst = conn.prepareStatement(sqlHeader)) {
+                pst.setString(1, phieuXuat.getMaPX());
+                pst.setDate(2, new java.sql.Date(phieuXuat.getNgayXuat().getTime()));
+                pst.setString(3, phieuXuat.getMaNV());
+                pst.setDouble(4, 0); // Ban đầu truyền 0, Trigger SQL tự động tính tổng tiền dựa vào chi tiết
+                
+                int rows = pst.executeUpdate();
+                if (rows <= 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            // 2. Thêm danh sách chi tiết nguyên liệu xuất
+            // Lưu ý: SQL của bạn đã có Trigger TRG_XuatKho tự động trừ kho nguyên liệu (NguyenLieu.SoLuong) 
+            // nên code Java KHÔNG cần gọi hàm trừ kho thủ công nữa! Rất tiện lợi.
+            String sqlDetail = "INSERT INTO ChiTietPhieuXuat (MaCTPX, SoLuong, DonGia, MaNL, MaPX) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement pstDetail = conn.prepareStatement(sqlDetail)) {
+                int index = 1;
+                for (CTPhieuXuat ct : chiTietList) {
+                    // Tự sinh mã chi tiết phiếu xuất ngẫu nhiên hoặc theo số thứ tự để tránh trùng PK MaCTPX
+                    String maCTPX = phieuXuat.getMaPX() + "_CT" + (index++);
+                    
+                    pstDetail.setString(1, maCTPX);
+                    pstDetail.setInt(2, ct.getSoLuong());
+                    pstDetail.setDouble(3, ct.getDonGia());
+                    pstDetail.setString(4, ct.getMaNL()); // Khớp với MaNL trong SQL của bạn
+                    pstDetail.setString(5, phieuXuat.getMaPX());
+                    pstDetail.addBatch();
+                }
+                pstDetail.executeBatch();
+            }
+
+            conn.commit(); 
+            success = true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+            // In lỗi ra màn hình (Ví dụ: Lỗi từ Trigger thông báo không đủ hàng tồn kho)
+            System.err.println("Lỗi Transaction Xuất Kho: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
+        return success;
     }
 
-    // 9. TÌM KIẾM
-    public List<PhieuXuat> search(String keyword) {
+    // --- Lấy toàn bộ danh sách phiếu xuất hiển thị lên JTable ---
+    public List<PhieuXuat> getAllPhieuXuat() {
         List<PhieuXuat> list = new ArrayList<>();
-        String sql = "SELECT * FROM VW_PhieuXuat WHERE MaPX LIKE ? OR TenNV LIKE ? ORDER BY NgayXuat DESC";
+        // Tận dụng luôn View VW_PhieuXuat bạn đã viết sẵn trong SQL, đỡ phải ghi lệnh JOIN phức tạp!
+        String sql = "SELECT * FROM VW_PhieuXuat";
+
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            String value = "%" + keyword + "%";
-            ps.setString(1, value);
-            ps.setString(2, value);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) list.add(mapResultSet(rs));
-        } catch (SQLException e) { e.printStackTrace(); }
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                PhieuXuat px = new PhieuXuat();
+                px.setMaPX(rs.getString("MaPX"));
+                px.setNgayXuat(rs.getDate("NgayXuat"));
+                px.setTenNV(rs.getString("TenNV")); // Lấy từ View
+                px.setTongTien(rs.getDouble("TongTien"));
+                list.add(px);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
         return list;
     }
 
-    // 10. LẤY THEO NHÂN VIÊN
-    public List<PhieuXuat> getByNhanVien(String maNV) {
+    // --- Tìm kiếm phiếu xuất kho ---
+    public List<PhieuXuat> searchPhieuXuat(String criteria, String searchTerm) {
         List<PhieuXuat> list = new ArrayList<>();
-        String sql = "SELECT * FROM VW_PhieuXuat WHERE MaNV = ? ORDER BY NgayXuat DESC";
+        String sql = "SELECT * FROM VW_PhieuXuat WHERE ";
+
+        switch (criteria) {
+            case "Mã PX":
+                sql += "MaPX LIKE ?";
+                searchTerm = "%" + searchTerm + "%";
+                break;
+            case "Tên NV":
+                sql += "TenNV LIKE ?";
+                searchTerm = "%" + searchTerm + "%";
+                break;
+            case "Ngày xuất":
+                sql += "NgayXuat = ?";
+                break;
+            default:
+                return list;
+        }
+
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maNV);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) list.add(mapResultSet(rs));
-        } catch (SQLException e) { e.printStackTrace(); }
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (criteria.equals("Ngày xuất")) {
+                try {
+                    java.util.Date date = new SimpleDateFormat("yyyy-MM-dd").parse(searchTerm);
+                    pstmt.setDate(1, new java.sql.Date(date.getTime()));
+                } catch (ParseException e) {
+                    return list;
+                }
+            } else {
+                pstmt.setString(1, searchTerm);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    PhieuXuat px = new PhieuXuat();
+                    px.setMaPX(rs.getString("MaPX"));
+                    px.setNgayXuat(rs.getDate("NgayXuat"));
+                    px.setTenNV(rs.getString("TenNV"));
+                    px.setTongTien(rs.getDouble("TongTien"));
+                    list.add(px);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
-    }
-
-    // 11. LẤY THEO NGÀY
-    public List<PhieuXuat> getByDateRange(Date from, Date to) {
-        List<PhieuXuat> list = new ArrayList<>();
-        String sql = "SELECT * FROM VW_PhieuXuat WHERE NgayXuat BETWEEN ? AND ? ORDER BY NgayXuat DESC";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, from);
-            ps.setDate(2, to);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) list.add(mapResultSet(rs));
-        } catch (SQLException e) { e.printStackTrace(); }
-        return list;
-    }
-
-    // 12. ĐẾM SỐ PHIẾU
-    public int count() {
-        String sql = "SELECT COUNT(*) FROM PhieuXuat";
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException e) { e.printStackTrace(); }
-        return 0;
-    }
-
-    // 13. TỔNG TIỀN
-    public BigDecimal getTotalAmount() {
-        String sql = "SELECT SUM(TongTien) FROM PhieuXuat";
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) return rs.getBigDecimal(1) != null ? rs.getBigDecimal(1) : BigDecimal.ZERO;
-        } catch (SQLException e) { e.printStackTrace(); }
-        return BigDecimal.ZERO;
-    }
-
-    // 14. MAP DỮ LIỆU
-    private PhieuXuat mapResultSet(ResultSet rs) throws SQLException {
-        PhieuXuat px = new PhieuXuat();
-        px.setMaPX(rs.getString("MaPX"));
-        px.setNgayXuat(rs.getDate("NgayXuat"));
-        px.setMaNV(rs.getString("MaNV"));
-        px.setTongTien(rs.getBigDecimal("TongTien"));
-        try { px.setTenNV(rs.getString("TenNV")); } catch (Exception e) {}
-        return px;
     }
 }
