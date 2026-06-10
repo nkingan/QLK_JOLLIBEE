@@ -202,13 +202,12 @@ public class LoginDialog extends JDialog {
         btnLogin.setBackground(jollibeeRed);
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFocusPainted(false);
-        btnLogin.setContentAreaFilled(false);
+        btnLogin.setContentAreaFilled(true);
         btnLogin.setOpaque(true);
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnLogin.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(jollibeeYellow, 1),
-            BorderFactory.createEmptyBorder(10, 25, 10, 25)
-        ));
+        btnLogin.setMargin(new Insets(10, 25, 10, 25));
+        btnLogin.putClientProperty("JButton.buttonType", "roundRect");
+        btnLogin.putClientProperty("FlatLaf.style", "background: #E31D2B; foreground: #FFFFFF; hoverBackground: #F53644; pressedBackground: #D01825; borderColor: #FFD200; borderWidth: 1; arc: 8;");
         btnLogin.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btnLogin.setBackground(hoverRed); }
             public void mouseExited(MouseEvent e) { btnLogin.setBackground(jollibeeRed); }
@@ -219,10 +218,12 @@ public class LoginDialog extends JDialog {
         btnCancel.setBackground(darkCharcoal);
         btnCancel.setForeground(Color.WHITE);
         btnCancel.setFocusPainted(false);
-        btnCancel.setContentAreaFilled(false);
+        btnCancel.setContentAreaFilled(true);
         btnCancel.setOpaque(true);
         btnCancel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnCancel.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
+        btnCancel.setMargin(new Insets(10, 25, 10, 25));
+        btnCancel.putClientProperty("JButton.buttonType", "roundRect");
+        btnCancel.putClientProperty("FlatLaf.style", "background: #323232; foreground: #FFFFFF; hoverBackground: #4B4B4B; pressedBackground: #202020; arc: 8;");
         btnCancel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btnCancel.setBackground(new Color(75, 75, 75)); }
             public void mouseExited(MouseEvent e) { btnCancel.setBackground(darkCharcoal); }
@@ -241,20 +242,30 @@ public class LoginDialog extends JDialog {
         linksPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         btnRegister = new JButton("Đăng ký phân quyền");
-        btnRegister.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btnRegister.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnRegister.setForeground(linkColor);
         btnRegister.setBorderPainted(false);
         btnRegister.setContentAreaFilled(false);
         btnRegister.setFocusPainted(false);
         btnRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRegister.putClientProperty("FlatLaf.style", "hoverForeground: #1E90FF; pressedForeground: #0052A3;");
+        btnRegister.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnRegister.setForeground(hoverLink); }
+            public void mouseExited(MouseEvent e) { btnRegister.setForeground(linkColor); }
+        });
         
         btnForgotPassword = new JButton("Quên mật khẩu?");
-        btnForgotPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btnForgotPassword.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnForgotPassword.setForeground(linkColor);
         btnForgotPassword.setBorderPainted(false);
         btnForgotPassword.setContentAreaFilled(false);
         btnForgotPassword.setFocusPainted(false);
         btnForgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnForgotPassword.putClientProperty("FlatLaf.style", "hoverForeground: #1E90FF; pressedForeground: #0052A3;");
+        btnForgotPassword.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnForgotPassword.setForeground(hoverLink); }
+            public void mouseExited(MouseEvent e) { btnForgotPassword.setForeground(linkColor); }
+        });
         
         linksPanel.add(btnRegister);
         linksPanel.add(Box.createHorizontalStrut(30));
