@@ -7,9 +7,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import dao.NhanVienDAO;
 import model.NhanVien;
@@ -17,11 +20,15 @@ import model.TaiKhoan;
 
 public class NhanVienUI extends JPanel {
 
-    private final Color jollibeeRed = new Color(224, 31, 42);
-    private final Color creamWhite = new Color(255, 253, 240);
-    private final Color darkCharcoal = new Color(45, 45, 45);
+    private static final Color JOLLIBEE_RED = new Color(0xE31837);
+    private static final Color JOLLIBEE_YELLOW = new Color(0xFFC72C);
+    private static final Color CREAM_WHITE = new Color(255, 253, 240);
+    private static final Color DARK_CHARCOAL = new Color(45, 45, 45);
+    private static final Color ROW_HOVER = new Color(255, 242, 204);
+    private static final Color ROW_ALT = new Color(250, 248, 244);
 
     private JTextField txtMaNV, txtTenNV, txtSDT, txtEmail, txtNgaySinh, txtGioiTinh, txtChucVu;
+    private int hoveredRow = -1;
     
     // Account details sub-form fields
     private JTextField txtTenDangNhap;
@@ -50,12 +57,12 @@ public class NhanVienUI extends JPanel {
     private void initComponents() {
         setLayout(new BorderLayout(15, 15));
         setBorder(new EmptyBorder(15, 15, 15, 15));
-        setBackground(creamWhite);
+        setBackground(CREAM_WHITE);
 
         // --- TITLE ---
         JLabel lblTitle = new JLabel("DANH MỤC THỦ KHO & QUẢN TRỊ TÀI KHOẢN HỆ THỐNG");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitle.setForeground(jollibeeRed);
+        lblTitle.setForeground(JOLLIBEE_RED);
         add(lblTitle, BorderLayout.NORTH);
 
         // --- CENTER: JTABLE ---
@@ -66,16 +73,27 @@ public class NhanVienUI extends JPanel {
         };
 
         tableNV = new JTable(tableModel);
-        tableNV.setRowHeight(30);
-        tableNV.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tableNV.setRowHeight(36);
+        tableNV.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         tableNV.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableNV.setFillsViewportHeight(true);
+        tableNV.setIntercellSpacing(new Dimension(0, 0));
+        tableNV.setShowGrid(false);
+        tableNV.setBackground(Color.WHITE);
+        tableNV.setForeground(Color.DARK_GRAY);
+        tableNV.setSelectionBackground(new Color(255, 225, 205));
+        tableNV.setSelectionForeground(Color.BLACK);
+        tableNV.setRowMargin(4);
+        tableNV.setAutoCreateRowSorter(true);
+        tableNV.getTableHeader().setReorderingAllowed(false);
 
         JTableHeader header = tableNV.getTableHeader();
+        header.setPreferredSize(new Dimension(0, 38));
         header.setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(139, 69, 19)); // Nâu ấm
+                setBackground(JOLLIBEE_RED);
                 setForeground(Color.WHITE);
                 setFont(new Font("Segoe UI", Font.BOLD, 13));
                 setHorizontalAlignment(JLabel.CENTER);
@@ -84,16 +102,73 @@ public class NhanVienUI extends JPanel {
             }
         });
 
-        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
-        centerRender.setHorizontalAlignment(JLabel.CENTER);
+        DefaultTableCellRenderer rowRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                if (isSelected) {
+                    setBackground(new Color(255, 225, 205));
+                    setForeground(Color.BLACK);
+                } else if (row == hoveredRow) {
+                    setBackground(ROW_HOVER);
+                    setForeground(Color.DARK_GRAY);
+                } else {
+                    setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
+                    setForeground(Color.DARK_GRAY);
+                }
+                setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+                return this;
+            }
+        };
+        tableNV.setDefaultRenderer(Object.class, rowRenderer);
+
+        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                if (isSelected) {
+                    setBackground(new Color(255, 225, 205));
+                    setForeground(Color.BLACK);
+                } else if (row == hoveredRow) {
+                    setBackground(ROW_HOVER);
+                    setForeground(Color.DARK_GRAY);
+                } else {
+                    setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
+                    setForeground(Color.DARK_GRAY);
+                }
+                setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+                setHorizontalAlignment(JLabel.CENTER);
+                return this;
+            }
+        };
         tableNV.getColumnModel().getColumn(0).setCellRenderer(centerRender);
         tableNV.getColumnModel().getColumn(4).setCellRenderer(centerRender);
         tableNV.getColumnModel().getColumn(5).setCellRenderer(centerRender);
         tableNV.getColumnModel().getColumn(7).setCellRenderer(centerRender);
 
+        tableNV.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int row = tableNV.rowAtPoint(e.getPoint());
+                if (row != hoveredRow) {
+                    hoveredRow = row;
+                    tableNV.repaint();
+                }
+            }
+        });
+        tableNV.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                hoveredRow = -1;
+                tableNV.repaint();
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(tableNV);
         scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(BorderFactory.createLineBorder(jollibeeRed, 1));
+        scrollPane.setBorder(BorderFactory.createLineBorder(JOLLIBEE_RED, 1));
         add(scrollPane, BorderLayout.CENTER);
 
         // --- EAST: FORM INTEGRATION ---
@@ -102,7 +177,7 @@ public class NhanVienUI extends JPanel {
         // Selection Listener
         tableNV.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tableNV.getSelectedRow() != -1) {
-                displayDetails(tableNV.getSelectedRow());
+                displayDetails(tableNV.convertRowIndexToModel(tableNV.getSelectedRow()));
             }
         });
     }
@@ -116,10 +191,10 @@ public class NhanVienUI extends JPanel {
         JPanel formEmp = new JPanel(new GridBagLayout());
         formEmp.setBackground(Color.WHITE);
         TitledBorder borderEmp = BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(jollibeeRed, 2), "Thông tin Cá nhân Nhân viên"
+            BorderFactory.createLineBorder(JOLLIBEE_RED, 2), "Thông tin Cá nhân Nhân viên"
         );
         borderEmp.setTitleFont(new Font("Segoe UI", Font.BOLD, 13));
-        borderEmp.setTitleColor(jollibeeRed);
+        borderEmp.setTitleColor(JOLLIBEE_RED);
         formEmp.setBorder(borderEmp);
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -200,6 +275,9 @@ public class NhanVienUI extends JPanel {
         btnSaveAccount.setBackground(new Color(242, 142, 43));
         btnSaveAccount.setForeground(Color.WHITE);
         btnSaveAccount.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSaveAccount.setFocusPainted(false);
+        btnSaveAccount.setBorderPainted(false);
+        btnSaveAccount.putClientProperty("JButton.buttonType", "roundRect");
         gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
         gbc.insets = new Insets(10, 8, 5, 8);
         formAcc.add(btnSaveAccount, gbc);
@@ -214,9 +292,9 @@ public class NhanVienUI extends JPanel {
         btnClear = new JButton("Làm mới");
 
         styleButton(btnAdd, new Color(40, 167, 69));
-        styleButton(btnUpdate, new Color(0, 123, 255));
-        styleButton(btnDelete, jollibeeRed);
-        styleButton(btnClear, darkCharcoal);
+        styleButton(btnUpdate, JOLLIBEE_YELLOW.darker());
+        styleButton(btnDelete, JOLLIBEE_RED);
+        styleButton(btnClear, DARK_CHARCOAL);
 
         Dimension btnSize = new Dimension(84, 34);
         btnAdd.setPreferredSize(btnSize);
@@ -254,11 +332,19 @@ public class NhanVienUI extends JPanel {
     }
 
     private void addField(JPanel p, String label, JTextField field, int row, GridBagConstraints gbc) {
-        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.35;
+        gbc.anchor = GridBagConstraints.EAST;
         JLabel lbl = new JLabel(label);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(DARK_CHARCOAL);
+        lbl.setHorizontalAlignment(SwingConstants.RIGHT);
         p.add(lbl, gbc);
+
         gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        gbc.anchor = GridBagConstraints.WEST;
         p.add(field, gbc);
     }
 
@@ -267,6 +353,8 @@ public class NhanVienUI extends JPanel {
         b.setForeground(Color.WHITE);
         b.setFont(new Font("Segoe UI", Font.BOLD, 11));
         b.setFocusPainted(false);
+        b.setBorderPainted(false);
+        b.putClientProperty("JButton.buttonType", "roundRect");
     }
 
     private void toggleAccountFields(boolean enabled) {
@@ -297,6 +385,8 @@ public class NhanVienUI extends JPanel {
                 });
             }
         }
+        // Tự động giãn cột bảng nhân viên
+        util.UIHelper.autoResizeColumnWidths(tableNV);
         clearForm();
     }
 
@@ -357,10 +447,41 @@ public class NhanVienUI extends JPanel {
         btnDelete.setEnabled(false);
     }
 
-    private void addNhanVien() {
-        String ten = txtTenNV.getText().trim();
-        if (ten.isEmpty()) {
+    private boolean validateForm(boolean isNew) {
+        String maNV = txtMaNV.getText().trim();
+        String tenNV = txtTenNV.getText().trim();
+        String sdt = txtSDT.getText().trim();
+        String email = txtEmail.getText().trim();
+
+        if (maNV.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Mã NV không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (isNew && nhanVienDAO.existsMaNV(maNV)) {
+            JOptionPane.showMessageDialog(this, "Mã NV đã tồn tại. Vui lòng làm mới hoặc chọn mã khác.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (tenNV.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Họ tên không được trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (!sdt.matches("\\d{9,12}")) {
+            JOptionPane.showMessageDialog(this, "Số điện thoại phải là số và có 9-12 chữ số.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (!isValidEmail(email)) {
+            JOptionPane.showMessageDialog(this, "Email không đúng định dạng.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isValidEmail(String email) {
+        return Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$").matcher(email).matches();
+    }
+
+    private void addNhanVien() {
+        if (!validateForm(true)) {
             return;
         }
 
@@ -376,8 +497,8 @@ public class NhanVienUI extends JPanel {
         }
 
         NhanVien nv = new NhanVien();
-        nv.setMaNV(txtMaNV.getText());
-        nv.setTenNV(ten);
+        nv.setMaNV(txtMaNV.getText().trim());
+        nv.setTenNV(txtTenNV.getText().trim());
         nv.setSdt(txtSDT.getText().trim());
         nv.setEmail(txtEmail.getText().trim());
         nv.setNgaySinh(birth);
@@ -394,10 +515,7 @@ public class NhanVienUI extends JPanel {
 
     private void updateNhanVien() {
         if (currentNhanVien == null) return;
-
-        String ten = txtTenNV.getText().trim();
-        if (ten.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Họ tên không được trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+        if (!validateForm(false)) {
             return;
         }
 
@@ -412,7 +530,7 @@ public class NhanVienUI extends JPanel {
             }
         }
 
-        currentNhanVien.setTenNV(ten);
+        currentNhanVien.setTenNV(txtTenNV.getText().trim());
         currentNhanVien.setSdt(txtSDT.getText().trim());
         currentNhanVien.setEmail(txtEmail.getText().trim());
         currentNhanVien.setNgaySinh(birth);

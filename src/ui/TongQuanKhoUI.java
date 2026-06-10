@@ -214,6 +214,8 @@ public class TongQuanKhoUI extends JPanel {
                     df.format(value) + " đ"
             });
         }
+        // Tự động giãn cột bảng cảnh báo tồn kho thấp
+        util.UIHelper.autoResizeColumnWidths(tblLowStock);
 
         // Load Chart
         List<Object[]> chartData = reportDAO.getTop10IngredientsByQuantity();

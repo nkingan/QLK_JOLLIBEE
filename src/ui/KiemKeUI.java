@@ -63,12 +63,18 @@ public class KiemKeUI extends JPanel {
         btnReload.setBackground(new Color(45, 45, 45));
         btnReload.setForeground(Color.WHITE);
         btnReload.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnReload.setFocusPainted(false);
+        btnReload.setBorderPainted(false);
+        btnReload.putClientProperty("JButton.buttonType", "roundRect");
         pnlActions.add(btnReload);
 
         btnExcel = new JButton("📥 Xuất Excel");
         btnExcel.setBackground(new Color(40, 167, 69)); // Xanh lá Excel
         btnExcel.setForeground(Color.WHITE);
         btnExcel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnExcel.setFocusPainted(false);
+        btnExcel.setBorderPainted(false);
+        btnExcel.putClientProperty("JButton.buttonType", "roundRect");
         pnlActions.add(btnExcel);
 
         pnlNorth.add(pnlActions, BorderLayout.EAST);
@@ -189,6 +195,8 @@ public class KiemKeUI extends JPanel {
                 }
             }
         }
+        // Tự động giãn cột bảng kiểm kê lô hàng tồn
+        util.UIHelper.autoResizeColumnWidths(tableTonKho);
     }
 
     private void performExportExcel() {

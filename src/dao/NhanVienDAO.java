@@ -43,6 +43,20 @@ public class NhanVienDAO {
         return "NV01";
     }
 
+    public boolean existsMaNV(String maNV) {
+        String sql = "SELECT 1 FROM NhanVien WHERE MaNV = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, maNV);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // 2. Thêm nhân viên mới
     public boolean addNhanVien(NhanVien nv) {
         String newMaNV = generateNextMaNV();

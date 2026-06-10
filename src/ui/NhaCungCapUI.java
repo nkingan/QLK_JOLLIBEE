@@ -106,7 +106,9 @@ public class NhaCungCapUI extends JPanel {
         // Sự kiện Table
         nhaCungCapTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && nhaCungCapTable.getSelectedRow() != -1) {
-                displayNhaCungCapDetails(nhaCungCapTable.getSelectedRow());
+                int selectedRow = nhaCungCapTable.getSelectedRow();
+                int modelRow = nhaCungCapTable.convertRowIndexToModel(selectedRow);
+                displayNhaCungCapDetails(modelRow);
             }
         });
     }
@@ -186,7 +188,9 @@ public class NhaCungCapUI extends JPanel {
 
     private void styleButton(JButton b, Color bg, Color fg) {
         b.setBackground(bg); b.setForeground(fg); b.setFocusPainted(false);
+        b.setBorderPainted(false);
         b.setFont(new Font("SansSerif", Font.BOLD, 12));
+        b.putClientProperty("JButton.buttonType", "roundRect");
     }
 
     // --- Các hàm Logic chính ---
@@ -198,6 +202,8 @@ public class NhaCungCapUI extends JPanel {
                 tableModel.addRow(new Object[]{n.getMaNCC(), n.getTenNCC(), n.getDiachi(), n.getSdt(), n.getEmail()});
             }
         }
+        // Tự động giãn cột bảng nhà cung cấp
+        util.UIHelper.autoResizeColumnWidths(nhaCungCapTable);
         clearForm();
     }
 
@@ -330,5 +336,7 @@ public class NhaCungCapUI extends JPanel {
         for (NhaCungCap n : res) {
             tableModel.addRow(new Object[]{n.getMaNCC(), n.getTenNCC(), n.getDiachi(), n.getSdt(), n.getEmail()});
         }
+        // Tự động giãn cột bảng sau khi tìm kiếm kết quả
+        util.UIHelper.autoResizeColumnWidths(nhaCungCapTable);
     }
 }

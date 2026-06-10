@@ -376,7 +376,13 @@ public class LoginDialog extends JDialog {
 
     public static void main(String[] args) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            try {
+                Class<?> flat = Class.forName("com.formdev.flatlaf.FlatLightLaf");
+                javax.swing.LookAndFeel laf = (javax.swing.LookAndFeel) flat.getDeclaredConstructor().newInstance();
+                UIManager.setLookAndFeel(laf);
+            } catch (ClassNotFoundException cnfe) {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
