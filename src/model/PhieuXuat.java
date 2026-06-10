@@ -1,39 +1,39 @@
+// package model;
+
+// import java.util.Date;
+
+// public class PhieuXuat {
+//     private String maPX;
+//     private String maNV;
+//     private Date ngayXuat;
+
+//     public String getMaPX() { return maPX; }
+//     public void setMaPX(String maPX) { this.maPX = maPX; }
+
+//     public String getMaNV() { return maNV; }
+//     public void setMaNV(String maNV) { this.maNV = maNV; }
+
+//     public Date getNgayXuat() { return ngayXuat; }
+//     public void setNgayXuat(Date ngayXuat) { this.ngayXuat = ngayXuat; }
+// }
 package model;
 
-import java.util.Date;
-
 public class PhieuXuat {
-    private String maPX;      
-    private Date ngayXuat;    
-    private String maNV;       
-    private double tongTien;   
-    
-    
-    private String tenNV;      
+    private String maXuat, ngayXuat, maNV;
+    private double tongTien;
 
-    public PhieuXuat() {
+    public PhieuXuat(String maXuat, String ngayXuat, String maNV, double tongTien) {
+        this.maXuat = maXuat; this.ngayXuat = ngayXuat;
+        this.maNV = maNV; this.tongTien = tongTien;
     }
 
-    public PhieuXuat(String maPX, Date ngayXuat, String maNV, double tongTien) {
-        this.maPX = maPX;
-        this.ngayXuat = ngayXuat;
-        this.maNV = maNV;
-        this.tongTien = tongTien;
-    }
-
-
-    public String getMaPX() { return maPX; }
-    public void setMaPX(String maPX) { this.maPX = maPX; }
-
-    public Date getNgayXuat() { return ngayXuat; }
-    public void setNgayXuat(Date ngayXuat) { this.ngayXuat = ngayXuat; }
-
-    public String getMaNV() { return maNV; }
-    public void setMaNV(String maNV) { this.maNV = maNV; }
-
+    public String getMaXuat()   { return maXuat; }
+    public String getNgayXuat() { return ngayXuat; }
+    public String getMaNV()     { return maNV; }
     public double getTongTien() { return tongTien; }
-    public void setTongTien(double tongTien) { this.tongTien = tongTien; }
 
-    public String getTenNV() { return tenNV; }
-    public void setTenNV(String tenNV) { this.tenNV = tenNV; }
+    public void setMaXuat(String v)   { maXuat = v; }
+    public void setNgayXuat(String v) { ngayXuat = v; }
+    public void setMaNV(String v)     { maNV = v; }
+    public void setTongTien(double v) { tongTien = v; }
 }
