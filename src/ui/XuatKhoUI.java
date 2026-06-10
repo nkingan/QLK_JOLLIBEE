@@ -12,6 +12,14 @@ import model.TaiKhoan;
 
 public class XuatKhoUI extends JPanel {
 
+    // =====================================================================
+    // BẢNG MÀU THƯƠNG HIỆU JOLLIBEE (ĐỒNG BỘ VỚI NHAPKHOUI VÀ NGUYENLIEUUI)
+    // =====================================================================
+    private static final Color JOLLIBEE_RED    = new Color(227, 29, 43);
+    private static final Color TABLE_HEADER_BG = new Color(180, 30, 45);
+    private static final Color ROW_ODD         = new Color(255, 253, 245);
+    private static final Color ROW_EVEN        = new Color(245, 240, 230);
+
     private JTable tablePhieuXuat;
     private DefaultTableModel tableModel;
     private JButton btnThemMoi;
@@ -73,21 +81,38 @@ public class XuatKhoUI extends JPanel {
             }
         };
 
-        tablePhieuXuat = new JTable(tableModel);
-        tablePhieuXuat.setRowHeight(30);
-        tablePhieuXuat.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tablePhieuXuat = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? ROW_EVEN : ROW_ODD);
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        tablePhieuXuat.setRowHeight(32);
+        tablePhieuXuat.setFont(new Font("SansSerif", Font.PLAIN, 13));
         tablePhieuXuat.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tablePhieuXuat.setGridColor(new Color(220, 210, 195));
+        tablePhieuXuat.setShowGrid(true);
+        tablePhieuXuat.setIntercellSpacing(new Dimension(1, 1));
 
         tablePhieuXuat.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(139, 69, 19)); // Nâu ấm Jollibee
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-                return this;
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(TABLE_HEADER_BG);
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, JOLLIBEE_RED));
+                return lbl;
             }
         });
 
@@ -101,7 +126,7 @@ public class XuatKhoUI extends JPanel {
         tablePhieuXuat.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
 
         JScrollPane scrollPane = new JScrollPane(tablePhieuXuat);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(ROW_ODD);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(224, 31, 42), 1));
         add(scrollPane, BorderLayout.CENTER);
 

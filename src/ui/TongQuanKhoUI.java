@@ -120,29 +120,53 @@ public class TongQuanKhoUI extends JPanel {
         header.setForeground(Color.WHITE);
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
         
-        // Render highlight red for low stock
+        // Align table look-and-feel with NguyenLieuUI: alternating rows + header styling
+        final Color ROW_ODD = new Color(255, 253, 245);
+        final Color ROW_EVEN = new Color(245, 240, 230);
+
+        // Header renderer: red background, white bold text, centered
+        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable t, Object val, boolean sel, boolean foc, int r, int c) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, val, sel, foc, r, c);
+                lbl.setBackground(jollibeeRed);
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                return lbl;
+            }
+        });
+
+        // Row renderer: alternate colors, highlight zero qty in red, selection highlight matches NguyenLieuUI
         tblLowStock.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object val, boolean isSelected, boolean hasFocus, int r, int c) {
-                Component comp = super.getTableCellRendererComponent(table, val, isSelected, hasFocus, r, c);
-                
-                int qty = Integer.parseInt(table.getValueAt(r, 2).toString());
-                if (qty == 0) {
-                    comp.setBackground(new Color(255, 204, 204)); // Darker pink/red
-                    comp.setForeground(Color.RED);
-                } else {
-                    comp.setBackground(new Color(255, 230, 230)); // Soft pink/red
-                    comp.setForeground(darkCharcoal);
-                }
-                
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                int modelRow = table.convertRowIndexToModel(row);
+                int qty = 0;
+                try {
+                    Object v = table.getModel().getValueAt(modelRow, 2);
+                    qty = Integer.parseInt(v == null ? "0" : v.toString());
+                } catch (Exception ignored) {}
+
                 if (isSelected) {
                     comp.setBackground(new Color(255, 180, 0, 150));
                     comp.setForeground(Color.BLACK);
+                } else if (qty == 0) {
+                    comp.setBackground(new Color(255, 204, 204));
+                    comp.setForeground(Color.RED);
+                } else {
+                    comp.setBackground((row % 2 == 0) ? ROW_EVEN : ROW_ODD);
+                    comp.setForeground(darkCharcoal);
                 }
-                
-                setHorizontalAlignment(c == 0 || c == 2 || c == 3 ? JLabel.CENTER : JLabel.LEFT);
-                if (c == 4) setHorizontalAlignment(JLabel.RIGHT);
-                
+
+                if (column == 0 || column == 2 || column == 3) setHorizontalAlignment(JLabel.CENTER);
+                else if (column == 4) setHorizontalAlignment(JLabel.RIGHT);
+                else setHorizontalAlignment(JLabel.LEFT);
+
                 return comp;
             }
         });

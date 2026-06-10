@@ -20,18 +20,37 @@ public class DbTester {
                     String tableType = rs.getString("TABLE_TYPE");
                     System.out.println("\n" + tableType + ": " + tableName);
                     
-                    // Let's print columns for this table
-                    try (Statement stmt = conn.createStatement();
-                         ResultSet rows = stmt.executeQuery("SELECT TOP 0 * FROM " + tableName)) {
-                        ResultSetMetaData rsmd = rows.getMetaData();
-                        int colCount = rsmd.getColumnCount();
-                        System.out.print("  Columns: ");
-                        for (int i = 1; i <= colCount; i++) {
-                            System.out.print(rsmd.getColumnName(i) + " (" + rsmd.getColumnTypeName(i) + ")" + (i < colCount ? ", " : ""));
+                    // Let's print columns and count for this table
+                    try (Statement stmt = conn.createStatement()) {
+                        int rowCount = 0;
+                        try (ResultSet rsCount = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName)) {
+                            if (rsCount.next()) {
+                                rowCount = rsCount.getInt(1);
+                            }
                         }
-                        System.out.println();
+                        System.out.println("  Rows: " + rowCount);
+                        
+                        try (ResultSet rows = stmt.executeQuery("SELECT TOP 0 * FROM " + tableName)) {
+                            ResultSetMetaData rsmd = rows.getMetaData();
+                            int colCount = rsmd.getColumnCount();
+                            System.out.print("  Columns: ");
+                            for (int i = 1; i <= colCount; i++) {
+                                System.out.print(rsmd.getColumnName(i) + " (" + rsmd.getColumnTypeName(i) + ")" + (i < colCount ? ", " : ""));
+                            }
+                            System.out.println();
+                        }
+                        
+                        // Print top 5 rows for NguyenLieu table specifically
+                        if ("NguyenLieu".equals(tableName)) {
+                            System.out.println("  Sample Rows:");
+                            try (ResultSet rsSample = stmt.executeQuery("SELECT TOP 5 MaNL, TenNL, SoLuong FROM NguyenLieu")) {
+                                while (rsSample.next()) {
+                                    System.out.println("    " + rsSample.getString(1) + " | " + rsSample.getString(2) + " | " + rsSample.getInt(3));
+                                }
+                            }
+                        }
                     } catch (Exception ex) {
-                        System.out.println("  Error reading columns: " + ex.getMessage());
+                        System.out.println("  Error reading columns/count: " + ex.getMessage());
                     }
                 }
                 rs.close();

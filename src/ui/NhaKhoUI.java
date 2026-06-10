@@ -19,15 +19,9 @@ import model.TaiKhoan;
 
 public class NhaKhoUI extends JPanel {
 
-    private static final Color JOLLIBEE_RED    = new Color(227, 29, 43);
-    private static final Color JOLLIBEE_YELLOW = new Color(255, 210, 0);
-    private static final Color CREAM_WHITE     = new Color(255, 253, 240);
-    private static final Color DARK_GRAY       = new Color(50, 50, 50);
-    private static final Color TABLE_HEADER_BG = new Color(180, 30, 45);
-    private static final Color ROW_ODD         = new Color(255, 253, 245);
-    private static final Color ROW_EVEN        = new Color(245, 240, 230);
-    private static final Color BTN_GREEN       = new Color(34, 139, 34);
-    private static final Color BTN_BLUE        = new Color(30, 100, 200);
+    private final Color jollibeeRed = new Color(224, 31, 42);      // #E01F2A
+    private final Color creamWhite = new Color(255, 253, 240);     // #FFFDF0
+    private final Color darkCharcoal = new Color(45, 45, 45);
 
     private JTextField txtMaKho, txtTenKho, txtDiaChi, txtSucChua, txtGhiChu;
     private JComboBox<String> cbNhanVien;
@@ -52,12 +46,12 @@ public class NhaKhoUI extends JPanel {
     private void initComponents() {
         setLayout(new BorderLayout(15, 15));
         setBorder(new EmptyBorder(15, 15, 15, 15));
-        setBackground(CREAM_WHITE );
+        setBackground(creamWhite );
 
         // --- TITLE ---
         JLabel lblTitle = new JLabel("DANH MỤC KHU VỰC LƯU TRỮ & NHÀ KHO JOLLIBEE");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitle.setForeground(JOLLIBEE_RED);
+        lblTitle.setForeground(jollibeeRed);
         add(lblTitle, BorderLayout.NORTH);
 
         // --- CENTER: JTABLE ---
@@ -67,41 +61,16 @@ public class NhaKhoUI extends JPanel {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        tableKho = new JTable(tableModel) {
-    @Override
-    public Component prepareRenderer(
-            TableCellRenderer renderer,
-            int row,
-            int col) {
-
-        Component c = super.prepareRenderer(renderer, row, col);
-
-        if (!isRowSelected(row)) {
-            c.setBackground(row % 2 == 0 ? ROW_EVEN : ROW_ODD);
-            c.setForeground(Color.BLACK);
-        } else {
-            c.setBackground(new Color(255,180,0,200));
-            c.setForeground(Color.BLACK);
-        }
-
-        return c;
-    }
-};
+        tableKho = new JTable(tableModel);
         tableKho.setRowHeight(30);
         tableKho.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tableKho.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableKho.setGridColor(new Color(220, 210, 195));
-tableKho.setShowGrid(true);
-tableKho.setIntercellSpacing(new Dimension(1, 1));
-tableKho.setFillsViewportHeight(true);
 
-        JTableHeader header = tableKho.getTableHeader();
-        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+        tableKho.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(TABLE_HEADER_BG);
-                setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, JOLLIBEE_RED));
+                setBackground(new Color(139, 69, 19)); // Nâu ấm Jollibee
                 setForeground(Color.WHITE);
                 setFont(new Font("Segoe UI", Font.BOLD, 13));
                 setHorizontalAlignment(JLabel.CENTER);
@@ -118,13 +87,7 @@ tableKho.setFillsViewportHeight(true);
 
         JScrollPane scrollPane = new JScrollPane(tableKho);
         scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(
-    BorderFactory.createLineBorder(
-        new Color(200,185,170), 1
-    )
-);
-
-scrollPane.getViewport().setBackground(ROW_ODD);
+        scrollPane.setBorder(BorderFactory.createLineBorder(jollibeeRed, 1));
         add(scrollPane, BorderLayout.CENTER);
 
         // --- EAST: CRUD FORM ---
@@ -148,10 +111,10 @@ scrollPane.getViewport().setBackground(ROW_ODD);
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
         TitledBorder formBorder = BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(JOLLIBEE_RED, 2), "Cấu hình Thông tin Nhà Kho"
+            BorderFactory.createLineBorder(jollibeeRed, 2), "Cấu hình Thông tin Nhà Kho"
         );
         formBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
-        formBorder.setTitleColor(JOLLIBEE_RED);
+        formBorder.setTitleColor(jollibeeRed);
         form.setBorder(formBorder);
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -203,8 +166,8 @@ scrollPane.getViewport().setBackground(ROW_ODD);
 
         styleButton(btnAdd, new Color(40, 167, 69)); // Xanh lá
         styleButton(btnUpdate, new Color(0, 123, 255)); // Xanh dương
-        styleButton(btnDelete, JOLLIBEE_RED); // Đỏ
-        styleButton(btnClear, DARK_GRAY); // Xám
+        styleButton(btnDelete, jollibeeRed); // Đỏ
+        styleButton(btnClear, darkCharcoal); // Xám
 
         Dimension btnSize = new Dimension(80, 35);
         btnAdd.setPreferredSize(btnSize);

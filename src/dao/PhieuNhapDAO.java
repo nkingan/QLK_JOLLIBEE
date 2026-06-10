@@ -48,7 +48,7 @@ public class PhieuNhapDAO {
                 nextNumber = 1;
             }
         }
-        return String.format("PN%03d", nextNumber);
+        return String.format("PN%02d", nextNumber);
     }
 
     // =========================================================
