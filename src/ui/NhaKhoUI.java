@@ -95,7 +95,9 @@ public class NhaKhoUI extends JPanel {
         // Selection listener
         tableKho.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tableKho.getSelectedRow() != -1) {
-                displayDetails(tableKho.getSelectedRow());
+                int selectedRow = tableKho.getSelectedRow();
+                int modelRow = tableKho.convertRowIndexToModel(selectedRow);
+                displayDetails(modelRow);
             }
         });
     }
@@ -200,11 +202,13 @@ public class NhaKhoUI extends JPanel {
         b.setForeground(Color.WHITE);
         b.setFont(new Font("Segoe UI", Font.BOLD, 12));
         b.setFocusPainted(false);
+        b.setBorderPainted(false);
+        b.putClientProperty("JButton.buttonType", "roundRect");
     }
-
+    
     private void loadKhoTable() {
         tableModel.setRowCount(0);
-        
+
         // Load cbNhanVien
         cbNhanVien.removeAllItems();
         List<NhanVien> listNV = nhanVienDAO.getAllNhanVien();
@@ -234,6 +238,8 @@ public class NhaKhoUI extends JPanel {
                 });
             }
         }
+        // Tự động giãn cách các cột bảng nhà kho
+        util.UIHelper.autoResizeColumnWidths(tableKho);
         clearForm();
     }
 
@@ -248,13 +254,18 @@ public class NhaKhoUI extends JPanel {
             txtGhiChu.setText(currentKho.getGhiChu());
 
             // Select manager combo box
+            boolean found = false;
             if (currentKho.getMaNV() != null) {
                 for (int i = 0; i < cbNhanVien.getItemCount(); i++) {
                     if (cbNhanVien.getItemAt(i).startsWith(currentKho.getMaNV())) {
                         cbNhanVien.setSelectedIndex(i);
+                        found = true;
                         break;
                     }
                 }
+            }
+            if (!found) {
+                cbNhanVien.setSelectedIndex(-1);
             }
             
             btnAdd.setEnabled(false);

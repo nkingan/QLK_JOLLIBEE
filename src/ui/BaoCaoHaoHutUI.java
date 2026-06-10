@@ -257,6 +257,8 @@ public class BaoCaoHaoHutUI extends JPanel {
         b.setForeground(Color.WHITE);
         b.setFont(new Font("Segoe UI", Font.BOLD, 12));
         b.setFocusPainted(false);
+        b.setBorderPainted(false);
+        b.putClientProperty("JButton.buttonType", "roundRect");
     }
 
     private void loadHaoHutData() {
@@ -286,6 +288,8 @@ public class BaoCaoHaoHutUI extends JPanel {
                 });
             }
         }
+        // Tự động giãn cột bảng báo cáo hao hụt
+        util.UIHelper.autoResizeColumnWidths(tableHaoHut);
         clearForm();
     }
 

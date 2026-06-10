@@ -29,8 +29,8 @@ public class NguyenLieuUI extends JPanel {
     // =====================================================================
     // THÀNH PHẦN GIAO DIỆN
     // =====================================================================
-    private JTextField txtMaNL, txtTenNL, txtMaKho, txtGiaNhap,
-                       txtSoLuong, txtDonVi, txtAnh, txtSearch;
+    private JTextField txtMaNL, txtTenNL, txtMaKho,
+                       txtSoLuong, txtDonViTinh, txtAnh, txtSearch;
     private JComboBox<String> cbSearchType;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
     private JTable tableNL;
@@ -47,6 +47,7 @@ public class NguyenLieuUI extends JPanel {
     // CONSTRUCTOR
     // =====================================================================
     public NguyenLieuUI(TaiKhoan user) {
+        System.out.println("DA TAO NguyenLieuUI");
         this.currentUser = user;
 
         // Fix UTF-8 console output cho debug tiếng Việt
@@ -122,7 +123,7 @@ public class NguyenLieuUI extends JPanel {
     private void buildTable() {
         String[] columns = {
             "Mã NL", "Tên Nguyên Liệu", "Mã Kho",
-            "Giá Nhập (đ)", "Số Lượng", "Đơn Vị", "Hình Ảnh"
+            "Số Lượng", "Đơn Vị Tính", "Hình Ảnh"
         };
 
         tableModel = new DefaultTableModel(columns, 0) {
@@ -173,7 +174,7 @@ public class NguyenLieuUI extends JPanel {
         header.setReorderingAllowed(false);
 
         // ── ĐỘ RỘNG CỘT ──────────────────────────────────────────────────
-        int[] colWidths = {70, 200, 90, 120, 85, 80, 130};
+        int[] colWidths = {70, 200, 90, 85, 100, 130};
         for (int i = 0; i < colWidths.length; i++) {
             tableNL.getColumnModel().getColumn(i).setPreferredWidth(colWidths[i]);
         }
@@ -181,7 +182,7 @@ public class NguyenLieuUI extends JPanel {
         // ── RENDERER CĂN GIỮA CHO MỘT SỐ CỘT ────────────────────────────
         DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
         centerRender.setHorizontalAlignment(JLabel.CENTER);
-        for (int col : new int[]{0, 2, 3, 4, 5}) {
+        for (int col : new int[]{0, 2, 3, 4}) {
             tableNL.getColumnModel().getColumn(col).setCellRenderer(centerRender);
         }
 
@@ -194,7 +195,9 @@ public class NguyenLieuUI extends JPanel {
         // ── SỰ KIỆN CHỌN HÀNG ────────────────────────────────────────────
         tableNL.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tableNL.getSelectedRow() != -1) {
-                displayDetailsFromTable(tableNL.getSelectedRow());
+                int selectedRow = tableNL.getSelectedRow();
+                int modelRow = tableNL.convertRowIndexToModel(selectedRow);
+                displayDetailsFromTable(modelRow);
             }
         });
     }
@@ -225,25 +228,23 @@ public class NguyenLieuUI extends JPanel {
         gbc.anchor  = GridBagConstraints.WEST;
 
         // Khởi tạo các trường nhập liệu
-        txtMaNL    = createReadOnlyField();
-        txtTenNL   = createInputField();
-        txtMaKho  = createInputField();
-        txtGiaNhap = createInputField();
-        txtSoLuong = createInputField();
-        txtDonVi   = createInputField();
-        txtAnh     = createInputField();
+        txtMaNL       = createReadOnlyField();
+        txtTenNL      = createInputField();
+        txtMaKho      = createInputField();
+        txtSoLuong    = createInputField();
+        txtDonViTinh  = createInputField();
+        txtAnh        = createInputField();
 
         // Thêm từng hàng label + textfield vào form
         String[][] rows = {
-            {"Mã NL:",         "maNL"},
-            {"Tên NL:",        "tenNL"},
-            {"Mã Kho:",       "maKho"},
-            {"Giá Nhập (đ):",  "giaNhap"},
-            {"Số Lượng:",      "soLuong"},
-            {"Đơn Vị:",        "donVi"},
-            {"Tên File Ảnh:",  "anh"},
+            {"Mã NL:",          "maNL"},
+            {"Tên NL:",         "tenNL"},
+            {"Mã Kho:",         "maKho"},
+            {"Số Lượng:",       "soLuong"},
+            {"Đơn Vị Tính:",    "donViTinh"},
+            {"Tên File Ảnh:",   "anh"},
         };
-        JTextField[] fields = {txtMaNL, txtTenNL, txtMaKho, txtGiaNhap, txtSoLuong, txtDonVi, txtAnh};
+        JTextField[] fields = {txtMaNL, txtTenNL, txtMaKho, txtSoLuong, txtDonViTinh, txtAnh};
 
         for (int i = 0; i < rows.length; i++) {
             gbc.gridx = 0; gbc.gridy = i; gbc.weightx = 0;
@@ -289,33 +290,19 @@ public class NguyenLieuUI extends JPanel {
     // HELPER: Tạo nút với màu nền rõ ràng — cross-platform
     // =====================================================================
     private JButton createStyledButton(String text, Color bg, Color fg) {
-        JButton btn = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                // Vẽ nền thủ công để đảm bảo hiển thị màu trên mọi LAF/OS
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                if (getModel().isPressed()) {
-                    g2.setColor(bg.darker());
-                } else if (getModel().isRollover()) {
-                    g2.setColor(bg.brighter());
-                } else {
-                    g2.setColor(isEnabled() ? bg : bg.darker().darker());
-                }
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        btn.setText(text);
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
         btn.setForeground(fg);
         btn.setFont(new Font("SansSerif", Font.BOLD, 13));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
-        btn.setContentAreaFilled(false); // Tắt fill mặc định, dùng custom paintComponent
-        btn.setOpaque(false);
+        btn.setContentAreaFilled(true); // Bật fill màu của FlatLaf
+        btn.setOpaque(true);
         btn.setPreferredSize(new Dimension(130, 38));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        
+        // Thiết lập FlatLaf Client Property giúp bo góc nút Flat Design
+        btn.putClientProperty("JButton.buttonType", "roundRect");
         return btn;
     }
 
@@ -363,28 +350,35 @@ public class NguyenLieuUI extends JPanel {
     // TẢI DỮ LIỆU VÀO BẢNG
     // =====================================================================
     public void loadTableData() {
+        System.out.println("DA VAO loadTableData()");
         tableModel.setRowCount(0);
         List<NguyenLieu> list = nguyenLieuDAO.getAllNguyenLieu();
+        
         if (list == null) {
-        JOptionPane.showMessageDialog(this, "Không thể kết nối CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-    } else if (list.isEmpty()) {
-        System.out.println("Danh sách nguyên liệu trống.");
-    } else {
-        // if (list != null && !list.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (list.isEmpty()) {
+            // Hiển thị thông báo nhẹ nhàng thay vì gây lỗi
+            System.out.println("Danh sách nguyên liệu trống.");
+        } else {
             for (NguyenLieu nl : list) {
                 tableModel.addRow(new Object[]{
                     nl.getMaNL(),
                     nl.getTenNL(),
                     nl.getMaKho(),
-                    String.format("%,d đ", nl.getGianhap()),
                     nl.getSoluong(),
                     nl.getDonvi(),
                     nl.getAnh()
                 });
             }
         }
+
         tableNL.revalidate();
         tableNL.repaint();
+        // Tự động giãn cột để hiển thị thông tin đầy đủ
+        util.UIHelper.autoResizeColumnWidths(tableNL);
     }
 
     // =====================================================================
@@ -399,9 +393,8 @@ public class NguyenLieuUI extends JPanel {
         txtMaNL.setText(currentNguyenLieu.getMaNL());
         txtTenNL.setText(currentNguyenLieu.getTenNL());
         txtMaKho.setText(currentNguyenLieu.getMaKho());
-        txtGiaNhap.setText(String.valueOf(currentNguyenLieu.getGianhap()));
         txtSoLuong.setText(String.valueOf(currentNguyenLieu.getSoluong()));
-        txtDonVi.setText(currentNguyenLieu.getDonvi());
+        txtDonViTinh.setText(currentNguyenLieu.getDonvi());
         txtAnh.setText(currentNguyenLieu.getAnh() != null ? currentNguyenLieu.getAnh() : "");
 
         boolean isEmployee = currentUser != null
@@ -429,10 +422,8 @@ public class NguyenLieuUI extends JPanel {
         txtMaNL.setText(nextId);
         txtTenNL.setText("");
         txtMaKho.setText("");
-        txtGiaNhap.setText("");
         txtSoLuong.setText("0");
-        txtDonVi.setText("");
-        txtAnh.setText("");
+        txtDonViTinh.setText("");
         txtSearch.setText("");
 
         currentNguyenLieu = null;
@@ -461,7 +452,7 @@ public class NguyenLieuUI extends JPanel {
                 showError("❌ Thêm thất bại!\nKiểm tra lại Mã Loại (khóa ngoại) có tồn tại không.");
             }
         } catch (NumberFormatException ex) {
-            showError("⚠ Giá nhập và Số lượng phải là số nguyên hợp lệ!");
+            showError("⚠ Số lượng phải là số nguyên hợp lệ!");
         }
     }
 
@@ -484,7 +475,7 @@ public class NguyenLieuUI extends JPanel {
                 clearForm();
             }
         } catch (NumberFormatException ex) {
-            showError("⚠ Giá nhập và Số lượng phải có định dạng số!");
+            showError("⚠ Số lượng phải có định dạng số!");
         }
     }
 
@@ -533,7 +524,6 @@ public class NguyenLieuUI extends JPanel {
             for (NguyenLieu nl : result) {
                 tableModel.addRow(new Object[]{
                     nl.getMaNL(), nl.getTenNL(), nl.getMaKho(),
-                    String.format("%,d đ", nl.getGianhap()),
                     nl.getSoluong(), nl.getDonvi(), nl.getAnh()
                 });
             }
@@ -543,6 +533,8 @@ public class NguyenLieuUI extends JPanel {
 
         tableNL.revalidate();
         tableNL.repaint();
+        // Tự động giãn cột bảng sau khi tìm kiếm dữ liệu
+        util.UIHelper.autoResizeColumnWidths(tableNL);
     }
 
     // =====================================================================
@@ -555,15 +547,8 @@ public class NguyenLieuUI extends JPanel {
         if (txtMaKho.getText().trim().isEmpty()) {
             showWarning("⚠ Mã Kho không được để trống!"); return false;
         }
-        if (txtGiaNhap.getText().trim().isEmpty()) {
-            showWarning("⚠ Giá nhập không được để trống!"); return false;
-        }
-        if (txtDonVi.getText().trim().isEmpty()) {
-            showWarning("⚠ Đơn vị không được để trống!"); return false;
-        }
-        try { Integer.parseInt(txtGiaNhap.getText().trim()); }
-        catch (NumberFormatException e) {
-            showWarning("⚠ Giá nhập phải là số nguyên!"); return false;
+        if (txtDonViTinh.getText().trim().isEmpty()) {
+            showWarning("⚠ Đơn vị tính không được để trống!"); return false;
         }
         try { Integer.parseInt(txtSoLuong.getText().trim()); }
         catch (NumberFormatException e) {
@@ -580,11 +565,9 @@ public class NguyenLieuUI extends JPanel {
         nl.setMaNL(txtMaNL.getText().trim());
         nl.setTenNL(txtTenNL.getText().trim());
         nl.setMaKho(txtMaKho.getText().trim());
-        nl.setGianhap(Integer.parseInt(txtGiaNhap.getText().trim()));
         nl.setSoluong(Integer.parseInt(txtSoLuong.getText().trim()));
-        nl.setDonvi(txtDonVi.getText().trim());
-        String anh = txtAnh.getText().trim();
-        nl.setAnh(anh.isEmpty() ? "default.png" : anh);
+        nl.setDonvi(txtDonViTinh.getText().trim());
+        nl.setAnh(txtAnh.getText().trim());
         return nl;
     }
 

@@ -217,7 +217,7 @@ public class ReportDAO {
                     nl.setMaNL(rs.getString("MaNL"));
                     nl.setTenNL(rs.getString("TenNL"));
                     nl.setSoluong(rs.getInt("SoLuong"));
-                    nl.setDonvi(rs.getString("Donvi"));
+                    nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setMaKho(rs.getString("MaKho"));
                     nl.setGianhap(rs.getInt("Gianhap"));
                     list.add(nl);
@@ -228,4 +228,4 @@ public class ReportDAO {
         }
         return list;
     }
-}
+}

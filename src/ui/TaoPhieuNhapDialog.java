@@ -194,9 +194,20 @@ public class TaoPhieuNhapDialog extends JDialog {
         btnDeleteRow = new JButton("- Xóa dòng");
         btnSave = new JButton("✓ Xác nhận & Lưu Kho");
 
+        btnAddRow.setFocusPainted(false);
+        btnAddRow.setBorderPainted(false);
+        btnAddRow.putClientProperty("JButton.buttonType", "roundRect");
+
+        btnDeleteRow.setFocusPainted(false);
+        btnDeleteRow.setBorderPainted(false);
+        btnDeleteRow.putClientProperty("JButton.buttonType", "roundRect");
+
         btnSave.setBackground(new Color(224, 31, 42));
         btnSave.setForeground(Color.WHITE);
         btnSave.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSave.setFocusPainted(false);
+        btnSave.setBorderPainted(false);
+        btnSave.putClientProperty("JButton.buttonType", "roundRect");
 
         pnlButtons.add(btnAddRow);
         pnlButtons.add(btnDeleteRow);
@@ -303,6 +314,9 @@ public class TaoPhieuNhapDialog extends JDialog {
         }
         lblTongTien.setText("TỔNG TIỀN PHIẾU: " + String.format("%,.0f", totalSum.doubleValue()) + " VNĐ");
         
+        // Tự động giãn cột bảng chi tiết phiếu nhập
+        util.UIHelper.autoResizeColumnWidths(tableChiTiet);
+        
         // Load additional info (NgayNhap, NhanVien, NCC)
         List<PhieuNhap> all = phieuNhapDAO.getAllPhieuNhap();
         for (PhieuNhap pn : all) {
@@ -385,6 +399,8 @@ public class TaoPhieuNhapDialog extends JDialog {
             });
 
             updateTotalSumLabel();
+            // Tự động giãn cột bảng chi tiết phiếu nhập sau khi thêm hàng mới
+            util.UIHelper.autoResizeColumnWidths(tableChiTiet);
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập định dạng số hợp lệ!", "Sai định dạng số", JOptionPane.ERROR_MESSAGE);
         }
@@ -393,8 +409,11 @@ public class TaoPhieuNhapDialog extends JDialog {
     private void performDeleteSelectedRow() {
         int selectedRow = tableChiTiet.getSelectedRow();
         if (selectedRow >= 0) {
-            tableModel.removeRow(selectedRow);
+            int modelRow = tableChiTiet.convertRowIndexToModel(selectedRow);
+            tableModel.removeRow(modelRow);
             updateTotalSumLabel();
+            // Tự động giãn cột bảng chi tiết phiếu nhập sau khi xóa hàng
+            util.UIHelper.autoResizeColumnWidths(tableChiTiet);
         } else {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng trên bảng để tiến hành xóa vật tư!", "Thông báo", JOptionPane.WARNING_MESSAGE);
         }

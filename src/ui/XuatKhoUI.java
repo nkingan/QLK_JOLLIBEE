@@ -57,6 +57,9 @@ public class XuatKhoUI extends JPanel {
         btnTimKiem.setBackground(new Color(242, 142, 43));
         btnTimKiem.setForeground(Color.WHITE);
         btnTimKiem.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnTimKiem.setFocusPainted(false);
+        btnTimKiem.setBorderPainted(false);
+        btnTimKiem.putClientProperty("JButton.buttonType", "roundRect");
         pnlSearch.add(btnTimKiem);
         pnlNorth.add(pnlSearch, BorderLayout.EAST);
 
@@ -112,14 +115,23 @@ public class XuatKhoUI extends JPanel {
         btnThemMoi.setBackground(new Color(224, 31, 42));
         btnThemMoi.setForeground(Color.WHITE);
         btnThemMoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnThemMoi.setFocusPainted(false);
+        btnThemMoi.setBorderPainted(false);
+        btnThemMoi.putClientProperty("JButton.buttonType", "roundRect");
 
         btnXemChiTiet.setBackground(new Color(242, 142, 43));
         btnXemChiTiet.setForeground(Color.WHITE);
         btnXemChiTiet.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnXemChiTiet.setFocusPainted(false);
+        btnXemChiTiet.setBorderPainted(false);
+        btnXemChiTiet.putClientProperty("JButton.buttonType", "roundRect");
 
         btnLamMoi.setBackground(new Color(45, 45, 45));
         btnLamMoi.setForeground(Color.WHITE);
         btnLamMoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnLamMoi.setFocusPainted(false);
+        btnLamMoi.setBorderPainted(false);
+        btnLamMoi.putClientProperty("JButton.buttonType", "roundRect");
 
         pnlSouth.add(btnThemMoi);
         pnlSouth.add(btnXemChiTiet);
@@ -155,6 +167,8 @@ public class XuatKhoUI extends JPanel {
                 });
             }
         }
+        // Tự động giãn cột bảng danh sách phiếu xuất
+        util.UIHelper.autoResizeColumnWidths(tablePhieuXuat);
     }
 
     private void btnThemMoiActionPerformed() {
@@ -167,7 +181,8 @@ public class XuatKhoUI extends JPanel {
     private void btnXemChiTietActionPerformed() {
         int selectedRow = tablePhieuXuat.getSelectedRow();
         if (selectedRow >= 0) {
-            String maPX = tablePhieuXuat.getValueAt(selectedRow, 0).toString();
+            int modelRow = tablePhieuXuat.convertRowIndexToModel(selectedRow);
+            String maPX = tablePhieuXuat.getValueAt(modelRow, 0).toString();
             JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             TaoPhieuXuatDialog dialog = new TaoPhieuXuatDialog(mainFrame, maPX);
             dialog.setVisible(true);
