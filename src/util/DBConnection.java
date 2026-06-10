@@ -6,11 +6,11 @@ import java.sql.DriverManager;
 
 public class DBConnection {
     private static String DB_URL =
-        "jdbc:sqlserver://localhost:1433;" +
+        "jdbc:sqlserver://LAPTOP-3IVVDPUN:1433;" +
         "databaseName=QuanLyKhoJollibee;" +
         "encrypt=true;trustServerCertificate=true;";
     private static String USER_NAME = "sa";
-    private static String PASSWORD  = "123456";
+    private static String PASSWORD  = "123456789";
 
     public static Connection getConnection() {
         try {

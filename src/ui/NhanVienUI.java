@@ -20,15 +20,15 @@ import model.TaiKhoan;
 
 public class NhanVienUI extends JPanel {
 
-    private static final Color JOLLIBEE_RED = new Color(0xE31837);
+    private static final Color JOLLIBEE_RED = new Color(227, 29, 43);
+    private static final Color TABLE_HEADER_BG = new Color(180, 30, 45);
+    private static final Color ROW_ODD         = new Color(255, 253, 245);
+    private static final Color ROW_EVEN        = new Color(245, 240, 230);
     private static final Color JOLLIBEE_YELLOW = new Color(0xFFC72C);
     private static final Color CREAM_WHITE = new Color(255, 253, 240);
     private static final Color DARK_CHARCOAL = new Color(45, 45, 45);
-    private static final Color ROW_HOVER = new Color(255, 242, 204);
-    private static final Color ROW_ALT = new Color(250, 248, 244);
 
     private JTextField txtMaNV, txtTenNV, txtSDT, txtEmail, txtNgaySinh, txtGioiTinh, txtChucVu;
-    private int hoveredRow = -1;
     
     // Account details sub-form fields
     private JTextField txtTenDangNhap;
@@ -72,102 +72,52 @@ public class NhanVienUI extends JPanel {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        tableNV = new JTable(tableModel);
-        tableNV.setRowHeight(36);
-        tableNV.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tableNV = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? ROW_EVEN : ROW_ODD);
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        tableNV.setRowHeight(32);
+        tableNV.setFont(new Font("SansSerif", Font.PLAIN, 13));
         tableNV.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableNV.setFillsViewportHeight(true);
-        tableNV.setIntercellSpacing(new Dimension(0, 0));
-        tableNV.setShowGrid(false);
-        tableNV.setBackground(Color.WHITE);
-        tableNV.setForeground(Color.DARK_GRAY);
-        tableNV.setSelectionBackground(new Color(255, 225, 205));
-        tableNV.setSelectionForeground(Color.BLACK);
-        tableNV.setRowMargin(4);
+        tableNV.setGridColor(new Color(220, 210, 195));
+        tableNV.setShowGrid(true);
+        tableNV.setIntercellSpacing(new Dimension(1, 1));
         tableNV.setAutoCreateRowSorter(true);
         tableNV.getTableHeader().setReorderingAllowed(false);
 
-        JTableHeader header = tableNV.getTableHeader();
-        header.setPreferredSize(new Dimension(0, 38));
-        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+        tableNV.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(JOLLIBEE_RED);
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-                return this;
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(TABLE_HEADER_BG);
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, JOLLIBEE_RED));
+                return lbl;
             }
         });
 
-        DefaultTableCellRenderer rowRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                if (isSelected) {
-                    setBackground(new Color(255, 225, 205));
-                    setForeground(Color.BLACK);
-                } else if (row == hoveredRow) {
-                    setBackground(ROW_HOVER);
-                    setForeground(Color.DARK_GRAY);
-                } else {
-                    setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
-                    setForeground(Color.DARK_GRAY);
-                }
-                setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-                return this;
-            }
-        };
-        tableNV.setDefaultRenderer(Object.class, rowRenderer);
-
-        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                if (isSelected) {
-                    setBackground(new Color(255, 225, 205));
-                    setForeground(Color.BLACK);
-                } else if (row == hoveredRow) {
-                    setBackground(ROW_HOVER);
-                    setForeground(Color.DARK_GRAY);
-                } else {
-                    setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
-                    setForeground(Color.DARK_GRAY);
-                }
-                setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-                setHorizontalAlignment(JLabel.CENTER);
-                return this;
-            }
-        };
+        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
+        centerRender.setHorizontalAlignment(JLabel.CENTER);
         tableNV.getColumnModel().getColumn(0).setCellRenderer(centerRender);
         tableNV.getColumnModel().getColumn(4).setCellRenderer(centerRender);
         tableNV.getColumnModel().getColumn(5).setCellRenderer(centerRender);
         tableNV.getColumnModel().getColumn(7).setCellRenderer(centerRender);
 
-        tableNV.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int row = tableNV.rowAtPoint(e.getPoint());
-                if (row != hoveredRow) {
-                    hoveredRow = row;
-                    tableNV.repaint();
-                }
-            }
-        });
-        tableNV.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseExited(MouseEvent e) {
-                hoveredRow = -1;
-                tableNV.repaint();
-            }
-        });
-
         JScrollPane scrollPane = new JScrollPane(tableNV);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(ROW_ODD);
         scrollPane.setBorder(BorderFactory.createLineBorder(JOLLIBEE_RED, 1));
         add(scrollPane, BorderLayout.CENTER);
 
