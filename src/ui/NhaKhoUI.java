@@ -20,6 +20,9 @@ public class NhaKhoUI extends JPanel {
     private final Color jollibeeRed = new Color(224, 31, 42);      // #E01F2A
     private final Color creamWhite = new Color(255, 253, 240);     // #FFFDF0
     private final Color darkCharcoal = new Color(45, 45, 45);
+    private final Color tableHeaderBg = new Color(180, 30, 45);
+    private final Color ROW_ODD         = new Color(255, 253, 245);
+    private final Color ROW_EVEN        = new Color(245, 240, 230);
 
     private JTextField txtMaKho, txtTenKho, txtDiaChi, txtSucChua, txtGhiChu;
     private JComboBox<String> cbNhanVien;
@@ -59,22 +62,38 @@ public class NhaKhoUI extends JPanel {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        tableKho = new JTable(tableModel);
-        tableKho.setRowHeight(30);
-        tableKho.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tableKho = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? ROW_EVEN : ROW_ODD);
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        tableKho.setRowHeight(32);
+        tableKho.setFont(new Font("SansSerif", Font.PLAIN, 13));
         tableKho.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableKho.setGridColor(new Color(220, 210, 195));
+        tableKho.setShowGrid(true);
+        tableKho.setIntercellSpacing(new Dimension(1, 1));
 
-        JTableHeader header = tableKho.getTableHeader();
-        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+        tableKho.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(139, 69, 19)); // Nâu ấm Jollibee
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-                return this;
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(tableHeaderBg);
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, jollibeeRed));
+                return lbl;
             }
         });
 
@@ -85,7 +104,7 @@ public class NhaKhoUI extends JPanel {
         tableKho.getColumnModel().getColumn(5).setCellRenderer(centerRender);
 
         JScrollPane scrollPane = new JScrollPane(tableKho);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(ROW_ODD);
         scrollPane.setBorder(BorderFactory.createLineBorder(jollibeeRed, 1));
         add(scrollPane, BorderLayout.CENTER);
 

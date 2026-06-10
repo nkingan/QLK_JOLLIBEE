@@ -82,22 +82,38 @@ public class BaoCaoHaoHutUI extends JPanel {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        tableHaoHut = new JTable(tableModel);
-        tableHaoHut.setRowHeight(28);
-        tableHaoHut.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tableHaoHut = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? new Color(245, 240, 230) : new Color(255, 253, 245));
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        tableHaoHut.setRowHeight(32);
+        tableHaoHut.setFont(new Font("SansSerif", Font.PLAIN, 13));
         tableHaoHut.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableHaoHut.setGridColor(new Color(220, 210, 195));
+        tableHaoHut.setShowGrid(true);
+        tableHaoHut.setIntercellSpacing(new Dimension(1, 1));
 
-        JTableHeader header = tableHaoHut.getTableHeader();
-        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+        tableHaoHut.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(139, 69, 19)); // Nâu ấm
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-                return this;
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(new Color(180, 30, 45)); // Đỏ sậm Jollibee giống NhapKhoUI
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, jollibeeRed));
+                return lbl;
             }
         });
 
@@ -115,7 +131,7 @@ public class BaoCaoHaoHutUI extends JPanel {
         tableHaoHut.getColumnModel().getColumn(6).setCellRenderer(rightRender);
 
         JScrollPane scrollPane = new JScrollPane(tableHaoHut);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(new Color(255, 253, 245));
         scrollPane.setBorder(BorderFactory.createLineBorder(jollibeeRed, 1));
         add(scrollPane, BorderLayout.CENTER);
 

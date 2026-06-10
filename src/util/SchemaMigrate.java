@@ -96,6 +96,18 @@ public class SchemaMigrate {
                     "END";
                 stmt.execute(createTableHaoHutSql);
 
+                // Thêm dữ liệu mẫu cho bảng HaoHut nếu chưa có
+                String insertHaoHutSampleSql = 
+                    "IF EXISTS (SELECT * FROM sys.tables WHERE name = 'HaoHut') AND NOT EXISTS (SELECT TOP 1 * FROM HaoHut) " +
+                    "BEGIN " +
+                    "    INSERT INTO HaoHut (MaHH, MaNL, SoLuongHeThong, SoLuongThucTe, SoLuongHaoHut, PhanTramHaoHut, LyDo, NgayGhiNhan) VALUES " +
+                    "    ('HH001', 'NL01', 100, 90, 10, 10.00, N'Hỏng hóc / Biến chất', '2026-06-05'), " +
+                    "    ('HH002', 'NL02', 60, 50, 10, 16.67, N'Mất mát / Thất thoát', '2026-06-06'), " +
+                    "    ('HH003', 'NL03', 35, 30, 5, 14.29, N'Sai lệch cân đo bàn giao', '2026-06-07'); " +
+                    "    PRINT 'Đã thêm dữ liệu mẫu vào bảng HaoHut'; " +
+                    "END";
+                stmt.execute(insertHaoHutSampleSql);
+
                 // 5. Tạo bảng CanhBaoTonKho
                 System.out.println("Đang kiểm tra và tạo bảng CanhBaoTonKho...");
                 String createTableCanhBaoSql = 

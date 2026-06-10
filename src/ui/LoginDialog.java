@@ -386,6 +386,13 @@ public class LoginDialog extends JDialog {
     }
 
     public static void main(String[] args) {
+        // Tự động chạy di chuyển lược đồ cơ sở dữ liệu để cập nhật cột/bảng thiếu
+        try {
+            util.SchemaMigrate.main(null);
+        } catch (Exception e) {
+            System.err.println("Không thể di chuyển lược đồ database tự động: " + e.getMessage());
+        }
+
         try {
             try {
                 Class<?> flat = Class.forName("com.formdev.flatlaf.FlatLightLaf");
