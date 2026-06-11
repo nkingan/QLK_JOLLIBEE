@@ -1,6 +1,7 @@
 package model;
 
 public class CTPhieuXuat {
+    private String maCTPX;
     private String maPX;
     private String maNL; 
     private int soLuong;
@@ -13,15 +14,15 @@ public class CTPhieuXuat {
     }
 
 
-    public CTPhieuXuat(String maPX, String maNL, int soLuong, int donGia, int thanhTien) {
+    public CTPhieuXuat( String maPX, String maNL, int soLuong, int donGia, int thanhTien) {
         this.maPX = maPX;
         this.maNL = maNL; 
         this.soLuong = soLuong;
         this.donGia = donGia;
         this.thanhTien = thanhTien;
     }
-
-   
+    public String getMaCTPX() { return maCTPX; }
+    public void setMaCTPX(String maCTPX) { this.maCTPX = maCTPX; }
     
     public String getMaPX() { return maPX; }
     public void setMaPX(String maPX) { this.maPX = maPX; }

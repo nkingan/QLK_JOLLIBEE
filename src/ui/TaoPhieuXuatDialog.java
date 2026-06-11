@@ -136,7 +136,7 @@ public class TaoPhieuXuatDialog extends JDialog {
 
         add(pnlHeader, BorderLayout.NORTH);
 
-        String[] columns = {"Mã NL", "Tên Nguyên Liệu", "Số Lượng", "Đơn Giá Xuất (VNĐ)", "Thành Tiền (VNĐ)"};
+        String[] columns = {"Mã CTPX", "Mã NL", "Tên Nguyên Liệu", "Số Lượng", "Đơn Giá Xuất (VNĐ)", "Thành Tiền (VNĐ)"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -185,14 +185,14 @@ public class TaoPhieuXuatDialog extends JDialog {
         // Căn giữa một số cột
         DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
         centerRender.setHorizontalAlignment(JLabel.CENTER);
-        for (int col : new int[]{0, 2}) {
+        for (int col : new int[]{0, 1, 3}) {
             tableChiTiet.getColumnModel().getColumn(col).setCellRenderer(centerRender);
         }
 
         // Căn phải cột tiền tệ
         DefaultTableCellRenderer rightRender = new DefaultTableCellRenderer();
         rightRender.setHorizontalAlignment(JLabel.RIGHT);
-        for (int col : new int[]{3, 4}) {
+        for (int col : new int[]{4, 5}) {
             tableChiTiet.getColumnModel().getColumn(col).setCellRenderer(rightRender);
         }
 
@@ -213,21 +213,27 @@ public class TaoPhieuXuatDialog extends JDialog {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnAddRow = new JButton("+ Thêm dòng");
-        btnDeleteRow = new JButton("- Xóa dòng");
-        btnSave = new JButton("✓ Xác nhận Xuất Kho");
+        btnAddRow = new JButton("➕  Thêm dòng");
+        btnDeleteRow = new JButton("🗑  Xóa dòng");
+        btnSave = new JButton("✓  Xác nhận Xuất Kho");
 
+        btnAddRow.setBackground(new Color(34, 139, 34));
+        btnAddRow.setForeground(Color.WHITE);
+        btnAddRow.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnAddRow.setFocusPainted(false);
         btnAddRow.setBorderPainted(false);
         btnAddRow.putClientProperty("JButton.buttonType", "roundRect");
 
+        btnDeleteRow.setBackground(new Color(227, 29, 43));
+        btnDeleteRow.setForeground(Color.WHITE);
+        btnDeleteRow.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnDeleteRow.setFocusPainted(false);
         btnDeleteRow.setBorderPainted(false);
         btnDeleteRow.putClientProperty("JButton.buttonType", "roundRect");
 
-        btnSave.setBackground(new Color(224, 31, 42));
+        btnSave.setBackground(new Color(34, 139, 34));
         btnSave.setForeground(Color.WHITE);
-        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSave.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnSave.setFocusPainted(false);
         btnSave.setBorderPainted(false);
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
@@ -325,6 +331,7 @@ public class TaoPhieuXuatDialog extends JDialog {
                     double thanhTien = ct.getSoLuong() * ct.getDonGia();
 
                     tableModel.addRow(new Object[]{
+                        ct.getMaCTPX(),
                         ct.getMaNL(),
                         name,
                         ct.getSoLuong(),
@@ -345,8 +352,10 @@ public class TaoPhieuXuatDialog extends JDialog {
             for (PhieuXuat px : all) {
                 if (px.getMaPX().equals(viewModeMaPX)) {
                     txtNgayXuat.setText(px.getNgayXuat() != null ? sdf.format(px.getNgayXuat()) : "");
+                    String tenNV = px.getTenNV();
                     for (int i = 0; i < cbNhanVien.getItemCount(); i++) {
-                        if (cbNhanVien.getItemAt(i).contains(px.getTenNV())) {
+                        String item = cbNhanVien.getItemAt(i);
+                        if (item != null && tenNV != null && item.contains(tenNV)) {
                             cbNhanVien.setSelectedIndex(i);
                             break;
                         }
@@ -384,8 +393,8 @@ public class TaoPhieuXuatDialog extends JDialog {
             int currentAdded = 0;
             int existingRow = -1;
             for (int i = 0; i < tableModel.getRowCount(); i++) {
-                if (tableModel.getValueAt(i, 0).toString().equals(maNL)) {
-                    currentAdded = (int) tableModel.getValueAt(i, 2);
+                if (tableModel.getValueAt(i, 1).toString().equals(maNL)) {
+                    currentAdded = (int) tableModel.getValueAt(i, 3);
                     existingRow = i;
                     break;
                 }
@@ -412,11 +421,12 @@ public class TaoPhieuXuatDialog extends JDialog {
             double thanhTien = totalRequested * donGiaXuat;
 
             if (existingRow >= 0) {
-                tableModel.setValueAt(totalRequested, existingRow, 2);
-                tableModel.setValueAt(String.format("%,d", donGiaXuat), existingRow, 3);
-                tableModel.setValueAt(String.format("%,.0f", thanhTien), existingRow, 4);
+                tableModel.setValueAt(totalRequested, existingRow, 3);
+                tableModel.setValueAt(String.format("%,d", donGiaXuat), existingRow, 4);
+                tableModel.setValueAt(String.format("%,.0f", thanhTien), existingRow, 5);
             } else {
                 tableModel.addRow(new Object[]{
+                    "", // Mã CTPX
                     maNL,
                     tenNL,
                     soLuongXuat,
@@ -425,6 +435,7 @@ public class TaoPhieuXuatDialog extends JDialog {
                 });
             }
 
+            resequenceMaCTPX();
             updateTotalSumLabel();
             // Tự động giãn cột bảng sau khi thêm vật tư xuất
             util.UIHelper.autoResizeColumnWidths(tableChiTiet);
@@ -438,6 +449,7 @@ public class TaoPhieuXuatDialog extends JDialog {
         if (selectedRow >= 0) {
             int modelRow = tableChiTiet.convertRowIndexToModel(selectedRow);
             tableModel.removeRow(modelRow);
+            resequenceMaCTPX();
             updateTotalSumLabel();
             // Tự động giãn cột bảng sau khi xóa dòng
             util.UIHelper.autoResizeColumnWidths(tableChiTiet);
@@ -446,10 +458,18 @@ public class TaoPhieuXuatDialog extends JDialog {
         }
     }
 
+    private void resequenceMaCTPX() {
+        String maPX = txtMaPX.getText().trim();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String newMaCTPX = maPX + "_" + String.format("%02d", i + 1);
+            tableModel.setValueAt(newMaCTPX, i, 0);
+        }
+    }
+
     private void updateTotalSumLabel() {
         double sum = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String thanhTienStr = tableModel.getValueAt(i, 4).toString().replaceAll("[^0-9]", "");
+            String thanhTienStr = tableModel.getValueAt(i, 5).toString().replaceAll("[^0-9]", "");
             sum += Double.parseDouble(thanhTienStr);
         }
         lblTongTien.setText("TỔNG TIỀN PHIẾU: " + String.format("%,.0f", sum) + " VNĐ");
@@ -482,13 +502,15 @@ public class TaoPhieuXuatDialog extends JDialog {
 
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             CTPhieuXuat ct = new CTPhieuXuat();
+            String maCTPX = tableModel.getValueAt(i, 0).toString();
+            ct.setMaCTPX(maCTPX);
             ct.setMaPX(px.getMaPX());
-            ct.setMaNL(tableModel.getValueAt(i, 0).toString());
+            ct.setMaNL(tableModel.getValueAt(i, 1).toString());
             
-            int soLuong = (int) tableModel.getValueAt(i, 2);
+            int soLuong = Integer.parseInt(tableModel.getValueAt(i, 3).toString().replaceAll("[^0-9]", ""));
             ct.setSoLuong(soLuong);
             
-            String giaStr = tableModel.getValueAt(i, 3).toString().replaceAll("[^0-9]", "");
+            String giaStr = tableModel.getValueAt(i, 4).toString().replaceAll("[^0-9]", "");
             int donGia = Integer.parseInt(giaStr);
             ct.setDonGia(donGia);
             

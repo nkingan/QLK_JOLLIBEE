@@ -183,18 +183,17 @@ public class NhaCungCapUI extends JPanel {
         // Khối các nút chức năng bên dưới form
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 10));
         btnPanel.setOpaque(false);
-        
-        btnAdd = new JButton("Thêm");
-        btnUpdate = new JButton("Cập nhật");
-        btnDelete = new JButton("Xóa");
-        btnClear = new JButton("Làm mới");
+        btnAdd = new JButton("➕  Thêm");
+        btnUpdate = new JButton("✏  Cập nhật");
+        btnDelete = new JButton("🗑  Xóa");
+        btnClear = new JButton("🔄  Làm mới");
 
-        styleButton(btnAdd, new Color(40, 167, 69), Color.WHITE); // Xanh lá
-        styleButton(btnUpdate, new Color(0, 123, 255), Color.WHITE); // Xanh dương
-        styleButton(btnDelete, jollibeeRed, Color.WHITE); // Đỏ thương hiệu
-        styleButton(btnClear, darkGray, Color.WHITE); // Xám đậm
+        styleButton(btnAdd, new Color(34, 139, 34), Color.WHITE); // Xanh lá
+        styleButton(btnUpdate, new Color(30, 100, 200), Color.WHITE); // Xanh dương
+        styleButton(btnDelete, new Color(227, 29, 43), Color.WHITE); // Đỏ thương hiệu
+        styleButton(btnClear, new Color(50, 50, 50), Color.WHITE); // Xám đậm
 
-        Dimension btnSize = new Dimension(82, 35);
+        Dimension btnSize = new Dimension(85, 35);
         btnAdd.setPreferredSize(btnSize); btnUpdate.setPreferredSize(btnSize);
         btnDelete.setPreferredSize(btnSize); btnClear.setPreferredSize(btnSize);
 

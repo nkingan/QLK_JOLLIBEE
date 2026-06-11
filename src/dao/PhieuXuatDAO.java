@@ -41,7 +41,7 @@ public class PhieuXuatDAO {
                 lastNumber = 0;
             }
         }
-        return prefix + (lastNumber + 1); 
+       return prefix + String.format("%02d", lastNumber + 1);
     }
 
     // --- Lưu Transaction Phiếu Xuất Kho ---
@@ -75,8 +75,10 @@ public class PhieuXuatDAO {
             try (PreparedStatement pstDetail = conn.prepareStatement(sqlDetail)) {
                 int index = 1;
                 for (CTPhieuXuat ct : chiTietList) {
-                    // Tự sinh mã chi tiết phiếu xuất ngẫu nhiên hoặc theo số thứ tự để tránh trùng PK MaCTPX
-                    String maCTPX = phieuXuat.getMaPX() + "_CT" + (index++);
+                    String maCTPX = ct.getMaCTPX();
+                    if (maCTPX == null || maCTPX.trim().isEmpty()) {
+                        maCTPX = phieuXuat.getMaPX() + "_" + String.format("%02d", index++);
+                    }
                     
                     pstDetail.setString(1, maCTPX);
                     pstDetail.setInt(2, ct.getSoLuong());

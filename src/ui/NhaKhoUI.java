@@ -179,7 +179,7 @@ public class NhaKhoUI extends JPanel {
         btnAdd = new JButton("Thêm");
         btnUpdate = new JButton("Cập nhật");
         btnDelete = new JButton("Xóa");
-        btnClear = new JButton("Làm mới");
+        btnClear = new JButton("Nhập mới");
 
         styleButton(btnAdd, new Color(40, 167, 69)); // Xanh lá
         styleButton(btnUpdate, new Color(0, 123, 255)); // Xanh dương

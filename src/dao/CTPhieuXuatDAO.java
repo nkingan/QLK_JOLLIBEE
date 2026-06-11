@@ -15,7 +15,7 @@ public class CTPhieuXuatDAO {
         String sql = "INSERT INTO ChiTietPhieuXuat (MaCTPX, MaNL, SoLuong, DonGia, MaPX) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
          
-            pst.setString(1, "CTPX" + System.currentTimeMillis()); 
+            pst.setString(1, ct.getMaCTPX()); 
             pst.setString(2, ct.getMaNL()); 
             pst.setInt(3, ct.getSoLuong());
             pst.setInt(4, ct.getDonGia());
@@ -29,12 +29,13 @@ public class CTPhieuXuatDAO {
 
     public List<CTPhieuXuat> getChiTietPhieuXuatByMaPX(Connection conn, String maPX) throws SQLException {
         List<CTPhieuXuat> list = new ArrayList<>();
-        String sql = "SELECT MaPX, MaNL, SoLuong, DonGia FROM ChiTietPhieuXuat WHERE MaPX = ?";
+        String sql = "SELECT MaCTPX, MaPX, MaNL, SoLuong, DonGia FROM ChiTietPhieuXuat WHERE MaPX = ?";
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setString(1, maPX);
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
                     CTPhieuXuat ct = new CTPhieuXuat();
+                    ct.setMaCTPX(rs.getString("MaCTPX"));
                     ct.setMaPX(rs.getString("MaPX"));
                     ct.setMaNL(rs.getString("MaNL"));
                     ct.setSoLuong(rs.getInt("SoLuong"));

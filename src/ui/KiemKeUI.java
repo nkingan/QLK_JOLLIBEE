@@ -59,7 +59,7 @@ public class KiemKeUI extends JPanel {
         cbFilterTrangThai.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlActions.add(cbFilterTrangThai);
 
-        btnReload = new JButton("🔄 Làm mới");
+        btnReload = new JButton("↺ Tải lại");
         btnReload.setBackground(new Color(45, 45, 45));
         btnReload.setForeground(Color.WHITE);
         btnReload.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -68,7 +68,7 @@ public class KiemKeUI extends JPanel {
         btnReload.putClientProperty("JButton.buttonType", "roundRect");
         pnlActions.add(btnReload);
 
-        btnExcel = new JButton("📥 Xuất Excel");
+        btnExcel = new JButton(" Xuất Excel");
         btnExcel.setBackground(new Color(40, 167, 69)); // Xanh lá Excel
         btnExcel.setForeground(Color.WHITE);
         btnExcel.setFont(new Font("Segoe UI", Font.BOLD, 12));

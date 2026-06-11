@@ -233,7 +233,7 @@ public class BaoCaoHaoHutUI extends JPanel {
         btnPanel.setOpaque(false);
 
         btnAdd = new JButton("Lưu báo cáo");
-        btnClear = new JButton("Làm mới");
+        btnClear = new JButton(" Nhập mới");
         btnExportExcel = new JButton("📊 Xuất Excel");
 
         styleButton(btnAdd, new Color(40, 167, 69)); // Xanh lá

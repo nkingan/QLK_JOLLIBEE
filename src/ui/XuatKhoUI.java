@@ -62,10 +62,10 @@ public class XuatKhoUI extends JPanel {
         txtTimKiem.setPreferredSize(new Dimension(150, 28));
         pnlSearch.add(txtTimKiem);
         
-        JButton btnTimKiem = new JButton("Tìm");
-        btnTimKiem.setBackground(new Color(242, 142, 43));
+        JButton btnTimKiem = new JButton("🔍  Tìm");
+        btnTimKiem.setBackground(new Color(227, 29, 43));
         btnTimKiem.setForeground(Color.WHITE);
-        btnTimKiem.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnTimKiem.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnTimKiem.setFocusPainted(false);
         btnTimKiem.setBorderPainted(false);
         btnTimKiem.putClientProperty("JButton.buttonType", "roundRect");
@@ -134,35 +134,35 @@ public class XuatKhoUI extends JPanel {
         JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         pnlSouth.setOpaque(false);
 
-        btnThemMoi = new JButton("+ Tạo Phiếu Xuất Mới");
-        btnXemChiTiet = new JButton("👁 Xem Chi Tiết");
-        btnXoa = new JButton("❌ Xóa Phiếu");
-        btnLamMoi = new JButton("🔄 Làm Mới");
+        btnThemMoi = new JButton("➕  Tạo Phiếu Xuất Mới");
+        btnXemChiTiet = new JButton("👁  Xem Chi Tiết");
+        btnXoa = new JButton("🗑  Xóa Phiếu");
+        btnLamMoi = new JButton("↺ Tải Lại");
 
-        btnThemMoi.setBackground(new Color(224, 31, 42));
+        btnThemMoi.setBackground(new Color(34, 139, 34));
         btnThemMoi.setForeground(Color.WHITE);
-        btnThemMoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnThemMoi.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnThemMoi.setFocusPainted(false);
         btnThemMoi.setBorderPainted(false);
         btnThemMoi.putClientProperty("JButton.buttonType", "roundRect");
 
-        btnXemChiTiet.setBackground(new Color(242, 142, 43));
+        btnXemChiTiet.setBackground(new Color(30, 100, 200));
         btnXemChiTiet.setForeground(Color.WHITE);
-        btnXemChiTiet.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnXemChiTiet.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnXemChiTiet.setFocusPainted(false);
         btnXemChiTiet.setBorderPainted(false);
         btnXemChiTiet.putClientProperty("JButton.buttonType", "roundRect");
 
-        btnXoa.setBackground(new Color(180, 30, 45));
+        btnXoa.setBackground(new Color(227, 29, 43));
         btnXoa.setForeground(Color.WHITE);
-        btnXoa.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnXoa.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnXoa.setFocusPainted(false);
         btnXoa.setBorderPainted(false);
         btnXoa.putClientProperty("JButton.buttonType", "roundRect");
 
-        btnLamMoi.setBackground(new Color(45, 45, 45));
+        btnLamMoi.setBackground(new Color(50, 50, 50));
         btnLamMoi.setForeground(Color.WHITE);
-        btnLamMoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnLamMoi.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnLamMoi.setFocusPainted(false);
         btnLamMoi.setBorderPainted(false);
         btnLamMoi.putClientProperty("JButton.buttonType", "roundRect");

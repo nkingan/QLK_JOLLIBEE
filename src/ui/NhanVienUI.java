@@ -239,7 +239,7 @@ public class NhanVienUI extends JPanel {
         btnAdd = new JButton("Thêm NV");
         btnUpdate = new JButton("Cập nhật");
         btnDelete = new JButton("Xóa NV");
-        btnClear = new JButton("Làm mới");
+        btnClear = new JButton("Nhập mới");
 
         styleButton(btnAdd, new Color(40, 167, 69));
         styleButton(btnUpdate, JOLLIBEE_YELLOW.darker());

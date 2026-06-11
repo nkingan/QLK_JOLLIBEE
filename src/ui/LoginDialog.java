@@ -196,10 +196,10 @@ public class LoginDialog extends JDialog {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
         buttonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        btnLogin = new JButton("Đăng nhập");
-        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        btnLogin.setBackground(jollibeeRed);
+
+        btnLogin = new JButton("  Đăng nhập");
+        btnLogin.setFont(new Font("SansSerif", Font.BOLD, 15));
+        btnLogin.setBackground(new Color(224, 31, 42));
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFocusPainted(false);
         btnLogin.setContentAreaFilled(true);
@@ -207,15 +207,15 @@ public class LoginDialog extends JDialog {
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.setMargin(new Insets(10, 25, 10, 25));
         btnLogin.putClientProperty("JButton.buttonType", "roundRect");
-        btnLogin.putClientProperty("FlatLaf.style", "background: #E31D2B; foreground: #FFFFFF; hoverBackground: #F53644; pressedBackground: #D01825; borderColor: #FFD200; borderWidth: 1; arc: 8;");
+        btnLogin.putClientProperty("FlatLaf.style", "background: #E01F2A; foreground: #FFFFFF; hoverBackground: #2E8B57; pressedBackground: #1E7B1E; arc: 8;");
         btnLogin.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { btnLogin.setBackground(hoverRed); }
-            public void mouseExited(MouseEvent e) { btnLogin.setBackground(jollibeeRed); }
+            public void mouseEntered(MouseEvent e) { btnLogin.setBackground(new Color(46, 139, 87)); }
+            public void mouseExited(MouseEvent e) { btnLogin.setBackground(new Color(224, 31, 42)); }
         });
         
-        btnCancel = new JButton("Hủy");
-        btnCancel.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        btnCancel.setBackground(darkCharcoal);
+        btnCancel = new JButton(" Hủy");
+        btnCancel.setFont(new Font("SansSerif", Font.BOLD, 15));
+        btnCancel.setBackground(new Color(50, 50, 50));
         btnCancel.setForeground(Color.WHITE);
         btnCancel.setFocusPainted(false);
         btnCancel.setContentAreaFilled(true);
@@ -226,7 +226,7 @@ public class LoginDialog extends JDialog {
         btnCancel.putClientProperty("FlatLaf.style", "background: #323232; foreground: #FFFFFF; hoverBackground: #4B4B4B; pressedBackground: #202020; arc: 8;");
         btnCancel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btnCancel.setBackground(new Color(75, 75, 75)); }
-            public void mouseExited(MouseEvent e) { btnCancel.setBackground(darkCharcoal); }
+            public void mouseExited(MouseEvent e) { btnCancel.setBackground(new Color(50, 50, 50)); }
         });
         
         buttonPanel.add(btnLogin);
@@ -241,7 +241,7 @@ public class LoginDialog extends JDialog {
         linksPanel.setOpaque(false);
         linksPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        btnRegister = new JButton("Đăng ký phân quyền");
+        btnRegister = new JButton("Đăng ký tài khoản mới");
         btnRegister.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnRegister.setForeground(linkColor);
         btnRegister.setBorderPainted(false);

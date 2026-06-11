@@ -224,21 +224,27 @@ public class TaoPhieuNhapDialog extends JDialog {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnAddRow = new JButton("+ Thêm dòng");
-        btnDeleteRow = new JButton("- Xóa dòng");
-        btnSave = new JButton("✓ Xác nhận & Lưu Kho");
+        btnAddRow = new JButton("➕  Thêm dòng");
+        btnDeleteRow = new JButton("🗑  Xóa dòng");
+        btnSave = new JButton("✓  Xác nhận & Lưu Kho");
 
+        btnAddRow.setBackground(new Color(34, 139, 34));
+        btnAddRow.setForeground(Color.WHITE);
+        btnAddRow.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnAddRow.setFocusPainted(false);
         btnAddRow.setBorderPainted(false);
         btnAddRow.putClientProperty("JButton.buttonType", "roundRect");
 
+        btnDeleteRow.setBackground(new Color(227, 29, 43));
+        btnDeleteRow.setForeground(Color.WHITE);
+        btnDeleteRow.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnDeleteRow.setFocusPainted(false);
         btnDeleteRow.setBorderPainted(false);
         btnDeleteRow.putClientProperty("JButton.buttonType", "roundRect");
 
-        btnSave.setBackground(new Color(224, 31, 42));
+        btnSave.setBackground(new Color(34, 139, 34));
         btnSave.setForeground(Color.WHITE);
-        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSave.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnSave.setFocusPainted(false);
         btnSave.setBorderPainted(false);
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
@@ -254,17 +260,18 @@ public class TaoPhieuNhapDialog extends JDialog {
         btnDeleteRow.addActionListener(e -> performDeleteSelectedRow());
         btnSave.addActionListener(e -> performSaveToDatabase());
 
-        btnExcel = new JButton("Xuất Excel");
+        btnExcel = new JButton("📊  Xuất Excel");
 
-btnExcel.setBackground(new Color(40, 167, 69));
-btnExcel.setForeground(Color.WHITE);
-btnExcel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-btnExcel.setFocusPainted(false);
-btnExcel.setBorderPainted(false);
+        btnExcel.setBackground(new Color(34, 139, 34));
+        btnExcel.setForeground(Color.WHITE);
+        btnExcel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btnExcel.setFocusPainted(false);
+        btnExcel.setBorderPainted(false);
+        btnExcel.putClientProperty("JButton.buttonType", "roundRect");
 
-pnlButtons.add(btnExcel);
+        pnlButtons.add(btnExcel);
 
-btnExcel.addActionListener(e -> exportExcel());
+        btnExcel.addActionListener(e -> exportExcel());
     }
 
     private void exportExcel() {
