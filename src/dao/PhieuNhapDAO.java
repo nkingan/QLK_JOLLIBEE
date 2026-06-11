@@ -48,7 +48,7 @@ public class PhieuNhapDAO {
                 nextNumber = 1;
             }
         }
-        return String.format("PN%03d", nextNumber);
+        return String.format("PN%02d", nextNumber);
     }
 
     // =========================================================
@@ -130,6 +130,66 @@ public class PhieuNhapDAO {
                 try {
                     conn.rollback(); // Hủy bỏ thao tác nếu phát hiện lỗi (Ví dụ: Đơn giá > 1.000.000đ sẽ bị Trigger chặn và ném lỗi về đây)
                     System.err.println("Đã tiến hành Rollback dữ liệu Phiếu Nhập thành công!");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            success = false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        return success;
+    }
+
+    // =========================================================
+    // XÓA PHIẾU NHẬP VÀ HOÀN TRẢ TỒN KHO NGUYÊN LIỆU (TRANSACTION)
+    // =========================================================
+    public boolean deletePhieuNhapTransaction(String maPN) {
+        Connection conn = null;
+        boolean success = false;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
+
+            // 1. Lấy danh sách nguyên liệu chi tiết để trừ tồn kho tương ứng
+            List<ChiTietPhieuNhap> listCT = chiTietPhieuNhapDAO.getChiTietPhieuNhapByMaPN(maPN);
+            if (listCT == null) {
+                listCT = chiTietPhieuNhapDAO.getChiTietByMaPN(maPN);
+            }
+
+            if (listCT != null && !listCT.isEmpty()) {
+                NguyenLieuDAO nlDAO = new NguyenLieuDAO();
+                for (ChiTietPhieuNhap ct : listCT) {
+                    // Trừ số lượng tồn kho nguyên liệu đã nhập
+                    nlDAO.updateStockQuantity(conn, ct.getMaNL(), -ct.getSoLuong());
+                }
+            }
+
+            // 2. Xóa chi tiết phiếu nhập
+            chiTietPhieuNhapDAO.deleteChiTietPhieuNhapByMaPN(conn, maPN);
+
+            // 3. Xóa header phiếu nhập
+            String sqlHeader = "DELETE FROM PhieuNhap WHERE MaPN = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlHeader)) {
+                pstmt.setString(1, maPN);
+                pstmt.executeUpdate();
+            }
+
+            conn.commit(); // Hoàn tất giao dịch
+            success = true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Hoàn tác nếu lỗi
+                    System.err.println("Đã tiến hành Rollback khi xóa phiếu nhập: " + maPN);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }

@@ -29,7 +29,7 @@ public class BaoCaoHaoHutUI extends JPanel {
     private JComboBox<String> cbNguyenLieu;
     private JComboBox<String> cbLyDo;
     
-    private JButton btnAdd, btnClear, btnExportPDF;
+    private JButton btnAdd, btnClear, btnExportExcel;
     private JTable tableHaoHut;
     private DefaultTableModel tableModel;
 
@@ -234,20 +234,20 @@ public class BaoCaoHaoHutUI extends JPanel {
 
         btnAdd = new JButton("Lưu báo cáo");
         btnClear = new JButton("Làm mới");
-        btnExportPDF = new JButton("Xuất PDF");
+        btnExportExcel = new JButton("📊 Xuất Excel");
 
         styleButton(btnAdd, new Color(40, 167, 69)); // Xanh lá
         styleButton(btnClear, darkCharcoal); // Xám
-        styleButton(btnExportPDF, jollibeeRed); // Đỏ
+        styleButton(btnExportExcel, new Color(40, 167, 69)); // Xanh lá giống Excel
 
         Dimension btnSize = new Dimension(105, 35);
         btnAdd.setPreferredSize(btnSize);
         btnClear.setPreferredSize(btnSize);
-        btnExportPDF.setPreferredSize(btnSize);
+        btnExportExcel.setPreferredSize(btnSize);
 
         btnPanel.add(btnAdd);
         btnPanel.add(btnClear);
-        btnPanel.add(btnExportPDF);
+        btnPanel.add(btnExportExcel);
         panel.add(btnPanel, BorderLayout.SOUTH);
 
         // Listeners for inputs
@@ -263,7 +263,7 @@ public class BaoCaoHaoHutUI extends JPanel {
 
         btnAdd.addActionListener(e -> performSaveHaoHut());
         btnClear.addActionListener(e -> clearForm());
-        btnExportPDF.addActionListener(e -> performExportPDF());
+        btnExportExcel.addActionListener(e -> performExportExcel());
 
         return panel;
     }
@@ -412,11 +412,86 @@ public class BaoCaoHaoHutUI extends JPanel {
         }
     }
 
-    private void performExportPDF() {
-        JOptionPane.showMessageDialog(this,
-            "Chức năng xuất PDF hiện không khả dụng trong môi trường này.\n" +
-            "Vui lòng thêm thư viện PDFBox vào classpath hoặc kiểm tra cài đặt dự án.",
-            "Chức năng tạm thời bị vô hiệu hoá",
-            JOptionPane.INFORMATION_MESSAGE);
+    private void performExportExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Lưu Báo Cáo Hao Hụt Excel");
+        fileChooser.setSelectedFile(new java.io.File("BaoCao_HaoHut_Jollibee.xls"));
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            java.io.File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+            if (!filePath.toLowerCase().endsWith(".xls")) {
+                filePath += ".xls";
+            }
+            
+            // Xây dựng chuỗi HTML chứa bảng Excel có định dạng màu sắc cao cấp
+            StringBuilder html = new StringBuilder();
+            html.append("<html><head><meta charset='UTF-8'></head><body>");
+            html.append("<h2 style='color:#E01F2A; text-align:center;'>BÁO CÁO HAO HỤT & BIÊN ĐỘ SAI LỆCH KIỂM KÊ KHO - JOLLIBEE</h2>");
+            html.append("<table border='1' style='border-collapse:collapse; font-family:Arial, sans-serif; font-size:11pt; width:100%;'>");
+            
+            // Header
+            html.append("<tr style='background-color:#B41E2D; color:white; font-weight:bold; height:30px;'>");
+            for (int col = 0; col < tableModel.getColumnCount(); col++) {
+                html.append("<th>").append(tableModel.getColumnName(col)).append("</th>");
+            }
+            html.append("</tr>");
+
+            // Data rows
+            for (int r = 0; r < tableModel.getRowCount(); r++) {
+                String rowBg = (r % 2 == 0) ? "#FFFFFF" : "#F5F0E6"; // Alternating white & cream
+                
+                // If there's a discrepancy, let's highlight it
+                String discrepancyStr = tableModel.getValueAt(r, 5).toString();
+                int discrepancy = 0;
+                try {
+                    discrepancy = Integer.parseInt(discrepancyStr.replaceAll("[^0-9\\-]", ""));
+                } catch (Exception e) {}
+                
+                if (discrepancy > 0) {
+                    rowBg = "#ffffff"; 
+                }
+
+                html.append("<tr style='background-color:").append(rowBg).append("; height:25px;'>");
+                for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                    String align = "left";
+                    if (c == 0 || c == 1 || c == 8) align = "center";
+                    if (c == 3 || c == 4 || c == 5 || c == 6) align = "right";
+
+                    Object val = tableModel.getValueAt(r, c);
+                    String cellContent = val != null ? val.toString() : "";
+
+                    // If discrepancy is highlighted, make text dark red
+                    String textStyle = "";
+                    if (discrepancy > 0 && (c == 5 || c == 6)) {
+                        textStyle = "color:#721C24; font-weight:bold;";
+                    }
+
+                    html.append("<td style='text-align:").append(align)
+                        .append("; ").append(textStyle).append(";'>")
+                        .append(cellContent).append("</td>");
+                }
+                html.append("</tr>");
+            }
+            html.append("</table></body></html>");
+
+            // Lưu file với chuẩn UTF-8
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(fileToSave);
+                 java.io.OutputStreamWriter osw = new java.io.OutputStreamWriter(fos, java.nio.charset.StandardCharsets.UTF_8)) {
+                
+                // Viết BOM để Excel hiển thị đúng dấu Tiếng Việt
+                fos.write(0xEF);
+                fos.write(0xBB);
+                fos.write(0xBF);
+
+                osw.write(html.toString());
+                osw.flush();
+                JOptionPane.showMessageDialog(this, "Xuất báo cáo Excel thành công!", "Xuất Excel thành công", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi xảy ra khi xuất Excel: " + e.getMessage(), "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

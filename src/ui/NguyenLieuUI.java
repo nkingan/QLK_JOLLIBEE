@@ -263,7 +263,7 @@ public class NguyenLieuUI extends JPanel {
         btnAdd    = createStyledButton("➕  Thêm",    BTN_GREEN,    Color.WHITE);
         btnUpdate = createStyledButton("✏  Sửa",     BTN_BLUE,     Color.WHITE);
         btnDelete = createStyledButton("🗑  Xóa",    JOLLIBEE_RED, Color.WHITE);
-        btnClear  = createStyledButton("🔄  Làm mới", DARK_GRAY,    Color.WHITE);
+        btnClear  = createStyledButton("🔄  Nhập mới", DARK_GRAY,    Color.WHITE);
 
         panelButtons.add(btnAdd);
         panelButtons.add(btnUpdate);

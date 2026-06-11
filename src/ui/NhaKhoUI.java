@@ -56,7 +56,7 @@ public class NhaKhoUI extends JPanel {
         add(lblTitle, BorderLayout.NORTH);
 
         // --- CENTER: JTABLE ---
-        String[] columns = {"Mã Kho", "Tên Nhà Kho", "Thủ Kho Phụ Trách", "Địa Chỉ", "Sức Chứa (Tấn)", "Số Loại Vật Tư Đang Lưu", "Ghi Chú"};
+        String[] columns = {"Mã Kho", "Tên Nhà Kho", "Thủ Kho Phụ Trách", "Số Loại Vật Tư Đang Lưu", "Ghi Chú"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -100,8 +100,7 @@ public class NhaKhoUI extends JPanel {
         DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
         centerRender.setHorizontalAlignment(JLabel.CENTER);
         tableKho.getColumnModel().getColumn(0).setCellRenderer(centerRender);
-        tableKho.getColumnModel().getColumn(4).setCellRenderer(centerRender);
-        tableKho.getColumnModel().getColumn(5).setCellRenderer(centerRender);
+        tableKho.getColumnModel().getColumn(3).setCellRenderer(centerRender);
 
         JScrollPane scrollPane = new JScrollPane(tableKho);
         scrollPane.getViewport().setBackground(ROW_ODD);
@@ -250,8 +249,6 @@ public class NhaKhoUI extends JPanel {
                     k.getMaKho(),
                     k.getTenKho(),
                     k.getMaNV() + " - " + managerName,
-                    k.getDiaChi(),
-                    k.getSucChua(),
                     count,
                     k.getGhiChu()
                 });

@@ -180,4 +180,62 @@ public class PhieuXuatDAO {
         }
         return list;
     }
+
+    // =========================================================
+    // XÓA PHIẾU XUẤT KHO VÀ HOÀN TRẢ TỒN KHO NGUYÊN LIỆU (TRANSACTION)
+    // =========================================================
+    public boolean deletePhieuXuatTransaction(String maPX) {
+        Connection conn = null;
+        boolean success = false;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
+
+            // 1. Lấy danh sách nguyên liệu chi tiết để hoàn trả tồn kho nguyên liệu (Cộng lại lượng đã xuất)
+            CTPhieuXuatDAO ctDAO = new CTPhieuXuatDAO();
+            List<CTPhieuXuat> listCT = ctDAO.getChiTietPhieuXuatByMaPX(conn, maPX);
+
+            if (listCT != null && !listCT.isEmpty()) {
+                NguyenLieuDAO nlDAO = new NguyenLieuDAO();
+                for (CTPhieuXuat ct : listCT) {
+                    // Cộng lại số lượng tồn kho nguyên liệu đã xuất
+                    nlDAO.updateStockQuantity(conn, ct.getMaNL(), ct.getSoLuong());
+                }
+            }
+
+            // 2. Xóa chi tiết phiếu xuất
+            ctDAO.deleteChiTietPhieuXuatByMaPX(conn, maPX);
+
+            // 3. Xóa header phiếu xuất
+            String sqlHeader = "DELETE FROM PhieuXuat WHERE MaPX = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlHeader)) {
+                pstmt.setString(1, maPX);
+                pstmt.executeUpdate();
+            }
+
+            conn.commit(); // Hoàn tất giao dịch
+            success = true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Hoàn tác nếu lỗi
+                    System.err.println("Đã tiến hành Rollback khi xóa phiếu xuất: " + maPX);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            success = false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        return success;
+    }
 }

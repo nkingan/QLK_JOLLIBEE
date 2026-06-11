@@ -1,8 +1,7 @@
 package ui;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
 import java.awt.*;
 import java.sql.Connection;
 import java.text.ParseException;
@@ -145,26 +144,60 @@ public class TaoPhieuXuatDialog extends JDialog {
             }
         };
 
-        tableChiTiet = new JTable(tableModel);
-        tableChiTiet.setRowHeight(28);
-        tableChiTiet.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tableChiTiet = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? new Color(245, 240, 230) : new Color(255, 253, 245));
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        tableChiTiet.setRowHeight(32);
+        tableChiTiet.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        tableChiTiet.setGridColor(new Color(220, 210, 195));
+        tableChiTiet.setShowGrid(true);
+        tableChiTiet.setIntercellSpacing(new Dimension(1, 1));
         tableChiTiet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        tableChiTiet.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+        JTableHeader header = tableChiTiet.getTableHeader();
+        header.setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(180, 30, 45));
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-                return this;
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int r, int c) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, val, sel, foc, r, c);
+                lbl.setBackground(new Color(180, 30, 45));
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, new Color(227, 29, 43)));
+                return lbl;
             }
         });
+        header.setPreferredSize(new Dimension(header.getWidth(), 38));
+        header.setReorderingAllowed(false);
+
+        // Căn giữa một số cột
+        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
+        centerRender.setHorizontalAlignment(JLabel.CENTER);
+        for (int col : new int[]{0, 2}) {
+            tableChiTiet.getColumnModel().getColumn(col).setCellRenderer(centerRender);
+        }
+
+        // Căn phải cột tiền tệ
+        DefaultTableCellRenderer rightRender = new DefaultTableCellRenderer();
+        rightRender.setHorizontalAlignment(JLabel.RIGHT);
+        for (int col : new int[]{3, 4}) {
+            tableChiTiet.getColumnModel().getColumn(col).setCellRenderer(rightRender);
+        }
 
         JScrollPane scrollPane = new JScrollPane(tableChiTiet);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(new Color(255, 253, 245));
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(224, 31, 42), 1));
         add(scrollPane, BorderLayout.CENTER);
 
@@ -416,7 +449,7 @@ public class TaoPhieuXuatDialog extends JDialog {
     private void updateTotalSumLabel() {
         double sum = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String thanhTienStr = tableModel.getValueAt(i, 4).toString().replace(",", "");
+            String thanhTienStr = tableModel.getValueAt(i, 4).toString().replaceAll("[^0-9]", "");
             sum += Double.parseDouble(thanhTienStr);
         }
         lblTongTien.setText("TỔNG TIỀN PHIẾU: " + String.format("%,.0f", sum) + " VNĐ");
@@ -455,7 +488,7 @@ public class TaoPhieuXuatDialog extends JDialog {
             int soLuong = (int) tableModel.getValueAt(i, 2);
             ct.setSoLuong(soLuong);
             
-            String giaStr = tableModel.getValueAt(i, 3).toString().replace(",", "");
+            String giaStr = tableModel.getValueAt(i, 3).toString().replaceAll("[^0-9]", "");
             int donGia = Integer.parseInt(giaStr);
             ct.setDonGia(donGia);
             

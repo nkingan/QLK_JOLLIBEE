@@ -24,6 +24,7 @@ public class NhapKhoUI extends JPanel {
     private DefaultTableModel tableModel;
     private JButton btnThemMoi;
     private JButton btnXemChiTiet;
+    private JButton btnXoa;
     private JButton btnLamMoi;
     private JTextField txtTimKiem;
 
@@ -61,8 +62,8 @@ public class NhapKhoUI extends JPanel {
         txtTimKiem.setPreferredSize(new Dimension(150, 28));
         pnlSearch.add(txtTimKiem);
         
-        JButton btnTimKiem = new JButton("Tìm");
-        btnTimKiem.setBackground(new Color(242, 142, 43));
+        JButton btnTimKiem = new JButton("🔍 Tìm");
+        btnTimKiem.setBackground(new Color(224, 31, 42));
         btnTimKiem.setForeground(Color.WHITE);
         btnTimKiem.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnTimKiem.setFocusPainted(false);
@@ -133,9 +134,10 @@ public class NhapKhoUI extends JPanel {
         JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         pnlSouth.setOpaque(false);
 
-        btnThemMoi = new JButton("+ Tạo Phiếu Nhập Mới");
-        btnXemChiTiet = new JButton("👁 Xem Chi Tiết");
-        btnLamMoi = new JButton("🔄 Làm Mới");
+        btnThemMoi = new JButton("➕ Tạo Phiếu Nhập Mới");
+        btnXemChiTiet = new JButton(" Xem Chi Tiết");
+        btnXoa = new JButton("🗑 Xóa Phiếu");
+        btnLamMoi = new JButton("↺ Tải Lại");
 
         btnThemMoi.setBackground(new Color(224, 31, 42));
         btnThemMoi.setForeground(Color.WHITE);
@@ -151,6 +153,13 @@ public class NhapKhoUI extends JPanel {
         btnXemChiTiet.setBorderPainted(false);
         btnXemChiTiet.putClientProperty("JButton.buttonType", "roundRect");
 
+        btnXoa.setBackground(new Color(180, 30, 45));
+        btnXoa.setForeground(Color.WHITE);
+        btnXoa.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnXoa.setFocusPainted(false);
+        btnXoa.setBorderPainted(false);
+        btnXoa.putClientProperty("JButton.buttonType", "roundRect");
+
         btnLamMoi.setBackground(new Color(45, 45, 45));
         btnLamMoi.setForeground(Color.WHITE);
         btnLamMoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -160,12 +169,14 @@ public class NhapKhoUI extends JPanel {
 
         pnlSouth.add(btnThemMoi);
         pnlSouth.add(btnXemChiTiet);
+        pnlSouth.add(btnXoa);
         pnlSouth.add(btnLamMoi);
 
         add(pnlSouth, BorderLayout.SOUTH);
 
         btnThemMoi.addActionListener(e -> btnThemMoiActionPerformed());
         btnXemChiTiet.addActionListener(e -> btnXemChiTietActionPerformed());
+        btnXoa.addActionListener(e -> btnXoaActionPerformed());
         btnLamMoi.addActionListener(e -> refreshData());
         btnTimKiem.addActionListener(e -> performSearch());
         txtTimKiem.addActionListener(e -> performSearch());
@@ -216,6 +227,39 @@ public class NhapKhoUI extends JPanel {
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn một hàng phiếu nhập kho trên bảng danh sách để xem chi tiết!", "Chưa chọn chứng từ", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void btnXoaActionPerformed() {
+        int selectedRow = tablePhieuNhap.getSelectedRow();
+        if (selectedRow >= 0) {
+            int modelRow = tablePhieuNhap.convertRowIndexToModel(selectedRow);
+            String maPN = tablePhieuNhap.getValueAt(modelRow, 0).toString();
+            
+            // Phân quyền: Chỉ cho phép Admin/WarehouseManager xóa phiếu
+            if (currentUser != null && currentUser.getQuyen() != null) {
+                String role = currentUser.getQuyen().trim();
+                if (!("Admin".equalsIgnoreCase(role) || "WarehouseManager".equalsIgnoreCase(role))) {
+                    JOptionPane.showMessageDialog(this, "Tài khoản của bạn không có thẩm quyền xóa chứng từ!", "Cảnh báo phân quyền", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn xóa phiếu nhập [ " + maPN + " ]?\n" +
+                "⚠️ Lưu ý: Tồn kho nguyên liệu liên quan sẽ tự động bị giảm trừ tương ứng!",
+                "Xác nhận xóa phiếu nhập", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (phieuNhapDAO.deletePhieuNhapTransaction(maPN)) {
+                    JOptionPane.showMessageDialog(this, "Đã xóa phiếu nhập kho và hoàn trả kho thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    refreshData();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Xóa phiếu nhập thất bại!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một hàng phiếu nhập kho để xóa!", "Chưa chọn chứng từ", JOptionPane.WARNING_MESSAGE);
         }
     }
 

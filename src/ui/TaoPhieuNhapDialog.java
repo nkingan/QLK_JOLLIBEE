@@ -1,8 +1,7 @@
 package ui;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -23,6 +22,11 @@ import model.NguyenLieu;
 import model.NhanVien;
 import model.TaiKhoan;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+
 public class TaoPhieuNhapDialog extends JDialog {
 
     private JTextField txtMaPN;
@@ -40,6 +44,7 @@ public class TaoPhieuNhapDialog extends JDialog {
     private JTable tableChiTiet;
     private DefaultTableModel tableModel;
     private JLabel lblTongTien;
+    private JButton btnExcel;
 
     private PhieuNhapDAO phieuNhapDAO;
     private ChiTietPhieuNhapDAO ctPhieuNhapDAO;
@@ -85,7 +90,7 @@ public class TaoPhieuNhapDialog extends JDialog {
     }
 
     private void initUI() {
-        setSize(950, 600);
+        setSize(1200, 650);
         setLocationRelativeTo(getOwner());
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(255, 252, 245));
@@ -98,42 +103,42 @@ public class TaoPhieuNhapDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Row 0
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.0;
+        gbc.gridx = 0; gbc.gridy = 0;
         pnlHeader.add(new JLabel("Mã phiếu nhập:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.gridx = 1;
         txtMaPN = new JTextField(12);
         txtMaPN.setEditable(false);
         pnlHeader.add(txtMaPN, gbc);
 
-        gbc.gridx = 2; gbc.weightx = 0.0;
+        gbc.gridx = 2;
         pnlHeader.add(new JLabel("Ngày nhập (dd/MM/yyyy):"), gbc);
-        gbc.gridx = 3; gbc.weightx = 1.0;
+        gbc.gridx = 3;
         txtNgayNhap = new JTextField(12);
         pnlHeader.add(txtNgayNhap, gbc);
 
         // Row 1
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.0;
+        gbc.gridx = 0; gbc.gridy = 1;
         pnlHeader.add(new JLabel("Nhà cung cấp:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.gridx = 1;
         cbNhaCungCap = new JComboBox<>();
         pnlHeader.add(cbNhaCungCap, gbc);
 
-        gbc.gridx = 2; gbc.weightx = 0.0;
+        gbc.gridx = 2;
         pnlHeader.add(new JLabel("Nhân viên lập:"), gbc);
-        gbc.gridx = 3; gbc.weightx = 1.0;
+        gbc.gridx = 3;
         cbNhanVien = new JComboBox<>();
         pnlHeader.add(cbNhanVien, gbc);
 
         // Row 2
-        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.0;
+        gbc.gridx = 0; gbc.gridy = 2;
         pnlHeader.add(new JLabel("Chọn nguyên liệu:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.gridx = 1;
         cbNguyenLieu = new JComboBox<>();
         pnlHeader.add(cbNguyenLieu, gbc);
 
-        gbc.gridx = 2; gbc.weightx = 0.0;
+        gbc.gridx = 2;
         pnlHeader.add(new JLabel("SL / Đơn giá / Hạn SD:"), gbc);
-        gbc.gridx = 3; gbc.weightx = 1.0;
+        gbc.gridx = 3;
         JPanel pnlInputs = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         pnlInputs.setOpaque(false);
         pnlInputs.add(new JLabel("SL:"));
@@ -157,22 +162,51 @@ public class TaoPhieuNhapDialog extends JDialog {
             }
         };
 
-        tableChiTiet = new JTable(tableModel);
-        tableChiTiet.setRowHeight(25);
+
+         tableChiTiet = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? new Color(245, 240, 230) : new Color(255, 253, 245));
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        tableChiTiet.setRowHeight(32);
+        tableChiTiet.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        tableChiTiet.setGridColor(new Color(220, 210, 195));
+        tableChiTiet.setShowGrid(true);
+        tableChiTiet.setIntercellSpacing(new Dimension(1, 1));
         tableChiTiet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        tableChiTiet.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+        JTableHeader header = tableChiTiet.getTableHeader();
+        header.setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(180, 30, 45));
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-                return this;
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int r, int c) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, val, sel, foc, r, c);
+                lbl.setBackground(new Color(180, 30, 45));
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, new Color(227, 29, 43)));
+                return lbl;
             }
         });
+        header.setPreferredSize(new Dimension(header.getWidth(), 38));
+        header.setReorderingAllowed(false);
+
+
+         DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
+        centerRender.setHorizontalAlignment(JLabel.CENTER);
+        for (int col : new int[]{0, 1, 2, 3, 4, 5, 6}) {
+            tableChiTiet.getColumnModel().getColumn(col).setCellRenderer(centerRender);
+        }
 
         JScrollPane scrollPane = new JScrollPane(tableChiTiet);
         scrollPane.getViewport().setBackground(Color.WHITE);
@@ -184,20 +218,11 @@ public class TaoPhieuNhapDialog extends JDialog {
 
         lblTongTien = new JLabel("TỔNG TIỀN PHIẾU: 0 VNĐ");
         lblTongTien.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        lblTongTien.setForeground(new Color(192, 0, 0));
+        lblTongTien.setForeground(new Color(192,0,0));
         pnlSouth.add(lblTongTien, BorderLayout.WEST);
 
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
-
-        JButton btnExportExcel = new JButton("📊 Xuất Excel");
-        btnExportExcel.setBackground(new Color(40, 167, 69));
-        btnExportExcel.setForeground(Color.WHITE);
-        btnExportExcel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnExportExcel.setFocusPainted(false);
-        btnExportExcel.setBorderPainted(false);
-        btnExportExcel.putClientProperty("JButton.buttonType", "roundRect");
-        btnExportExcel.addActionListener(e -> performExportExcel());
 
         btnAddRow = new JButton("+ Thêm dòng");
         btnDeleteRow = new JButton("- Xóa dòng");
@@ -218,7 +243,6 @@ public class TaoPhieuNhapDialog extends JDialog {
         btnSave.setBorderPainted(false);
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
 
-        pnlButtons.add(btnExportExcel);
         pnlButtons.add(btnAddRow);
         pnlButtons.add(btnDeleteRow);
         pnlButtons.add(btnSave);
@@ -229,7 +253,124 @@ public class TaoPhieuNhapDialog extends JDialog {
         btnAddRow.addActionListener(e -> performAddMaterialRow());
         btnDeleteRow.addActionListener(e -> performDeleteSelectedRow());
         btnSave.addActionListener(e -> performSaveToDatabase());
+
+        btnExcel = new JButton("Xuất Excel");
+
+btnExcel.setBackground(new Color(40, 167, 69));
+btnExcel.setForeground(Color.WHITE);
+btnExcel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+btnExcel.setFocusPainted(false);
+btnExcel.setBorderPainted(false);
+
+pnlButtons.add(btnExcel);
+
+btnExcel.addActionListener(e -> exportExcel());
     }
+
+    private void exportExcel() {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Lưu Chi Tiết Phiếu Nhập");
+    fileChooser.setSelectedFile(
+        new File("ChiTietPhieuNhap_" + txtMaPN.getText() + ".xls")
+    );
+
+    if (fileChooser.showSaveDialog(this)
+            == JFileChooser.APPROVE_OPTION) {
+
+        File file = fileChooser.getSelectedFile();
+
+        StringBuilder html = new StringBuilder();
+
+        html.append("<html><head><meta charset='UTF-8'></head><body>");
+
+        html.append("<h2 style='color:#E01F2A;text-align:center;'>");
+        html.append("CHI TIẾT PHIẾU NHẬP KHO JOLLIBEE");
+        html.append("</h2>");
+
+        html.append("<p><b>Mã phiếu nhập:</b> ")
+            .append(txtMaPN.getText())
+            .append("</p>");
+
+        html.append("<p><b>Ngày nhập:</b> ")
+            .append(txtNgayNhap.getText())
+            .append("</p>");
+
+        html.append("<p><b>Nhân viên lập:</b> ")
+            .append(cbNhanVien.getSelectedItem().toString())
+            .append("</p>");
+
+        html.append("<p><b>Nhà cung cấp:</b> ")
+            .append(cbNhaCungCap.getSelectedItem().toString())
+            .append("</p>");
+
+        html.append("<table border='1' ")
+            .append("style='border-collapse:collapse;width:100%;font-family:Arial;'>");
+
+        html.append("<tr style='background:#B41E2D;color:white;'>");
+
+        for (int c = 0; c < tableModel.getColumnCount(); c++) {
+            html.append("<th>")
+                .append(tableModel.getColumnName(c))
+                .append("</th>");
+        }
+
+        html.append("</tr>");
+
+        for (int r = 0; r < tableModel.getRowCount(); r++) {
+
+            html.append("<tr>");
+
+            for (int c = 0; c < tableModel.getColumnCount(); c++) {
+
+                Object value = tableModel.getValueAt(r, c);
+
+                String align = "left";
+
+                if (c == 2 || c == 3 || c == 5) {
+                    align = "right";
+                }
+
+                html.append("<td style='text-align:")
+                    .append(align)
+                    .append(";'>")
+                    .append(value == null ? "" : value.toString())
+                    .append("</td>");
+            }
+
+            html.append("</tr>");
+        }
+        html.append("</table>");
+
+        html.append("<h3 style='color:#C00000;'>")
+            .append(lblTongTien.getText())
+            .append("</h3>");
+
+        html.append("</body></html>");
+
+        try (FileOutputStream fos = new FileOutputStream(file);
+             OutputStreamWriter osw =
+                 new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
+
+            fos.write(0xEF);
+            fos.write(0xBB);
+            fos.write(0xBF);
+
+            osw.write(html.toString());
+            osw.flush();
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Xuất Excel thành công!"
+            );
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Lỗi xuất Excel: " + ex.getMessage()
+            );
+        }
+    }
+}
 
     private void loadComboboxData() {
         // 1. Load NCC
@@ -276,7 +417,7 @@ public class TaoPhieuNhapDialog extends JDialog {
             if (nextCode != null) {
                 txtMaPN.setText(nextCode);
             } else {
-                txtMaPN.setText("PN001");
+                txtMaPN.setText("PN01");
             }
         }
     }
@@ -436,7 +577,7 @@ public class TaoPhieuNhapDialog extends JDialog {
     private void updateTotalSumLabel() {
         double sum = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String thanhTienStr = tableModel.getValueAt(i, 6).toString().replace(",", "");
+            String thanhTienStr = tableModel.getValueAt(i, 6).toString().replaceAll("[^0-9]", "");
             sum += Double.parseDouble(thanhTienStr);
         }
         lblTongTien.setText("TỔNG TIỀN PHIẾU: " + String.format("%,.0f", sum) + " VNĐ");
@@ -490,7 +631,7 @@ public class TaoPhieuNhapDialog extends JDialog {
             int soLuong = (int) tableModel.getValueAt(i, 3);
             ct.setSoLuong(soLuong);
             
-            String giaStr = tableModel.getValueAt(i, 4).toString().replace(",", "");
+            String giaStr = tableModel.getValueAt(i, 4).toString().replaceAll("[^0-9]", "");
             BigDecimal donGia = new BigDecimal(giaStr);
             ct.setDonGia(donGia);
             
@@ -566,9 +707,9 @@ public class TaoPhieuNhapDialog extends JDialog {
                     String maNL = tableModel.getValueAt(i, 1).toString();
                     String tenNL = tableModel.getValueAt(i, 2).toString();
                     String soLuong = tableModel.getValueAt(i, 3).toString();
-                    String donGia = tableModel.getValueAt(i, 4).toString().replace(",", "");
+                    String donGia = tableModel.getValueAt(i, 4).toString().replaceAll("[^0-9]", "");
                     String hsd = tableModel.getValueAt(i, 5).toString();
-                    String thanhTien = tableModel.getValueAt(i, 6).toString().replace(",", "");
+                    String thanhTien = tableModel.getValueAt(i, 6).toString().replaceAll("[^0-9]", "");
                     
                     osw.write(String.format("%s,%s,\"%s\",%s,%s,%s,%s\n", 
                         maCTPN, maNL, tenNL.replace("\"", "\"\""), soLuong, donGia, hsd, thanhTien));

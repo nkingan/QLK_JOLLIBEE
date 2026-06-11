@@ -273,7 +273,6 @@ public class MainApplicationFrame extends JFrame {
 
                 menuButton.setAlignmentX(Component.CENTER_ALIGNMENT); 
                 menuPanel.add(menuButton); 
-                menuPanel.add(Box.createRigidArea(new Dimension(0, 6))); 
 
                 menuButtons.put(menuName, menuButton);
             }
@@ -302,9 +301,9 @@ public class MainApplicationFrame extends JFrame {
                      BorderFactory.createEmptyBorder(10, 15, 10, 15) 
             ));
         } else {
-            button.setBackground(darkCharcoal); 
-            button.setForeground(Color.WHITE); 
-            button.setBorder(BorderFactory.createEmptyBorder(10, 21, 10, 15)); 
+           button.setBackground(darkCharcoal); 
+           button.setForeground(Color.WHITE); 
+           button.setBorder(BorderFactory.createEmptyBorder(13, 21, 13, 15));
         }
     }
 
@@ -375,10 +374,10 @@ public class MainApplicationFrame extends JFrame {
              case "Quản lý Nhập kho":
              case "Quản lý Xuất kho":
              case "Kiểm kê & Hạn sử dụng":
+             case "Báo cáo hao hụt":
                   return true; 
              case "Quản lý Nhà cung cấp":
              case "Danh mục Nhà kho":
-             case "Báo cáo hao hụt":
                   return "Admin".equalsIgnoreCase(role) || "WarehouseManager".equalsIgnoreCase(role);
              case "Quản lý Nhân viên":
                   return "Admin".equalsIgnoreCase(role);
