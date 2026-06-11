@@ -15,9 +15,7 @@ public class DBConnection {
     public static Connection getConnection() {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            Connection conn = DriverManager.getConnection(DB_URL, USER_NAME, PASSWORD);
-            System.out.println("Kết nối DB thành công!");
-            return conn;
+            return DriverManager.getConnection(DB_URL, USER_NAME, PASSWORD);
         } catch (Exception ex) {
             System.out.println("Kết nối DB thất bại: " + ex.getMessage());
             ex.printStackTrace();
