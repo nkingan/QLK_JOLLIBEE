@@ -226,13 +226,14 @@ public class KiemKeUI extends JPanel {
         header.setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(139, 69, 19)); // Nâu ấm Jollibee
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-                return this;
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(new Color(180, 30, 45)); // Đỏ sậm Jollibee giống NhapKhoUI
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, new Color(227, 29, 43)));
+                return lbl;
             }
         });
 
@@ -509,7 +510,7 @@ public class KiemKeUI extends JPanel {
             html.append("<table border='1' style='border-collapse:collapse; font-family:Arial, sans-serif; font-size:11pt; width:100%;'>");
             
             // Header
-            html.append("<tr style='background-color:#8B4513; color:white; font-weight:bold; height:30px;'>");
+            html.append("<tr style='background-color:#B41E2D; color:white; font-weight:bold; height:30px;'>");
             for (int col = 0; col < tableModel.getColumnCount(); col++) {
                 html.append("<th>").append(tableModel.getColumnName(col)).append("</th>");
             }

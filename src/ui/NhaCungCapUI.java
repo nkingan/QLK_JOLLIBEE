@@ -16,11 +16,13 @@ import java.util.List;
 
 public class NhaCungCapUI extends JPanel {
 
-    // --- BẢNG MÀU THƯƠNG HIỆU JOLLIBEE (Đồng bộ hoàn toàn với Login & NguyenLieuUI) ---
+    // --- BẢNG MÀU THƯƠNG HIỆU JOLLIBEE (Đồng bộ hoàn hoàn với Login & NguyenLieuUI) ---
     private final Color jollibeeRed = new Color(227, 29, 43);      // #E31D2B
     private final Color creamWhite = new Color(255, 253, 240);     // Nền kem nhẹ
     private final Color darkGray = new Color(50, 50, 50);
-    private final Color tableHeaderBg = new Color(139, 69, 19);    // Màu nâu đậm thanh lịch
+    private final Color tableHeaderBg = new Color(180, 30, 45);    // Màu đỏ Jollibee sậm đồng nhất
+    private final Color ROW_ODD         = new Color(255, 253, 245);
+    private final Color ROW_EVEN        = new Color(245, 240, 230);
 
     private JTextField txtMaNCC, txtTenNCC, txtDiachi, txtSDT, txtEmail;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
@@ -77,16 +79,41 @@ public class NhaCungCapUI extends JPanel {
             public boolean isCellEditable(int row, int col) { return false; }
         };
         
-        nhaCungCapTable = new JTable(tableModel);
-        nhaCungCapTable.setRowHeight(30);
+        nhaCungCapTable = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? ROW_EVEN : ROW_ODD);
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        nhaCungCapTable.setRowHeight(32);
         nhaCungCapTable.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        nhaCungCapTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        nhaCungCapTable.setGridColor(new Color(220, 210, 195));
+        nhaCungCapTable.setShowGrid(true);
+        nhaCungCapTable.setIntercellSpacing(new Dimension(1, 1));
         
         // Custom Header Bảng
-        JTableHeader header = nhaCungCapTable.getTableHeader();
-        header.setBackground(tableHeaderBg);
-        header.setForeground(Color.WHITE);
-        header.setFont(new Font("SansSerif", Font.BOLD, 13));
-        header.setPreferredSize(new Dimension(header.getWidth(), 35));
+        nhaCungCapTable.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(tableHeaderBg);
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, jollibeeRed));
+                return lbl;
+            }
+        });
 
         // Căn giữa cột Mã NCC và SĐT
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -95,7 +122,8 @@ public class NhaCungCapUI extends JPanel {
         nhaCungCapTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
 
         JScrollPane scrollPane = new JScrollPane(nhaCungCapTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        scrollPane.getViewport().setBackground(ROW_ODD);
+        scrollPane.setBorder(BorderFactory.createLineBorder(jollibeeRed, 1));
         add(scrollPane, BorderLayout.CENTER);
 
         // ==========================================

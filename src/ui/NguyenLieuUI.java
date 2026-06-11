@@ -30,7 +30,7 @@ public class NguyenLieuUI extends JPanel {
     // THÀNH PHẦN GIAO DIỆN
     // =====================================================================
     private JTextField txtMaNL, txtTenNL, txtMaKho,
-                       txtSoLuong, txtDonViTinh, txtAnh, txtSearch;
+                       txtSoLuong, txtDonViTinh, txtSearch;
     private JComboBox<String> cbSearchType;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
     private JTable tableNL;
@@ -123,7 +123,7 @@ public class NguyenLieuUI extends JPanel {
     private void buildTable() {
         String[] columns = {
             "Mã NL", "Tên Nguyên Liệu", "Mã Kho",
-            "Số Lượng", "Đơn Vị Tính", "Hình Ảnh"
+            "Số Lượng", "Đơn Vị Tính"
         };
 
         tableModel = new DefaultTableModel(columns, 0) {
@@ -174,7 +174,7 @@ public class NguyenLieuUI extends JPanel {
         header.setReorderingAllowed(false);
 
         // ── ĐỘ RỘNG CỘT ──────────────────────────────────────────────────
-        int[] colWidths = {70, 200, 90, 85, 100, 130};
+        int[] colWidths = {80, 250, 100, 100, 120};
         for (int i = 0; i < colWidths.length; i++) {
             tableNL.getColumnModel().getColumn(i).setPreferredWidth(colWidths[i]);
         }
@@ -233,7 +233,6 @@ public class NguyenLieuUI extends JPanel {
         txtMaKho      = createInputField();
         txtSoLuong    = createInputField();
         txtDonViTinh  = createInputField();
-        txtAnh        = createInputField();
 
         // Thêm từng hàng label + textfield vào form
         String[][] rows = {
@@ -242,9 +241,8 @@ public class NguyenLieuUI extends JPanel {
             {"Mã Kho:",         "maKho"},
             {"Số Lượng:",       "soLuong"},
             {"Đơn Vị Tính:",    "donViTinh"},
-            {"Tên File Ảnh:",   "anh"},
         };
-        JTextField[] fields = {txtMaNL, txtTenNL, txtMaKho, txtSoLuong, txtDonViTinh, txtAnh};
+        JTextField[] fields = {txtMaNL, txtTenNL, txtMaKho, txtSoLuong, txtDonViTinh};
 
         for (int i = 0; i < rows.length; i++) {
             gbc.gridx = 0; gbc.gridy = i; gbc.weightx = 0;
@@ -369,8 +367,7 @@ public class NguyenLieuUI extends JPanel {
                     nl.getTenNL(),
                     nl.getMaKho(),
                     nl.getSoluong(),
-                    nl.getDonvi(),
-                    nl.getAnh()
+                    nl.getDonvi()
                 });
             }
         }
@@ -395,7 +392,6 @@ public class NguyenLieuUI extends JPanel {
         txtMaKho.setText(currentNguyenLieu.getMaKho());
         txtSoLuong.setText(String.valueOf(currentNguyenLieu.getSoluong()));
         txtDonViTinh.setText(currentNguyenLieu.getDonvi());
-        txtAnh.setText(currentNguyenLieu.getAnh() != null ? currentNguyenLieu.getAnh() : "");
 
         boolean isEmployee = currentUser != null
             && "Nhân viên".equalsIgnoreCase(currentUser.getQuyen());
@@ -524,7 +520,7 @@ public class NguyenLieuUI extends JPanel {
             for (NguyenLieu nl : result) {
                 tableModel.addRow(new Object[]{
                     nl.getMaNL(), nl.getTenNL(), nl.getMaKho(),
-                    nl.getSoluong(), nl.getDonvi(), nl.getAnh()
+                    nl.getSoluong(), nl.getDonvi()
                 });
             }
         } else {
@@ -567,7 +563,6 @@ public class NguyenLieuUI extends JPanel {
         nl.setMaKho(txtMaKho.getText().trim());
         nl.setSoluong(Integer.parseInt(txtSoLuong.getText().trim()));
         nl.setDonvi(txtDonViTinh.getText().trim());
-        nl.setAnh(txtAnh.getText().trim());
         return nl;
     }
 

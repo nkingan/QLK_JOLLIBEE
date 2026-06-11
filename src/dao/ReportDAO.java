@@ -207,7 +207,7 @@ public class ReportDAO {
 
     public List<NguyenLieu> getLowStockIngredients(int threshold) {
         List<NguyenLieu> list = new ArrayList<>();
-        String sql = "SELECT MaNL, TenNL, SoLuong, Donvi, MaKho, Gianhap FROM NguyenLieu WHERE SoLuong <= ? ORDER BY SoLuong ASC";
+        String sql = "SELECT MaNL, TenNL, SoLuong, DonViTinh, MaKho, Gianhap FROM NguyenLieu WHERE SoLuong <= ? ORDER BY SoLuong ASC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, threshold);

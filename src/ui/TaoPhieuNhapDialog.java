@@ -165,7 +165,7 @@ public class TaoPhieuNhapDialog extends JDialog {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBackground(new Color(139, 69, 19));
+                setBackground(new Color(180, 30, 45));
                 setForeground(Color.WHITE);
                 setFont(new Font("Segoe UI", Font.BOLD, 13));
                 setHorizontalAlignment(JLabel.CENTER);

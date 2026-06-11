@@ -13,16 +13,7 @@ public class SchemaMigrate {
             if (conn != null) {
                 // 1. Cập nhật bảng NguyenLieu
                 System.out.println("Đang kiểm tra và cập nhật bảng NguyenLieu...");
-                
-                // Đổi tên DonViTinh thành Donvi bằng sp_rename nếu Donvi chưa tồn tại
-                String renameDonviSql = 
-                    "IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('NguyenLieu') AND name = 'DonViTinh') " +
-                    "AND NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('NguyenLieu') AND name = 'Donvi') " +
-                    "BEGIN " +
-                    "    EXEC sp_rename 'NguyenLieu.DonViTinh', 'Donvi', 'COLUMN'; " +
-                    "    PRINT 'Đã đổi tên cột DonViTinh thành Donvi'; " +
-                    "END";
-                stmt.execute(renameDonviSql);
+                // Giữ nguyên cột DonViTinh không đổi tên thành Donvi
 
                 // Thêm cột Gianhap nếu thiếu
                 String addGiaNhapSql = 
@@ -33,14 +24,14 @@ public class SchemaMigrate {
                     "END";
                 stmt.execute(addGiaNhapSql);
 
-                // Thêm cột Anh nếu thiếu
-                String addAnhSql = 
-                    "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('NguyenLieu') AND name = 'Anh') " +
+                // Xóa cột Anh nếu tồn tại (dự án không dùng dữ liệu ảnh)
+                String dropAnhSql = 
+                    "IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('NguyenLieu') AND name = 'Anh') " +
                     "BEGIN " +
-                    "    ALTER TABLE NguyenLieu ADD Anh varchar(255) NULL; " +
-                    "    PRINT 'Đã thêm cột Anh vào bảng NguyenLieu'; " +
+                    "    ALTER TABLE NguyenLieu DROP COLUMN Anh; " +
+                    "    PRINT 'Đã xóa cột Anh khỏi bảng NguyenLieu'; " +
                     "END";
-                stmt.execute(addAnhSql);
+                stmt.execute(dropAnhSql);
 
                 // 2. Cập nhật bảng Kho
                 System.out.println("Đang kiểm tra và cập nhật bảng Kho...");
@@ -104,6 +95,61 @@ public class SchemaMigrate {
                     "    PRINT 'Đã tạo bảng HaoHut thành công!'; " +
                     "END";
                 stmt.execute(createTableHaoHutSql);
+
+                // Thêm dữ liệu mẫu cho bảng HaoHut nếu chưa có
+                String insertHaoHutSampleSql = 
+                    "IF EXISTS (SELECT * FROM sys.tables WHERE name = 'HaoHut') AND NOT EXISTS (SELECT TOP 1 * FROM HaoHut) " +
+                    "BEGIN " +
+                    "    INSERT INTO HaoHut (MaHH, MaNL, SoLuongHeThong, SoLuongThucTe, SoLuongHaoHut, PhanTramHaoHut, LyDo, NgayGhiNhan) VALUES " +
+                    "    ('HH001', 'NL01', 100, 90, 10, 10.00, N'Hỏng hóc / Biến chất', '2026-06-05'), " +
+                    "    ('HH002', 'NL02', 60, 50, 10, 16.67, N'Mất mát / Thất thoát', '2026-06-06'), " +
+                    "    ('HH003', 'NL03', 35, 30, 5, 14.29, N'Sai lệch cân đo bàn giao', '2026-06-07'); " +
+                    "    PRINT 'Đã thêm dữ liệu mẫu vào bảng HaoHut'; " +
+                    "END";
+                stmt.execute(insertHaoHutSampleSql);
+
+                // 5. Tạo bảng CanhBaoTonKho
+                System.out.println("Đang kiểm tra và tạo bảng CanhBaoTonKho...");
+                String createTableCanhBaoSql = 
+                    "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CanhBaoTonKho') " +
+                    "BEGIN " +
+                    "    CREATE TABLE CanhBaoTonKho ( " +
+                    "        MaCanhBao INT IDENTITY(1,1) PRIMARY KEY, " +
+                    "        MaNL " + maNLSpec + " FOREIGN KEY REFERENCES NguyenLieu(MaNL), " +
+                    "        TenNL nvarchar(100), " +
+                    "        SoLuongHienTai INT, " +
+                    "        NguongCanhBao INT, " +
+                    "        ThoiGianGhiNhan DATETIME DEFAULT GETDATE(), " +
+                    "        TrangThai nvarchar(50) DEFAULT N'Chưa xử lý' " +
+                    "    ); " +
+                    "    PRINT 'Đã tạo bảng CanhBaoTonKho thành công!'; " +
+                    "END";
+                stmt.execute(createTableCanhBaoSql);
+
+                // 6. Tạo trigger TRG_KiemTraTonKhoThap
+                System.out.println("Đang kiểm tra và tạo Trigger TRG_KiemTraTonKhoThap...");
+                stmt.execute("IF EXISTS (SELECT * FROM sys.triggers WHERE name = 'TRG_KiemTraTonKhoThap') DROP TRIGGER TRG_KiemTraTonKhoThap;");
+                
+                String createTriggerSql = 
+                    "CREATE TRIGGER TRG_KiemTraTonKhoThap " +
+                    "ON NguyenLieu " +
+                    "AFTER UPDATE, INSERT " +
+                    "AS " +
+                    "BEGIN " +
+                    "    SET NOCOUNT ON; " +
+                    "    DECLARE @NguongCanhBao INT = 15; " +
+                    "    INSERT INTO CanhBaoTonKho (MaNL, TenNL, SoLuongHienTai, NguongCanhBao) " +
+                    "    SELECT i.MaNL, i.TenNL, i.SoLuong, @NguongCanhBao " +
+                    "    FROM inserted i " +
+                    "    WHERE i.SoLuong <= @NguongCanhBao " +
+                    "      AND NOT EXISTS ( " +
+                    "          SELECT 1 " +
+                    "          FROM CanhBaoTonKho cb " +
+                    "          WHERE cb.MaNL = i.MaNL AND cb.TrangThai = N'Chưa xử lý' " +
+                    "      ); " +
+                    "END;";
+                stmt.execute(createTriggerSql);
+                System.out.println("Đã tạo trigger TRG_KiemTraTonKhoThap thành công!");
 
                 System.out.println("Hoàn tất di chuyển lược đồ (Schema Migration) thành công!");
             }

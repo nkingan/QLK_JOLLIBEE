@@ -12,15 +12,19 @@ import model.TaiKhoan;
 
 public class XuatKhoUI extends JPanel {
 
+    // =====================================================================
+    // BẢNG MÀU THƯƠNG HIỆU JOLLIBEE (ĐỒNG BỘ VỚI NHAPKHOUI VÀ NGUYENLIEUUI)
+    // =====================================================================
+    private static final Color JOLLIBEE_RED    = new Color(227, 29, 43);
+    private static final Color TABLE_HEADER_BG = new Color(180, 30, 45);
+    private static final Color ROW_ODD         = new Color(255, 253, 245);
+    private static final Color ROW_EVEN        = new Color(245, 240, 230);
+
     private JTable tablePhieuXuat;
     private DefaultTableModel tableModel;
     private JButton btnThemMoi;
     private JButton btnXemChiTiet;
     private JButton btnLamMoi;
-<<<<<<< HEAD
-    private JButton btnExportExcel;
-=======
->>>>>>> origin/van
     private JTextField txtTimKiem;
 
     private PhieuXuatDAO phieuXuatDAO;
@@ -35,37 +39,19 @@ public class XuatKhoUI extends JPanel {
 
     private void initUI() {
         setLayout(new BorderLayout(15, 15));
-<<<<<<< HEAD
-        setBackground(new Color(255, 252, 245));
-=======
         setBackground(new Color(255, 253, 240)); // Nền kem Jollibee #FFFDF0
->>>>>>> origin/van
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         JPanel pnlNorth = new JPanel(new BorderLayout(10, 10));
         pnlNorth.setOpaque(false);
 
-<<<<<<< HEAD
-        JLabel lblTitle = new JLabel("QUẢN LÝ KHO NGUYÊN LIỆU - PHIẾU XUẤT KHO");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTitle.setForeground(new Color(139, 69, 19));
-=======
         JLabel lblTitle = new JLabel("QUẢN LÝ KHO JOLLIBEE - PHIẾU XUẤT KHO");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitle.setForeground(new Color(224, 31, 42)); // Đỏ Jollibee
->>>>>>> origin/van
         pnlNorth.add(lblTitle, BorderLayout.WEST);
 
         JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
         pnlSearch.setOpaque(false);
-<<<<<<< HEAD
-        pnlSearch.add(new JLabel("Tìm kiếm mã phiếu: "));
-        txtTimKiem = new JTextField(15);
-        pnlSearch.add(txtTimKiem);
-        
-        JButton btnTimKiem = new JButtonCustom("Tìm", new Color(139, 69, 19), Color.WHITE);
-        btnTimKiem.setPreferredSize(new Dimension(80, 28));
-=======
         
         JLabel lblSearch = new JLabel("Tìm kiếm mã phiếu: ");
         lblSearch.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -82,7 +68,6 @@ public class XuatKhoUI extends JPanel {
         btnTimKiem.setFocusPainted(false);
         btnTimKiem.setBorderPainted(false);
         btnTimKiem.putClientProperty("JButton.buttonType", "roundRect");
->>>>>>> origin/van
         pnlSearch.add(btnTimKiem);
         pnlNorth.add(pnlSearch, BorderLayout.EAST);
 
@@ -96,30 +81,38 @@ public class XuatKhoUI extends JPanel {
             }
         };
 
-        tablePhieuXuat = new JTable(tableModel);
-        tablePhieuXuat.setRowHeight(30);
-        tablePhieuXuat.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tablePhieuXuat = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? ROW_EVEN : ROW_ODD);
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(255, 180, 0, 200)); // highlight vàng Jollibee
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        };
+        tablePhieuXuat.setRowHeight(32);
+        tablePhieuXuat.setFont(new Font("SansSerif", Font.PLAIN, 13));
         tablePhieuXuat.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tablePhieuXuat.setGridColor(new Color(220, 210, 195));
+        tablePhieuXuat.setShowGrid(true);
+        tablePhieuXuat.setIntercellSpacing(new Dimension(1, 1));
 
         tablePhieuXuat.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-<<<<<<< HEAD
-                
-                setBackground(new Color(139, 69, 19));
-=======
-                setBackground(new Color(139, 69, 19)); // Nâu ấm Jollibee
->>>>>>> origin/van
-                setForeground(Color.WHITE);
-                setFont(new Font("Segoe UI", Font.BOLD, 13));
-                setHorizontalAlignment(JLabel.CENTER);
-                setOpaque(true);
-<<<<<<< HEAD
-                
-=======
->>>>>>> origin/van
-                return this;
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(TABLE_HEADER_BG);
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+                lbl.setHorizontalAlignment(JLabel.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, JOLLIBEE_RED));
+                return lbl;
             }
         });
 
@@ -133,29 +126,13 @@ public class XuatKhoUI extends JPanel {
         tablePhieuXuat.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
 
         JScrollPane scrollPane = new JScrollPane(tablePhieuXuat);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-<<<<<<< HEAD
-=======
+        scrollPane.getViewport().setBackground(ROW_ODD);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(224, 31, 42), 1));
->>>>>>> origin/van
         add(scrollPane, BorderLayout.CENTER);
 
         JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         pnlSouth.setOpaque(false);
 
-<<<<<<< HEAD
-        btnThemMoi = new JButtonCustom("+ Tạo Phiếu Xuất Mới", new Color(224, 31, 42), Color.WHITE);
-        btnThemMoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
-        btnXemChiTiet = new JButtonCustom("👁 Xem Chi Tiết Chứng Từ", new Color(242, 142, 43), Color.WHITE);
-        btnXemChiTiet.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        
-        btnLamMoi = new JButtonCustom("🔄 Làm Mới Tải Lại", new Color(45, 45, 45), Color.WHITE);
-        btnLamMoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
-        btnExportExcel = new JButtonCustom("📊 Xuất Excel", new Color(40, 167, 69), Color.WHITE);
-        btnExportExcel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-=======
         btnThemMoi = new JButton("+ Tạo Phiếu Xuất Mới");
         btnXemChiTiet = new JButton("👁 Xem Chi Tiết");
         btnLamMoi = new JButton("🔄 Làm Mới");
@@ -180,32 +157,18 @@ public class XuatKhoUI extends JPanel {
         btnLamMoi.setFocusPainted(false);
         btnLamMoi.setBorderPainted(false);
         btnLamMoi.putClientProperty("JButton.buttonType", "roundRect");
->>>>>>> origin/van
 
         pnlSouth.add(btnThemMoi);
         pnlSouth.add(btnXemChiTiet);
         pnlSouth.add(btnLamMoi);
-<<<<<<< HEAD
-        pnlSouth.add(btnExportExcel);
-
-
-=======
->>>>>>> origin/van
 
         add(pnlSouth, BorderLayout.SOUTH);
 
         btnThemMoi.addActionListener(e -> btnThemMoiActionPerformed());
         btnXemChiTiet.addActionListener(e -> btnXemChiTietActionPerformed());
         btnLamMoi.addActionListener(e -> refreshData());
-<<<<<<< HEAD
-        btnExportExcel.addActionListener(e -> btnExportExcelActionPerformed());
         btnTimKiem.addActionListener(e -> performSearch());
         txtTimKiem.addActionListener(e -> performSearch());
-
-=======
-        btnTimKiem.addActionListener(e -> performSearch());
-        txtTimKiem.addActionListener(e -> performSearch());
->>>>>>> origin/van
     }
 
     public void refreshData() {
@@ -229,11 +192,8 @@ public class XuatKhoUI extends JPanel {
                 });
             }
         }
-<<<<<<< HEAD
-=======
         // Tự động giãn cột bảng danh sách phiếu xuất
         util.UIHelper.autoResizeColumnWidths(tablePhieuXuat);
->>>>>>> origin/van
     }
 
     private void btnThemMoiActionPerformed() {
@@ -246,21 +206,13 @@ public class XuatKhoUI extends JPanel {
     private void btnXemChiTietActionPerformed() {
         int selectedRow = tablePhieuXuat.getSelectedRow();
         if (selectedRow >= 0) {
-<<<<<<< HEAD
-            String maPX = tablePhieuXuat.getValueAt(selectedRow, 0).toString();
-=======
             int modelRow = tablePhieuXuat.convertRowIndexToModel(selectedRow);
             String maPX = tablePhieuXuat.getValueAt(modelRow, 0).toString();
->>>>>>> origin/van
             JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             TaoPhieuXuatDialog dialog = new TaoPhieuXuatDialog(mainFrame, maPX);
             dialog.setVisible(true);
         } else {
-<<<<<<< HEAD
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một hàng phiếu xuất kho trên bảng danh sách để xem chi tiết!", "Chưa chọn chứng từ", JOptionPane.WARNING_MESSAGE);
-=======
             JOptionPane.showMessageDialog(this, "Vui lòng chọn một hàng phiếu xuất trên bảng để xem chi tiết!", "Chưa chọn chứng từ", JOptionPane.WARNING_MESSAGE);
->>>>>>> origin/van
         }
     }
 
@@ -283,18 +235,4 @@ public class XuatKhoUI extends JPanel {
             loadDataPhieuXuat(filteredList);
         }
     }
-<<<<<<< HEAD
-
-    private void btnExportExcelActionPerformed() {
-        int selectedRow = tablePhieuXuat.getSelectedRow();
-        if (selectedRow >= 0) {
-            String maPX = tablePhieuXuat.getValueAt(selectedRow, 0).toString();
-            JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            util.ExcelExporter.exportPhieuXuat(mainFrame, maPX);
-        } else {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một hàng phiếu xuất kho trên bảng danh sách để xuất file Excel!", "Chưa chọn chứng từ", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-=======
->>>>>>> origin/van
 }
