@@ -12,7 +12,7 @@ import util.DBConnection;
 
 public class NhanVienDAO {
 
-    // 1. Tự động sinh mã nhân viên tiếp theo (NV01, NV02,...)
+    // 1. Tự động sinh mã nhân viên tiếp theo 
     public synchronized String generateNextMaNV() {
         String latestMaNV = null;
         String sql = "SELECT TOP 1 MaNV FROM NhanVien WHERE MaNV LIKE 'NV%' ORDER BY MaNV DESC";
@@ -113,7 +113,7 @@ public class NhanVienDAO {
         }
     }
 
-    // 4. Xóa nhân viên theo mã (và cả tài khoản liên quan nếu có)
+    // 4. Xóa nhân viên theo mã
     public boolean deleteNhanVien(String maNV) {
         // Xóa tài khoản trước do ràng buộc khóa ngoại
         deleteTaiKhoanByMaNV(maNV);
@@ -215,7 +215,7 @@ public class NhanVienDAO {
         return danhSach;
     }
 
-    // 8. Tên nhân viên từ MaNV (hỗ trợ các phần hiển thị khác)
+    // 8. Tên nhân viên từ MaNV
     public String getTenNhanVienByMaNV(String maNV) {
         String tenNV = "Nhân viên";
         String sql = "SELECT TenNV FROM NhanVien WHERE MaNV = ?";
@@ -236,7 +236,7 @@ public class NhanVienDAO {
     }
 
     // ==========================================
-    // LIÊN KẾT PHÂN QUYỀN VỚI BẢNG TÀI KHOẢN (TaiKhoan)
+    // LIÊN KẾT PHÂN QUYỀN VỚI BẢNG TÀI KHOẢN 
     // ==========================================
 
     public TaiKhoan getTaiKhoanByMaNV(String maNV) {
@@ -263,7 +263,6 @@ public class NhanVienDAO {
     }
 
     public boolean saveTaiKhoan(TaiKhoan tk) {
-        // Kiểm tra xem đã có tài khoản cho nhân viên này chưa
         TaiKhoan existing = getTaiKhoanByMaNV(tk.getMaNV());
         
         if (existing != null) {
@@ -283,8 +282,6 @@ public class NhanVienDAO {
                 return false;
             }
         } else {
-            // Insert
-            // Tự sinh mã tài khoản
             String nextMaTK = "TK01";
             String sqlMax = "SELECT TOP 1 MaTK FROM TaiKhoan ORDER BY MaTK DESC";
             try (Connection conn = DBConnection.getConnection();

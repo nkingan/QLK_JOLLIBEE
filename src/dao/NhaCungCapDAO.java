@@ -15,7 +15,7 @@ public class NhaCungCapDAO {
     public NhaCungCapDAO() {
     }
 
-    // 1. Tự động sinh mã Nhà cung cấp tiếp theo (NCC01, NCC02,...)
+    // 1. Tự động sinh mã Nhà cung cấp tiếp theo 
     public synchronized String generateNextMaNCC() {
         String latestMaNCC = null;
         String sql = "SELECT TOP 1 MaNCC FROM NhaCungCap WHERE MaNCC LIKE 'NCC%' ORDER BY MaNCC DESC";
@@ -34,22 +34,22 @@ public class NhaCungCapDAO {
 
         if (latestMaNCC != null && latestMaNCC.startsWith("NCC")) {
             try {
-                String numberPart = latestMaNCC.substring(3); // Cắt chuỗi bỏ chữ 'NCC' lấy phần số
+                String numberPart = latestMaNCC.substring(3); 
                 int number = Integer.parseInt(numberPart);
                 int nextNumber = number + 1;
-                return String.format("NCC%02d", nextNumber); // Định dạng hiển thị NCC01, NCC02...
+                return String.format("NCC%02d", nextNumber); 
             } catch (NumberFormatException e) {
                 e.printStackTrace();
                 return "NCC01";
             }
         }
-        return "NCC01"; // Trả về mã đầu tiên nếu bảng trống
+        return "NCC01"; 
     }
 
     // 2. Thêm mới một Nhà cung cấp
     public boolean addNhaCungCap(NhaCungCap ncc) {
         String newMaNCC = generateNextMaNCC();
-        ncc.setMaNCC(newMaNCC); // Gán mã tự động sinh vào đối tượng
+        ncc.setMaNCC(newMaNCC); 
 
         String sql = "INSERT INTO NhaCungCap (MaNCC, TenNCC, DiaChi, SDT, Email) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -80,7 +80,7 @@ public class NhaCungCapDAO {
             pstmt.setString(2, ncc.getDiachi());
             pstmt.setString(3, ncc.getSdt());
             pstmt.setString(4, ncc.getEmail());
-            pstmt.setString(5, ncc.getMaNCC()); // Điều kiện WHERE
+            pstmt.setString(5, ncc.getMaNCC()); 
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -121,10 +121,9 @@ public class NhaCungCapDAO {
                 NhaCungCap ncc = new NhaCungCap();
                 ncc.setMaNCC(rs.getString("MaNCC"));
                 ncc.setTenNCC(rs.getString("TenNCC"));
-                ncc.setDiachi(rs.getString("DiaChi")); // Khớp cột SQL
-                ncc.setSdt(rs.getString("SDT"));       // Khớp cột SQL
-                ncc.setEmail(rs.getString("Email"));   // Khớp cột SQL
-                
+                ncc.setDiachi(rs.getString("DiaChi")); 
+                ncc.setSdt(rs.getString("SDT"));       
+                ncc.setEmail(rs.getString("Email"));  
                 danhSach.add(ncc);
             }
         } catch (SQLException e) {
@@ -158,7 +157,7 @@ public class NhaCungCapDAO {
         return null;
     }
 
-    // 7. Tìm kiếm Nhà cung cấp gần đúng theo Tên (dành cho ô tìm kiếm trên UI)
+    // 7. Tìm kiếm Nhà cung cấp gần đúng theo Tên 
     public List<NhaCungCap> searchNhaCungCapByTen(String searchTerm) {
         List<NhaCungCap> danhSach = new ArrayList<>();
         String sql = "SELECT MaNCC, TenNCC, DiaChi, SDT, Email FROM NhaCungCap WHERE TenNCC LIKE ?";

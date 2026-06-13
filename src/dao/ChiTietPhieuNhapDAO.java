@@ -78,11 +78,10 @@ import util.DBConnection;
 public class ChiTietPhieuNhapDAO {
 
     public ChiTietPhieuNhapDAO() {
-        // Constructor rỗng
     }
 
     // =========================================================
-    // 1. THÊM CHI TIẾT PHIẾU NHẬP (Tham gia vào Transaction)
+    // 1. THÊM CHI TIẾT PHIẾU NHẬP 
     // =========================================================
     public void addChiTietPhieuNhap(Connection conn, ChiTietPhieuNhap ct) throws SQLException {
         // Khớp 100% với cấu trúc bảng ChiTietPhieuNhap trong SQL Server của bạn
@@ -104,17 +103,16 @@ public class ChiTietPhieuNhapDAO {
             pstmt.setString(6, ct.getMaPN());
 
             pstmt.executeUpdate();
-            // Không bọc try-catch lỗi ở đây để ném về PhieuNhapDAO xử lý Rollback khi gặp sự cố
         } 
     }
 
     // =========================================================
-    // 2. LẤY DANH SÁCH CHI TIẾT THEO MÃ PHIẾU - ĐỌC TỪ VIEW
+    // 2. LẤY DANH SÁCH CHI TIẾT THEO MÃ PHIẾU 
     // =========================================================
     public List<ChiTietPhieuNhap> getChiTietPhieuNhapByMaPN(String maPN) {
         List<ChiTietPhieuNhap> chiTietList = new ArrayList<>();
         
-        // Tận dụng View VW_ChiTietPhieuNhap bạn đã viết sẵn giúp lấy luôn TenNL, DonViTinh, ThanhTien
+        // Tận dụng View VW_ChiTietPhieuNhap
         String sql = "SELECT MaCTPN, MaNL, TenNL, DonViTinh, SoLuong, DonGia, ThanhTien, HanSuDung, TrangThaiHan " +
                      "FROM VW_ChiTietPhieuNhap " +
                      "WHERE MaPN = ?";
@@ -153,7 +151,7 @@ public class ChiTietPhieuNhapDAO {
     }
 
     // =========================================================
-    // 3. XÓA TẤT CẢ CHI TIẾT THEO MÃ PHIẾU NHẬP (Dùng khi hủy/xóa phiếu)
+    // 3. XÓA TẤT CẢ CHI TIẾT THEO MÃ PHIẾU NHẬP 
     // =========================================================
     public void deleteChiTietPhieuNhapByMaPN(Connection conn, String maPN) throws SQLException {
         String sql = "DELETE FROM ChiTietPhieuNhap WHERE MaPN = ?";
@@ -180,8 +178,8 @@ public class ChiTietPhieuNhapDAO {
                     ct.setMaPN(rs.getString("MaPN"));
                     ct.setMaNL(rs.getString("MaNL"));
                     ct.setSoLuong(rs.getInt("SoLuong"));
-                    ct.setDonGia(rs.getBigDecimal("DonGia"));       // Đọc chuẩn dữ liệu BigDecimal
-                    ct.setThanhTien(rs.getBigDecimal("ThanhTien")); // Đọc chuẩn dữ liệu BigDecimal
+                    ct.setDonGia(rs.getBigDecimal("DonGia"));       
+                    ct.setThanhTien(rs.getBigDecimal("ThanhTien")); 
                     
                     list.add(ct);
                 }

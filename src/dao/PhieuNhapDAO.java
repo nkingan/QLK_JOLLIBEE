@@ -19,7 +19,7 @@ public class PhieuNhapDAO {
     }
 
     // =========================================================
-    // TỰ ĐỘNG TẠO MÃ PHIẾU NHẬP TIẾP THEO (Format: PN001, PN002...)
+    // TỰ ĐỘNG TẠO MÃ PHIẾU NHẬP TIẾP THEO 
     // =========================================================
     public synchronized String generateNextPhieuNhapCode() {
         String latestMaPN = null;
@@ -56,7 +56,6 @@ public class PhieuNhapDAO {
     // =========================================================
     public List<PhieuNhap> getAllPhieuNhap() {
         List<PhieuNhap> list = new ArrayList<>();
-        // Đọc trực tiếp từ VW_PhieuNhap giúp tối ưu hiệu năng hệ thống
         String sql = "SELECT MaPN, NgayNhap, TenNV, TenNCC, TongTien FROM VW_PhieuNhap";
 
         try (Connection conn = DBConnection.getConnection();
@@ -67,9 +66,9 @@ public class PhieuNhapDAO {
                 PhieuNhap pn = new PhieuNhap();
                 pn.setMaPN(rs.getString("MaPN"));
                 pn.setNgayNhap(rs.getDate("NgayNhap"));
-                pn.setTongTien(rs.getBigDecimal("TongTien")); // Lấy chuẩn dữ liệu DECIMAL(18,2)
-                pn.setTenNV(rs.getString("TenNV"));           // Lấy từ View
-                pn.setTenNCC(rs.getString("TenNCC"));         // Lấy từ View
+                pn.setTongTien(rs.getBigDecimal("TongTien")); 
+                pn.setTenNV(rs.getString("TenNV"));          
+                pn.setTenNCC(rs.getString("TenNCC"));        
                 
                 list.add(pn);
             }
@@ -89,7 +88,7 @@ public class PhieuNhapDAO {
 
         try {
             conn = DBConnection.getConnection();
-            conn.setAutoCommit(false); // BẤT ĐẦU TRANSACTION TRÊN JAVA
+            conn.setAutoCommit(false); 
 
             // 1. Lưu thông tin chứng từ Phiếu Nhập (Header)
             String insertPhieuNhapSql = "INSERT INTO PhieuNhap (MaPN, NgayNhap, MaNV, MaNCC, TongTien) VALUES (?, ?, ?, ?, ?)";
@@ -110,25 +109,20 @@ public class PhieuNhapDAO {
             // 2. Lưu danh sách nguyên liệu chi tiết đi kèm Phiếu Nhập
             if (danhSachChiTiet != null && !danhSachChiTiet.isEmpty()) {
                 for (ChiTietPhieuNhap ct : danhSachChiTiet) {
-                    ct.setMaPN(phieuNhap.getMaPN()); // Đồng bộ mã phiếu nhập
-                    
-                    // Thực hiện lưu chi tiết hóa đơn
+                    ct.setMaPN(phieuNhap.getMaPN()); 
+
                     chiTietPhieuNhapDAO.addChiTietPhieuNhap(conn, ct);
                     
-                    // 🌟 KHÔNG CẦN CẬP NHẬT TỒN KHO THỦ CÔNG! 
-                    // Nhờ Trigger `TRG_NhapKho` của nhóm bạn viết rất tốt, khi câu lệnh insert 
-                    // chi tiết chạy, SQL Server sẽ tự động cộng dồn số lượng vào bảng `NguyenLieu` 
-                    // và tự tính toán lại `TongTien` của bảng `PhieuNhap`.
                 }
             }
 
-            conn.commit(); // Hoàn tất giao dịch an toàn
+            conn.commit(); 
             success = true;
 
         } catch (SQLException e) {
             if (conn != null) {
                 try {
-                    conn.rollback(); // Hủy bỏ thao tác nếu phát hiện lỗi (Ví dụ: Đơn giá > 1.000.000đ sẽ bị Trigger chặn và ném lỗi về đây)
+                    conn.rollback();
                     System.err.println("Đã tiến hành Rollback dữ liệu Phiếu Nhập thành công!");
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -150,16 +144,16 @@ public class PhieuNhapDAO {
     }
 
     // =========================================================
-    // XÓA PHIẾU NHẬP VÀ HOÀN TRẢ TỒN KHO NGUYÊN LIỆU (TRANSACTION)
+    // XÓA PHIẾU NHẬP VÀ HOÀN TRẢ TỒN KHO NGUYÊN LIỆU 
     // =========================================================
     public boolean deletePhieuNhapTransaction(String maPN) {
         Connection conn = null;
         boolean success = false;
         try {
             conn = DBConnection.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false); 
 
-            // 1. Xóa chi tiết phiếu nhập (SQL trigger TRG_NhapKho tự động hoàn trả tồn kho)
+            // 1. Xóa chi tiết phiếu nhập
             chiTietPhieuNhapDAO.deleteChiTietPhieuNhapByMaPN(conn, maPN);
 
             // 2. Xóa header phiếu nhập
@@ -169,12 +163,12 @@ public class PhieuNhapDAO {
                 pstmt.executeUpdate();
             }
 
-            conn.commit(); // Hoàn tất giao dịch
+            conn.commit(); 
             success = true;
         } catch (SQLException e) {
             if (conn != null) {
                 try {
-                    conn.rollback(); // Hoàn tác nếu lỗi
+                    conn.rollback();
                     System.err.println("Đã tiến hành Rollback khi xóa phiếu nhập: " + maPN);
                 } catch (SQLException ex) {
                     ex.printStackTrace();

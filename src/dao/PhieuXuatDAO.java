@@ -13,7 +13,7 @@ import model.PhieuXuat;
 import util.DBConnection;
 public class PhieuXuatDAO {
 
-    // --- Tự động sinh mã phiếu xuất (Ví dụ: PX01, PX02...) ---
+    // --- Tự động sinh mã phiếu xuất  ---
     public synchronized String generateNextPhieuXuatCode() {
         String latestMaPX = null;
         // Khớp với kiểu sắp xếp chuỗi mã của hệ thống
@@ -28,7 +28,7 @@ public class PhieuXuatDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return "PX01"; // Nếu lỗi hoặc chưa có dữ liệu, trả về mã đầu tiên
+            return "PX01"; 
         }
 
         String prefix = "PX";
@@ -51,7 +51,7 @@ public class PhieuXuatDAO {
 
         try {
             conn = DBConnection.getConnection();
-            conn.setAutoCommit(false); // Chạy chế độ an toàn Transaction
+            conn.setAutoCommit(false); 
 
             // 1. Thêm thông tin phiếu xuất chung
             String sqlHeader = "INSERT INTO PhieuXuat (MaPX, NgayXuat, MaNV, TongTien) VALUES (?, ?, ?, ?)";
@@ -59,7 +59,7 @@ public class PhieuXuatDAO {
                 pst.setString(1, phieuXuat.getMaPX());
                 pst.setDate(2, new java.sql.Date(phieuXuat.getNgayXuat().getTime()));
                 pst.setString(3, phieuXuat.getMaNV());
-                pst.setDouble(4, 0); // Ban đầu truyền 0, Trigger SQL tự động tính tổng tiền dựa vào chi tiết
+                pst.setDouble(4, 0); 
                 
                 int rows = pst.executeUpdate();
                 if (rows <= 0) {
@@ -68,9 +68,7 @@ public class PhieuXuatDAO {
                 }
             }
 
-            // 2. Thêm danh sách chi tiết nguyên liệu xuất
-            // Lưu ý: SQL của bạn đã có Trigger TRG_XuatKho tự động trừ kho nguyên liệu (NguyenLieu.SoLuong) 
-            // nên code Java KHÔNG cần gọi hàm trừ kho thủ công nữa! Rất tiện lợi.
+            // 2. Thêm danh sách chi tiết nguyên liệu xuất 
             String sqlDetail = "INSERT INTO ChiTietPhieuXuat (MaCTPX, SoLuong, DonGia, MaNL, MaPX) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement pstDetail = conn.prepareStatement(sqlDetail)) {
                 int index = 1;
@@ -96,7 +94,7 @@ public class PhieuXuatDAO {
             if (conn != null) {
                 try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
-            // In lỗi ra màn hình (Ví dụ: Lỗi từ Trigger thông báo không đủ hàng tồn kho)
+            // In lỗi ra màn hình 
             System.err.println("Lỗi Transaction Xuất Kho: " + e.getMessage());
             e.printStackTrace();
         } finally {
@@ -110,7 +108,6 @@ public class PhieuXuatDAO {
     // --- Lấy toàn bộ danh sách phiếu xuất hiển thị lên JTable ---
     public List<PhieuXuat> getAllPhieuXuat() {
         List<PhieuXuat> list = new ArrayList<>();
-        // Tận dụng luôn View VW_PhieuXuat bạn đã viết sẵn trong SQL, đỡ phải ghi lệnh JOIN phức tạp!
         String sql = "SELECT * FROM VW_PhieuXuat";
 
         try (Connection conn = DBConnection.getConnection();
@@ -184,16 +181,16 @@ public class PhieuXuatDAO {
     }
 
     // =========================================================
-    // XÓA PHIẾU XUẤT KHO VÀ HOÀN TRẢ TỒN KHO NGUYÊN LIỆU (TRANSACTION)
+    // XÓA PHIẾU XUẤT KHO VÀ HOÀN TRẢ TỒN KHO NGUYÊN LIỆU 
     // =========================================================
     public boolean deletePhieuXuatTransaction(String maPX) {
         Connection conn = null;
         boolean success = false;
         try {
             conn = DBConnection.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false); 
 
-            // 1. Xóa chi tiết phiếu xuất (SQL trigger TRG_XuatKho tự động hoàn trả tồn kho)
+            // 1. Xóa chi tiết phiếu xuất 
             CTPhieuXuatDAO ctDAO = new CTPhieuXuatDAO();
             ctDAO.deleteChiTietPhieuXuatByMaPX(conn, maPX);
 
@@ -204,12 +201,12 @@ public class PhieuXuatDAO {
                 pstmt.executeUpdate();
             }
 
-            conn.commit(); // Hoàn tất giao dịch
+            conn.commit(); 
             success = true;
         } catch (SQLException e) {
             if (conn != null) {
                 try {
-                    conn.rollback(); // Hoàn tác nếu lỗi
+                    conn.rollback(); 
                     System.err.println("Đã tiến hành Rollback khi xóa phiếu xuất: " + maPX);
                 } catch (SQLException ex) {
                     ex.printStackTrace();

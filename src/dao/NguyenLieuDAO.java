@@ -184,7 +184,7 @@ public class NguyenLieuDAO {
         return nl;
     }
 
-    // --- QUẢN LÝ TỒN KHO NGUYÊN LIỆU (Nhập / Xuất / Cảnh báo) ---
+    // --- QUẢN LÝ TỒN KHO NGUYÊN LIỆU  ---
     
     /**
      * Thay đổi số lượng tồn kho của nguyên liệu ngay trong một Transaction chung.
