@@ -235,44 +235,8 @@ public class LoginDialog extends JDialog {
         
         mainContentPanel.add(buttonPanel);
         mainContentPanel.add(Box.createVerticalStrut(20));
-        
-        // 5. Liên kết mở rộng
-        JPanel linksPanel = new JPanel();
-        linksPanel.setOpaque(false);
-        linksPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        btnRegister = new JButton("Đăng ký tài khoản mới");
-        btnRegister.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnRegister.setForeground(linkColor);
-        btnRegister.setBorderPainted(false);
-        btnRegister.setContentAreaFilled(false);
-        btnRegister.setFocusPainted(false);
-        btnRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnRegister.putClientProperty("FlatLaf.style", "hoverForeground: #1E90FF; pressedForeground: #0052A3;");
-        btnRegister.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { btnRegister.setForeground(hoverLink); }
-            public void mouseExited(MouseEvent e) { btnRegister.setForeground(linkColor); }
-        });
-        
-        btnForgotPassword = new JButton("Quên mật khẩu?");
-        btnForgotPassword.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnForgotPassword.setForeground(linkColor);
-        btnForgotPassword.setBorderPainted(false);
-        btnForgotPassword.setContentAreaFilled(false);
-        btnForgotPassword.setFocusPainted(false);
-        btnForgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnForgotPassword.putClientProperty("FlatLaf.style", "hoverForeground: #1E90FF; pressedForeground: #0052A3;");
-        btnForgotPassword.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { btnForgotPassword.setForeground(hoverLink); }
-            public void mouseExited(MouseEvent e) { btnForgotPassword.setForeground(linkColor); }
-        });
-        
-        linksPanel.add(btnRegister);
-        linksPanel.add(Box.createHorizontalStrut(30));
-        linksPanel.add(btnForgotPassword);
-        
-        mainContentPanel.add(linksPanel);
     }
+
     
     private void createLoadingPanel() {
         loadingPanel = new JPanel();
