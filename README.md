@@ -27,7 +27,7 @@ Xây dựng bằng **Java** + **Java Swing** + **SQL Server**
 
 ## Giới thiệu
 
-Hệ thống quản lý kho nguyên liệu giúp cửa hàng **Jollibee Phạm Ngọc Thạch** theo dõi toàn bộ quy trình nhập — xuất — tồn kho nguyên liệu. Phần mềm hỗ trợ phân quyền người dùng, cảnh báo hạn sử dụng và xuất báo cáo hao hụt theo kỳ.
+Hệ thống quản lý kho nguyên liệu giúp cửa hàng "Jollibee Phạm Ngọc Thạch" theo dõi toàn bộ quy trình nhập - xuất - tồn kho nguyên liệu. Phần mềm hỗ trợ phân quyền người dùng, cảnh báo hạn sử dụng và xuất báo cáo hao hụt theo kỳ.
 
 | Thông tin | Chi tiết |
 |---|---|
@@ -53,15 +53,15 @@ Hệ thống quản lý kho nguyên liệu giúp cửa hàng **Jollibee Phạm N
 
 ## Chức năng chính
 
-- **Tổng quan kho** — Dashboard hiển thị số liệu tổng hợp: tồn kho, nhập/xuất hôm nay, cảnh báo sắp hết hàng
-- **Quản lý Nguyên Liệu** — Thêm, sửa, xoá, tìm kiếm nguyên liệu; phân loại theo danh mục
-- **Quản lý Nhập Kho** — Tạo phiếu nhập, chọn nhà cung cấp, cập nhật số lượng tồn kho tự động
-- **Quản lý Xuất Kho** — Tạo phiếu xuất theo ca/ngày, trừ tồn kho theo thời gian thực
-- **Kiểm kê & Hạn sử dụng** — Cảnh báo nguyên liệu sắp hết hạn, hỗ trợ kiểm kê định kỳ
-- **Quản lý Nhà Cung Cấp** — Thông tin nhà cung cấp, liên kết với phiếu nhập
-- **Danh mục Nhà Kho** — Quản lý vị trí, khu vực lưu trữ trong kho
-- **Quản lý Nhân Viên** — Phân quyền theo vai trò (Quản lý / Nhân viên kho)
-- **Báo cáo Hao Hụt** — Thống kê hao hụt theo kỳ, xuất báo cáo file `.xls` và `.csv`
+- **Tổng quan kho** - Dashboard hiển thị số liệu tổng hợp: tồn kho, nhập/xuất hôm nay, cảnh báo sắp hết hàng
+- **Quản lý Nguyên Liệu** - Thêm, sửa, xoá, tìm kiếm nguyên liệu; phân loại theo danh mục
+- **Quản lý Nhập Kho** - Tạo phiếu nhập, chọn nhà cung cấp, cập nhật số lượng tồn kho tự động
+- **Quản lý Xuất Kho** - Tạo phiếu xuất theo ca/ngày, trừ tồn kho theo thời gian thực
+- **Kiểm kê & Hạn sử dụng** - Cảnh báo nguyên liệu sắp hết hạn, hỗ trợ kiểm kê định kỳ
+- **Quản lý Nhà Cung Cấp** - Thông tin nhà cung cấp, liên kết với phiếu nhập
+- **Danh mục Nhà Kho** - Quản lý vị trí, khu vực lưu trữ trong kho
+- **Quản lý Nhân Viên** - Phân quyền theo vai trò (Quản lý / Nhân viên kho)
+- **Báo cáo Hao Hụt** - Thống kê hao hụt theo kỳ, xuất báo cáo file `.xls` và `.csv`
 
 ---
 
