@@ -62,18 +62,26 @@ public class KiemKeUI extends JPanel {
         btnReload = new JButton("↺ Tải lại");
         btnReload.setBackground(new Color(45, 45, 45));
         btnReload.setForeground(Color.WHITE);
-        btnReload.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnReload.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnReload.setFocusPainted(false);
         btnReload.setBorderPainted(false);
+        btnReload.setContentAreaFilled(true);
+        btnReload.setOpaque(true);
+        btnReload.setPreferredSize(new Dimension(110, 32));
+        btnReload.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnReload.putClientProperty("JButton.buttonType", "roundRect");
         pnlActions.add(btnReload);
 
-        btnExcel = new JButton(" Xuất Excel");
+        btnExcel = new JButton("📊 Xuất Excel");
         btnExcel.setBackground(new Color(40, 167, 69)); // Xanh lá Excel
         btnExcel.setForeground(Color.WHITE);
-        btnExcel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnExcel.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnExcel.setFocusPainted(false);
         btnExcel.setBorderPainted(false);
+        btnExcel.setContentAreaFilled(true);
+        btnExcel.setOpaque(true);
+        btnExcel.setPreferredSize(new Dimension(130, 32));
+        btnExcel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnExcel.putClientProperty("JButton.buttonType", "roundRect");
         pnlActions.add(btnExcel);
 
@@ -160,12 +168,44 @@ public class KiemKeUI extends JPanel {
 
         // --- 3. ACTIONS WIRING ---
         cbFilterTrangThai.addActionListener(e -> applyFilter());
-        btnReload.addActionListener(e -> refreshData());
+        btnReload.addActionListener(e -> performReload());
         btnExcel.addActionListener(e -> performExportExcel());
     }
 
+    /**
+     * Tải lại toàn bộ dữ liệu từ DB và reset bộ lọc về "Tất cả"
+     */
     public void refreshData() {
         fullList = reportDAO.getInventoryReport();
+        applyFilter();
+    }
+
+    private void performReload() {
+        // Xóa tất cả listener tạm thời để tránh trigger applyFilter() trước khi fullList được cập nhật
+        java.awt.event.ActionListener[] listeners = cbFilterTrangThai.getActionListeners();
+        for (java.awt.event.ActionListener al : listeners) {
+            cbFilterTrangThai.removeActionListener(al);
+        }
+
+        // Reset bộ lọc về "Tất cả"
+        cbFilterTrangThai.setSelectedIndex(0);
+
+        // Khôi phục listener
+        for (java.awt.event.ActionListener al : listeners) {
+            cbFilterTrangThai.addActionListener(al);
+        }
+
+        // Tải lại dữ liệu từ DB
+        fullList = reportDAO.getInventoryReport();
+
+        if (fullList == null || fullList.isEmpty()) {
+            tableModel.setRowCount(0);
+            JOptionPane.showMessageDialog(this,
+                "Không tìm thấy dữ liệu tồn kho hoặc lỗi kết nối cơ sở dữ liệu.",
+                "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         applyFilter();
     }
 

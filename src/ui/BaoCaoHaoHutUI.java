@@ -148,9 +148,9 @@ public class BaoCaoHaoHutUI extends JPanel {
         form.setBackground(Color.WHITE);
         
         TitledBorder formBorder = BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(jollibeeRed, 2), "Ghi nhận Hao Hụt Thực Tế"
+            BorderFactory.createLineBorder(jollibeeRed, 2), " 📋  Ghi nhận Hao Hụt Thực Tế "
         );
-        formBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
+        formBorder.setTitleFont(new Font("SansSerif", Font.BOLD, 13));
         formBorder.setTitleColor(jollibeeRed);
         form.setBorder(formBorder);
 
@@ -162,22 +162,28 @@ public class BaoCaoHaoHutUI extends JPanel {
         txtMaHH = new JTextField();
         txtMaHH.setEditable(false);
         txtMaHH.setBackground(new Color(235, 235, 230));
+        txtMaHH.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
         cbNguyenLieu = new JComboBox<>();
+        cbNguyenLieu.setFont(new Font("SansSerif", Font.PLAIN, 13));
         
         txtSystemQty = new JTextField("0");
         txtSystemQty.setEditable(false);
         txtSystemQty.setBackground(new Color(235, 235, 230));
+        txtSystemQty.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
         txtPhysicalQty = new JTextField();
+        txtPhysicalQty.setFont(new Font("SansSerif", Font.PLAIN, 13));
         
         txtDiscrepancyQty = new JTextField("0");
         txtDiscrepancyQty.setEditable(false);
         txtDiscrepancyQty.setBackground(new Color(235, 235, 230));
+        txtDiscrepancyQty.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
         txtPercentage = new JTextField("0.00 %");
         txtPercentage.setEditable(false);
         txtPercentage.setBackground(new Color(235, 235, 230));
+        txtPercentage.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
         cbLyDo = new JComboBox<>(new String[]{
             "Hỏng hóc / Biến chất",
@@ -186,12 +192,14 @@ public class BaoCaoHaoHutUI extends JPanel {
             "Hết hạn sử dụng hư hỏng",
             "Lý do khác"
         });
+        cbLyDo.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
         txtNgayGhiNhan = new JTextField();
         txtNgayGhiNhan.setEditable(false);
         txtNgayGhiNhan.setBackground(new Color(235, 235, 230));
+        txtNgayGhiNhan.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        Dimension fieldSize = new Dimension(200, 30);
+        Dimension fieldSize = new Dimension(210, 32);
         txtMaHH.setPreferredSize(fieldSize);
         cbNguyenLieu.setPreferredSize(fieldSize);
         txtSystemQty.setPreferredSize(fieldSize);
@@ -201,30 +209,15 @@ public class BaoCaoHaoHutUI extends JPanel {
         cbLyDo.setPreferredSize(fieldSize);
         txtNgayGhiNhan.setPreferredSize(fieldSize);
 
-        // Grid Mapping
-        gbc.gridx = 0; gbc.gridy = 0; form.add(new JLabel("Mã báo cáo:"), gbc);
-        gbc.gridx = 1; form.add(txtMaHH, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 1; form.add(new JLabel("Nguyên liệu:"), gbc);
-        gbc.gridx = 1; form.add(cbNguyenLieu, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 2; form.add(new JLabel("Tồn hệ thống:"), gbc);
-        gbc.gridx = 1; form.add(txtSystemQty, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 3; form.add(new JLabel("Tồn thực tế:"), gbc);
-        gbc.gridx = 1; form.add(txtPhysicalQty, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 4; form.add(new JLabel("Hao hụt (Lượng):"), gbc);
-        gbc.gridx = 1; form.add(txtDiscrepancyQty, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 5; form.add(new JLabel("Biên độ (%):"), gbc);
-        gbc.gridx = 1; form.add(txtPercentage, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 6; form.add(new JLabel("Lý do hao hụt:"), gbc);
-        gbc.gridx = 1; form.add(cbLyDo, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 7; form.add(new JLabel("Ngày ghi nhận:"), gbc);
-        gbc.gridx = 1; form.add(txtNgayGhiNhan, gbc);
+        // Grid Mapping using addField helper
+        addField(form, "Mã báo cáo:", txtMaHH, 0, gbc);
+        addField(form, "Nguyên liệu:", cbNguyenLieu, 1, gbc);
+        addField(form, "Tồn hệ thống:", txtSystemQty, 2, gbc);
+        addField(form, "Tồn thực tế:", txtPhysicalQty, 3, gbc);
+        addField(form, "Hao hụt (Lượng):", txtDiscrepancyQty, 4, gbc);
+        addField(form, "Biên độ (%):", txtPercentage, 5, gbc);
+        addField(form, "Lý do hao hụt:", cbLyDo, 6, gbc);
+        addField(form, "Ngày ghi nhận:", txtNgayGhiNhan, 7, gbc);
 
         panel.add(form, BorderLayout.CENTER);
 
@@ -232,8 +225,8 @@ public class BaoCaoHaoHutUI extends JPanel {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 10));
         btnPanel.setOpaque(false);
 
-        btnAdd = new JButton("Lưu báo cáo");
-        btnClear = new JButton(" Nhập mới");
+        btnAdd = new JButton("✓ Lưu báo cáo");
+        btnClear = new JButton("🔄 Nhập mới");
         btnExportExcel = new JButton("📊 Xuất Excel");
 
         styleButton(btnAdd, new Color(40, 167, 69)); // Xanh lá
@@ -268,10 +261,22 @@ public class BaoCaoHaoHutUI extends JPanel {
         return panel;
     }
 
+    private void addField(JPanel p, String label, Component field, int row, GridBagConstraints gbc) {
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lbl.setForeground(darkCharcoal);
+        p.add(lbl, gbc);
+
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        p.add(field, gbc);
+    }
+
     private void styleButton(JButton b, Color bg) {
         b.setBackground(bg);
         b.setForeground(Color.WHITE);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        // b.setFont(new Font("Segoe UI", Font.BOLD, 12));
         b.setFocusPainted(false);
         b.setBorderPainted(false);
         b.putClientProperty("JButton.buttonType", "roundRect");

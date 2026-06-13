@@ -45,29 +45,42 @@ public class NhaCungCapUI extends JPanel {
         setBackground(creamWhite);
 
         // ==========================================
-        // 1. TOP PANEL: THANH TÌM KIẾM
+        // 1. TOP PANEL: THANH TÌM KIẾM (đồng nhất với NguyenLieuUI)
         // ==========================================
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        searchPanel.setOpaque(false);
-        
-        JLabel lblSearch = new JLabel("Tìm kiếm theo:");
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        searchPanel.setBackground(new Color(245, 245, 245));
+        searchPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, jollibeeRed),
+            BorderFactory.createEmptyBorder(4, 6, 4, 6)
+        ));
+
+        JLabel lblSearch = new JLabel("\uD83D\uDD0D  Tìm kiếm theo:");
         lblSearch.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblSearch.setForeground(darkGray);
         searchPanel.add(lblSearch);
 
         cbSearchType = new JComboBox<>(new String[]{"Mã NCC", "Tên NCC"});
         cbSearchType.setPreferredSize(new Dimension(110, 32));
+        cbSearchType.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        cbSearchType.setBackground(Color.WHITE);
         searchPanel.add(cbSearchType);
 
-        txtSearch = new JTextField(22);
-        txtSearch.setPreferredSize(new Dimension(200, 32));
+        txtSearch = new JTextField();
+        txtSearch.setPreferredSize(new Dimension(230, 32));
+        txtSearch.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtSearch.addActionListener(e -> performSearch());
         searchPanel.add(txtSearch);
 
-        btnSearch = new JButton("Tìm kiếm");
-        styleButton(btnSearch, jollibeeRed, Color.WHITE);
-        btnSearch.setPreferredSize(new Dimension(100, 32));
-        searchPanel.add(btnSearch);
-        
+        btnSearch = createStyledButton("\uD83D\uDD0D Tìm kiếm", jollibeeRed, Color.WHITE);
+        btnSearch.setPreferredSize(new Dimension(120, 32));
         btnSearch.addActionListener(e -> performSearch());
+        searchPanel.add(btnSearch);
+
+        JButton btnReload = createStyledButton("\u21ba Tải lại", darkGray, Color.WHITE);
+        btnReload.setPreferredSize(new Dimension(95, 32));
+        btnReload.addActionListener(e -> { txtSearch.setText(""); loadNhaCCTable(); });
+        searchPanel.add(btnReload);
+
         add(searchPanel, BorderLayout.NORTH);
 
         // ==========================================
@@ -142,32 +155,38 @@ public class NhaCungCapUI extends JPanel {
     }
 
     private JPanel createDetailPanel() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setPreferredSize(new Dimension(380, 0)); // Tạo kích thước khung bên phải chuẩn chỉnh
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
+        panel.setPreferredSize(new Dimension(380, 0));
         panel.setOpaque(false);
 
+        // ── FORM NHẬP LIỆU ──────────────────────────────────────────────────────────────────
         JPanel form = new JPanel(new GridBagLayout());
-        form.setOpaque(false);
-        
+        form.setBackground(Color.WHITE);
+
         TitledBorder formBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(jollibeeRed, 1), "Thông tin chi tiết Nhà cung cấp"
+            BorderFactory.createLineBorder(jollibeeRed, 2),
+            " 🏢  Thông tin chi tiết Nhà cung cấp "
         );
-        formBorder.setTitleFont(new Font("SansSerif", Font.BOLD, 14));
+        formBorder.setTitleFont(new Font("SansSerif", Font.BOLD, 13));
         formBorder.setTitleColor(jollibeeRed);
         form.setBorder(formBorder);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 10, 8, 10);
+        gbc.insets = new Insets(7, 12, 7, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        txtMaNCC = new JTextField(); txtMaNCC.setEditable(false); txtMaNCC.setBackground(new Color(230, 230, 230));
-        txtTenNCC = new JTextField();
-        txtDiachi = new JTextField();
-        txtSDT = new JTextField();
-        txtEmail = new JTextField();
+        txtMaNCC = new JTextField();
+        txtMaNCC.setEditable(false);
+        txtMaNCC.setBackground(new Color(235, 235, 230));
+        txtMaNCC.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        Dimension fieldSize = new Dimension(200, 30);
+        txtTenNCC = new JTextField(); txtTenNCC.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtDiachi  = new JTextField(); txtDiachi.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtSDT    = new JTextField(); txtSDT.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtEmail  = new JTextField(); txtEmail.setFont(new Font("SansSerif", Font.PLAIN, 13));
+
+        Dimension fieldSize = new Dimension(200, 32);
         txtMaNCC.setPreferredSize(fieldSize); txtTenNCC.setPreferredSize(fieldSize);
         txtDiachi.setPreferredSize(fieldSize); txtSDT.setPreferredSize(fieldSize);
         txtEmail.setPreferredSize(fieldSize);
@@ -180,44 +199,65 @@ public class NhaCungCapUI extends JPanel {
 
         panel.add(form, BorderLayout.CENTER);
 
-        // Khối các nút chức năng bên dưới form
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 10));
-        btnPanel.setOpaque(false);
-        btnAdd = new JButton("➕  Thêm");
-        btnUpdate = new JButton("✏  Cập nhật");
-        btnDelete = new JButton("🗑  Xóa");
-        btnClear = new JButton("🔄  Làm mới");
+        // ── PANEL NÚT CHỦC NĂNG (GridLayout 2x2 giống NguyenLieuUI) ────────────────────
+        JPanel btnPanel = new JPanel(new GridLayout(2, 2, 8, 8));
+        btnPanel.setBackground(new Color(245, 245, 240));
+        btnPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
 
-        styleButton(btnAdd, new Color(34, 139, 34), Color.WHITE); // Xanh lá
-        styleButton(btnUpdate, new Color(30, 100, 200), Color.WHITE); // Xanh dương
-        styleButton(btnDelete, new Color(227, 29, 43), Color.WHITE); // Đỏ thương hiệu
-        styleButton(btnClear, new Color(50, 50, 50), Color.WHITE); // Xám đậm
+        btnAdd    = createStyledButton("➕  Thêm",      new Color(34, 139, 34),  Color.WHITE);
+        btnUpdate = createStyledButton("✏  Cập nhật",  new Color(30, 100, 200), Color.WHITE);
+        btnDelete = createStyledButton("🗑  Xóa",       new Color(227, 29, 43),  Color.WHITE);
+        btnClear  = createStyledButton("🔄  Nhập mới",  new Color(50, 50, 50),   Color.WHITE);
 
-        Dimension btnSize = new Dimension(85, 35);
-        btnAdd.setPreferredSize(btnSize); btnUpdate.setPreferredSize(btnSize);
-        btnDelete.setPreferredSize(btnSize); btnClear.setPreferredSize(btnSize);
+        btnPanel.add(btnAdd);
+        btnPanel.add(btnUpdate);
+        btnPanel.add(btnDelete);
+        btnPanel.add(btnClear);
+        panel.add(btnPanel, BorderLayout.SOUTH);
 
         btnAdd.addActionListener(e -> addNhaCungCap());
         btnUpdate.addActionListener(e -> updateNhaCungCap());
         btnDelete.addActionListener(e -> deleteNhaCungCap());
         btnClear.addActionListener(e -> clearForm());
 
-        btnPanel.add(btnAdd); btnPanel.add(btnUpdate); btnPanel.add(btnDelete); btnPanel.add(btnClear);
-        panel.add(btnPanel, BorderLayout.SOUTH);
-
         return panel;
     }
 
     private void addField(JPanel p, String label, JTextField field, int row, GridBagConstraints gbc) {
-        gbc.gridx = 0; gbc.gridy = row; p.add(new JLabel(label), gbc);
-        gbc.gridx = 1; p.add(field, gbc);
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lbl.setForeground(darkGray);
+        p.add(lbl, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        p.add(field, gbc);
     }
 
     private void styleButton(JButton b, Color bg, Color fg) {
-        b.setBackground(bg); b.setForeground(fg); b.setFocusPainted(false);
+        b.setBackground(bg);
+        b.setForeground(fg);
+        b.setFocusPainted(false);
         b.setBorderPainted(false);
-        b.setFont(new Font("SansSerif", Font.BOLD, 12));
+        b.setContentAreaFilled(true);
+        b.setOpaque(true);
+        b.setFont(new Font("SansSerif", Font.BOLD, 13));
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.putClientProperty("JButton.buttonType", "roundRect");
+    }
+
+    private JButton createStyledButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(true);
+        btn.setOpaque(true);
+        btn.setPreferredSize(new Dimension(130, 38));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.putClientProperty("JButton.buttonType", "roundRect");
+        return btn;
     }
 
     // --- Các hàm Logic chính ---
@@ -365,5 +405,9 @@ public class NhaCungCapUI extends JPanel {
         }
         // Tự động giãn cột bảng sau khi tìm kiếm kết quả
         util.UIHelper.autoResizeColumnWidths(nhaCungCapTable);
+    }
+
+    public void refreshData() {
+        loadNhaCCTable();
     }
 }

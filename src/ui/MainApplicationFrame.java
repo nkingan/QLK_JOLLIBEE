@@ -251,20 +251,27 @@ public class MainApplicationFrame extends JFrame {
                           highlightMenuButton(menuName);
                           
                           // Tự động làm mới dữ liệu lưới bảng khi nhân viên thay đổi Tab làm việc
-                          if (menuName.equals("Quản lý Nhập kho")) {
-                               if (nhapKhoUI != null) nhapKhoUI.refreshData();
-                          } else if (menuName.equals("Quản lý Xuất kho")) {
-                               XuatKhoUI p = (XuatKhoUI) uiPanels.get("Quản lý Xuất kho");
-                               if (p != null) p.refreshData();
-                          } else if (menuName.equals("Kiểm kê & Hạn sử dụng")) {
-                               KiemKeUI p = (KiemKeUI) uiPanels.get("Kiểm kê & Hạn sử dụng");
-                               if (p != null) p.refreshData();
-                          } else if (menuName.equals("Tổng quan kho")) {
-                               TongQuanKhoUI p = (TongQuanKhoUI) uiPanels.get("Tổng quan kho");
-                               if (p != null) p.refreshData();
-                          } else if (menuName.equals("Báo cáo hao hụt")) {
-                               BaoCaoHaoHutUI p = (BaoCaoHaoHutUI) uiPanels.get("Báo cáo hao hụt");
-                               if (p != null) p.refreshData();
+                          JPanel activePanel = uiPanels.get(menuName);
+                          if (activePanel != null) {
+                               if (activePanel instanceof NhapKhoUI) {
+                                   ((NhapKhoUI) activePanel).refreshData();
+                               } else if (activePanel instanceof XuatKhoUI) {
+                                   ((XuatKhoUI) activePanel).refreshData();
+                               } else if (activePanel instanceof KiemKeUI) {
+                                   ((KiemKeUI) activePanel).refreshData();
+                               } else if (activePanel instanceof TongQuanKhoUI) {
+                                   ((TongQuanKhoUI) activePanel).refreshData();
+                               } else if (activePanel instanceof BaoCaoHaoHutUI) {
+                                   ((BaoCaoHaoHutUI) activePanel).refreshData();
+                               } else if (activePanel instanceof NguyenLieuAll) {
+                                   ((NguyenLieuAll) activePanel).refreshData();
+                               } else if (activePanel instanceof NhaCungCapUI) {
+                                   ((NhaCungCapUI) activePanel).refreshData();
+                               } else if (activePanel instanceof NhaKhoUI) {
+                                   ((NhaKhoUI) activePanel).refreshData();
+                               } else if (activePanel instanceof NhanVienUI) {
+                                   ((NhanVienUI) activePanel).refreshData();
+                               }
                           }
                      } else {
                           JOptionPane.showMessageDialog(this, "Tài khoản của bạn không có thẩm quyền kiểm soát phân hệ này!", "Cảnh báo phân quyền", JOptionPane.WARNING_MESSAGE);

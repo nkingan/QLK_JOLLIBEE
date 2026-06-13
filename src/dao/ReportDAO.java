@@ -149,17 +149,13 @@ public class ReportDAO {
     }
 
     public double getTotalInventoryValue() {
-        String sql = "SELECT SUM(CAST(Gianhap AS DECIMAL(18,2)) * SoLuong) FROM NguyenLieu";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getDouble(1);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        NguyenLieuDAO nlDAO = new NguyenLieuDAO();
+        List<NguyenLieu> list = nlDAO.getAllNguyenLieu();
+        double totalValue = 0;
+        for (NguyenLieu nl : list) {
+            totalValue += nl.getThanhtien();
         }
-        return 0;
+        return totalValue;
     }
 
     public int getTodayImportReceiptsCount() {
@@ -212,6 +208,7 @@ public class ReportDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, threshold);
             try (ResultSet rs = pstmt.executeQuery()) {
+                NguyenLieuDAO nlDAO = new NguyenLieuDAO();
                 while (rs.next()) {
                     NguyenLieu nl = new NguyenLieu();
                     nl.setMaNL(rs.getString("MaNL"));
@@ -220,6 +217,9 @@ public class ReportDAO {
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setMaKho(rs.getString("MaKho"));
                     nl.setGianhap(rs.getInt("Gianhap"));
+
+                    nlDAO.calculateBatchValueAndPrice(conn, nl);
+
                     list.add(nl);
                 }
             }

@@ -207,7 +207,7 @@ public class LoginDialog extends JDialog {
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.setMargin(new Insets(10, 25, 10, 25));
         btnLogin.putClientProperty("JButton.buttonType", "roundRect");
-        btnLogin.putClientProperty("FlatLaf.style", "background: #E01F2A; foreground: #FFFFFF; hoverBackground: #2E8B57; pressedBackground: #1E7B1E; arc: 8;");
+        btnLogin.putClientProperty("FlatLaf.style", "background: #E01F2A; foreground: #FFFFFF; hoverBackground: #d45b5b; pressedBackground: #d45b5b; arc: 8;");
         btnLogin.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btnLogin.setBackground(new Color(46, 139, 87)); }
             public void mouseExited(MouseEvent e) { btnLogin.setBackground(new Color(224, 31, 42)); }

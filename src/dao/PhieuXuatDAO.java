@@ -193,22 +193,11 @@ public class PhieuXuatDAO {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false); // Bắt đầu transaction
 
-            // 1. Lấy danh sách nguyên liệu chi tiết để hoàn trả tồn kho nguyên liệu (Cộng lại lượng đã xuất)
+            // 1. Xóa chi tiết phiếu xuất (SQL trigger TRG_XuatKho tự động hoàn trả tồn kho)
             CTPhieuXuatDAO ctDAO = new CTPhieuXuatDAO();
-            List<CTPhieuXuat> listCT = ctDAO.getChiTietPhieuXuatByMaPX(conn, maPX);
-
-            if (listCT != null && !listCT.isEmpty()) {
-                NguyenLieuDAO nlDAO = new NguyenLieuDAO();
-                for (CTPhieuXuat ct : listCT) {
-                    // Cộng lại số lượng tồn kho nguyên liệu đã xuất
-                    nlDAO.updateStockQuantity(conn, ct.getMaNL(), ct.getSoLuong());
-                }
-            }
-
-            // 2. Xóa chi tiết phiếu xuất
             ctDAO.deleteChiTietPhieuXuatByMaPX(conn, maPX);
 
-            // 3. Xóa header phiếu xuất
+            // 2. Xóa header phiếu xuất
             String sqlHeader = "DELETE FROM PhieuXuat WHERE MaPX = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(sqlHeader)) {
                 pstmt.setString(1, maPX);

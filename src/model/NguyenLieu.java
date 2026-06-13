@@ -9,6 +9,7 @@ public class NguyenLieu {
     private int gianhap;     // Giá nhập vào trên một đơn vị tính
     private int soluong;     // Số lượng tồn kho hiện tại trong hệ thống
     private String donvi;    // Đơn vị tính (VD: Kg, Lít, Chai, Bao...)
+    private int thanhtien;   // Tổng thành tiền tính dựa trên các lô nhập kho thực tế (FIFO)
 
     // 1. Hàm khởi tạo không tham số
     public NguyenLieu() {
@@ -23,6 +24,7 @@ public class NguyenLieu {
         this.soluong = soluong;
         this.maKho = maKho; // Tạm thời map mã kho vào biến maKho nếu bạn muốn tận dụng trường này
         this.gianhap = 0;    // Giá nhập mặc định bằng 0
+        this.thanhtien = 0;
     }
 
     // 3. Hàm khởi tạo đầy đủ 6 tham số (không có ảnh)
@@ -33,6 +35,7 @@ public class NguyenLieu {
         this.gianhap = gianhap;
         this.soluong = soluong;
         this.donvi = donvi;
+        this.thanhtien = 0;
     }
    
     public String getMaNL() {
@@ -84,6 +87,14 @@ public class NguyenLieu {
         this.donvi = donvi;
     }
 
+    public int getThanhtien() {
+        return thanhtien;
+    }
+
+    public void setThanhtien(int thanhtien) {
+        this.thanhtien = thanhtien;
+    }
+
     @Override
     public String toString() {
         return "NguyenLieu{" +
@@ -93,6 +104,7 @@ public class NguyenLieu {
                 ", gianhap=" + gianhap +
                 ", soluong=" + soluong +
                 ", donvi='" + donvi + '\'' +
+                ", thanhtien=" + thanhtien +
                 '}';
     }
 }

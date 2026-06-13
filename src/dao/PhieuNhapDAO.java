@@ -159,24 +159,10 @@ public class PhieuNhapDAO {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false); // Bắt đầu transaction
 
-            // 1. Lấy danh sách nguyên liệu chi tiết để trừ tồn kho tương ứng
-            List<ChiTietPhieuNhap> listCT = chiTietPhieuNhapDAO.getChiTietPhieuNhapByMaPN(maPN);
-            if (listCT == null) {
-                listCT = chiTietPhieuNhapDAO.getChiTietByMaPN(maPN);
-            }
-
-            if (listCT != null && !listCT.isEmpty()) {
-                NguyenLieuDAO nlDAO = new NguyenLieuDAO();
-                for (ChiTietPhieuNhap ct : listCT) {
-                    // Trừ số lượng tồn kho nguyên liệu đã nhập
-                    nlDAO.updateStockQuantity(conn, ct.getMaNL(), -ct.getSoLuong());
-                }
-            }
-
-            // 2. Xóa chi tiết phiếu nhập
+            // 1. Xóa chi tiết phiếu nhập (SQL trigger TRG_NhapKho tự động hoàn trả tồn kho)
             chiTietPhieuNhapDAO.deleteChiTietPhieuNhapByMaPN(conn, maPN);
 
-            // 3. Xóa header phiếu nhập
+            // 2. Xóa header phiếu nhập
             String sqlHeader = "DELETE FROM PhieuNhap WHERE MaPN = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(sqlHeader)) {
                 pstmt.setString(1, maPN);

@@ -118,34 +118,36 @@ public class NguyenLieuDAO {
      * @return Danh sách chứa các đối tượng NguyenLieu.
      */
     public List<NguyenLieu> getAllNguyenLieu() {
-    List<NguyenLieu> danhSachNguyenLieu = new ArrayList<>();
+        List<NguyenLieu> danhSachNguyenLieu = new ArrayList<>();
 
-    String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap FROM NguyenLieu";
+        String sql = "SELECT MaNL, TenNL, MaKho, SoLuong, DonViTinh, Gianhap FROM NguyenLieu";
 
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql);
-         ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
-        while (rs.next()) {
-            NguyenLieu nl = new NguyenLieu();
+            while (rs.next()) {
+                NguyenLieu nl = new NguyenLieu();
 
-            nl.setMaNL(rs.getString("MaNL"));
-            nl.setTenNL(rs.getString("TenNL"));
-            nl.setMaKho(rs.getString("MaKho"));
-            nl.setSoluong(rs.getInt("SoLuong"));
-            nl.setDonvi(rs.getString("DonViTinh"));
-            nl.setGianhap(rs.getInt("Gianhap"));
+                nl.setMaNL(rs.getString("MaNL"));
+                nl.setTenNL(rs.getString("TenNL"));
+                nl.setMaKho(rs.getString("MaKho"));
+                nl.setSoluong(rs.getInt("SoLuong"));
+                nl.setDonvi(rs.getString("DonViTinh"));
+                nl.setGianhap(rs.getInt("Gianhap"));
 
-            danhSachNguyenLieu.add(nl);
+                calculateBatchValueAndPrice(conn, nl);
+
+                danhSachNguyenLieu.add(nl);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi tải danh sách nguyên liệu:");
+            e.printStackTrace();
         }
 
-    } catch (SQLException e) {
-        System.err.println("Lỗi khi tải danh sách nguyên liệu:");
-        e.printStackTrace();
+        return danhSachNguyenLieu;
     }
-
-    return danhSachNguyenLieu;
-}
 
     /**
      * Tìm kiếm thông tin chi tiết của một nguyên liệu cụ thể bằng Mã Nguyên Liệu.
@@ -171,6 +173,8 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
+
+                    calculateBatchValueAndPrice(conn, nl);
                 }
             }
         } catch (SQLException e) {
@@ -247,6 +251,9 @@ public class NguyenLieuDAO {
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
                     nl.setMaKho(rs.getString("MaKho"));
+
+                    calculateBatchValueAndPrice(conn, nl);
+
                     lowStockList.add(nl);
                 }
             }
@@ -305,6 +312,8 @@ public class NguyenLieuDAO {
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
 
+                    calculateBatchValueAndPrice(conn, nl);
+
                     nguyenLieuList.add(nl);
                 }
             }
@@ -337,6 +346,9 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
+
+                    calculateBatchValueAndPrice(conn, nl);
+
                     danhSach.add(nl);
                 }
             }
@@ -368,6 +380,9 @@ public class NguyenLieuDAO {
                     nl.setSoluong(rs.getInt("SoLuong"));
                     nl.setDonvi(rs.getString("DonViTinh"));
                     nl.setGianhap(rs.getInt("Gianhap"));
+
+                    calculateBatchValueAndPrice(conn, nl);
+
                     nguyenLieuList.add(nl);
                 }
             }
@@ -442,5 +457,73 @@ public class NguyenLieuDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    void calculateBatchValueAndPrice(Connection conn, NguyenLieu nl) {
+        int soLuong = nl.getSoluong();
+        int defaultGia = nl.getGianhap(); // which is stored in db
+        
+        String sqlNhap = "SELECT SUM(ctpn.SoLuong * ctpn.DonGia) FROM ChiTietPhieuNhap ctpn WHERE ctpn.MaNL = ?";
+        String sqlXuat = "SELECT SUM(ctpx.SoLuong * ctpx.DonGia) FROM ChiTietPhieuXuat ctpx WHERE ctpx.MaNL = ?";
+        
+        double totalNhap = 0;
+        double totalXuat = 0;
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlNhap)) {
+            pstmt.setString(1, nl.getMaNL());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    totalNhap = rs.getDouble(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlXuat)) {
+            pstmt.setString(1, nl.getMaNL());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    totalXuat = rs.getDouble(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        double totalValue = totalNhap - totalXuat;
+        if (totalValue < 0 || soLuong <= 0) {
+            totalValue = 0;
+        }
+        
+        int exactTotalValue = (int) Math.round(totalValue);
+        nl.setThanhtien(exactTotalValue);
+        
+        if (soLuong > 0) {
+            nl.setGianhap((int) Math.round(totalValue / soLuong));
+        } else {
+            // Get latest import price as unit price if stock is 0
+            int latestPrice = getLatestImportPrice(conn, nl.getMaNL(), defaultGia);
+            nl.setGianhap(latestPrice);
+        }
+    }
+
+    private int getLatestImportPrice(Connection conn, String maNL, int defaultGia) {
+        String sql = "SELECT TOP 1 ctpn.DonGia " +
+                     "FROM ChiTietPhieuNhap ctpn " +
+                     "INNER JOIN PhieuNhap pn ON ctpn.MaPN = pn.MaPN " +
+                     "WHERE ctpn.MaNL = ? " +
+                     "ORDER BY pn.NgayNhap DESC, ctpn.MaCTPN DESC";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, maNL);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("DonGia");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return defaultGia;
     }
 }

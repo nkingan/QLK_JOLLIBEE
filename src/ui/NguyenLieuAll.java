@@ -368,4 +368,12 @@ public class NguyenLieuAll extends JPanel { // Đổi thành JPanel để nhúng
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
+
+    public void refreshData() {
+        if (this.nguyenLieuUI != null) {
+            this.nguyenLieuUI.loadTableData();
+        } else {
+            loadAndDisplayIngredients();
+        }
+    }
 }

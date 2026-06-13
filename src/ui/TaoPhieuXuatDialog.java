@@ -3,6 +3,10 @@ package ui;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,6 +36,7 @@ public class TaoPhieuXuatDialog extends JDialog {
     private JButton btnAddRow;
     private JButton btnDeleteRow;
     private JButton btnSave;
+    private JButton btnExcel;
     private JTable tableChiTiet;
     private DefaultTableModel tableModel;
     private JLabel lblTongTien;
@@ -238,9 +243,18 @@ public class TaoPhieuXuatDialog extends JDialog {
         btnSave.setBorderPainted(false);
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
 
+        btnExcel = new JButton("📊  Xuất Excel");
+        btnExcel.setBackground(new Color(34, 139, 34));
+        btnExcel.setForeground(Color.WHITE);
+        btnExcel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btnExcel.setFocusPainted(false);
+        btnExcel.setBorderPainted(false);
+        btnExcel.putClientProperty("JButton.buttonType", "roundRect");
+
         pnlButtons.add(btnAddRow);
         pnlButtons.add(btnDeleteRow);
         pnlButtons.add(btnSave);
+        pnlButtons.add(btnExcel);
         pnlSouth.add(pnlButtons, BorderLayout.EAST);
 
         add(pnlSouth, BorderLayout.SOUTH);
@@ -248,6 +262,7 @@ public class TaoPhieuXuatDialog extends JDialog {
         btnAddRow.addActionListener(e -> performAddMaterialRow());
         btnDeleteRow.addActionListener(e -> performDeleteSelectedRow());
         btnSave.addActionListener(e -> performSaveToDatabase());
+        btnExcel.addActionListener(e -> exportExcel());
         
         // Auto load đơn giá từ nguyên liệu được chọn
         cbNguyenLieu.addActionListener(e -> {
@@ -269,7 +284,7 @@ public class TaoPhieuXuatDialog extends JDialog {
         List<NguyenLieu> nlList = nguyenLieuDAO.getAllNguyenLieu();
         if (nlList != null) {
             for (NguyenLieu nl : nlList) {
-                cbNguyenLieu.addItem(nl.getMaNL() + " | " + nl.getTenNL());
+                cbNguyenLieu.addItem(nl.getMaNL() + " | " + nl.getTenNL() + " (Tồn: " + nl.getSoluong() + ")");
             }
         }
 
@@ -377,6 +392,9 @@ public class TaoPhieuXuatDialog extends JDialog {
             String selectedNL = (String) cbNguyenLieu.getSelectedItem();
             String maNL = selectedNL.split(" \\| ")[0];
             String tenNL = selectedNL.split(" \\| ")[1];
+            if (tenNL.contains(" (Tồn:")) {
+                tenNL = tenNL.substring(0, tenNL.indexOf(" (Tồn:"));
+            }
             
             int soLuongXuat = Integer.parseInt(txtSoLuong.getText().trim());
             int donGiaXuat = Integer.parseInt(txtDonGia.getText().trim());
@@ -526,29 +544,94 @@ public class TaoPhieuXuatDialog extends JDialog {
         boolean result = phieuXuatDAO.savePhieuXuatTransaction(px, listCT);
         
         if (result) {
-            // Cập nhật tồn kho thực tế trong NguyenLieu table
-            // SQL Server Trigger TRG_XuatKho tự động trừ kho nguyên liệu (NguyenLieu.SoLuong)
-            // và tự động cập nhật tổng tiền bảng PhieuXuat. 
-            // Ta chỉ cần cập nhật tồn kho phía Java thủ công nếu Trigger không chạy, 
-            // nhưng do DB đã được viết Trigger, ta hoàn toàn yên tâm. 
-            // Ta thực hiện cập nhật bổ sung qua NguyenLieuDAO để phòng xa:
-            try (Connection conn = util.DBConnection.getConnection()) {
-                if (conn != null) {
-                    conn.setAutoCommit(false);
-                    NguyenLieuDAO nlDAO = new NguyenLieuDAO();
-                    for (CTPhieuXuat ct : listCT) {
-                        nlDAO.updateStockQuantity(conn, ct.getMaNL(), -ct.getSoLuong());
-                    }
-                    conn.commit();
-                }
-            } catch (Exception ex) {
-                System.err.println("Cảnh báo cập nhật tồn kho phụ: " + ex.getMessage());
-            }
-
             JOptionPane.showMessageDialog(this, "Ghi nhận phiếu xuất kho thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Lưu phiếu xuất thất bại! Kiểm tra số lượng tồn kho trong hệ thống.", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void exportExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Lưu Chi Tiết Phiếu Xuất");
+        fileChooser.setSelectedFile(
+            new File("ChiTietPhieuXuat_" + txtMaPX.getText() + ".xls")
+        );
+
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            StringBuilder html = new StringBuilder();
+
+            html.append("<html><head><meta charset='UTF-8'></head><body>");
+            html.append("<h2 style='color:#E01F2A;text-align:center;'>");
+            html.append("CHI TIẾT PHIẾU XUẤT KHO JOLLIBEE");
+            html.append("</h2>");
+
+            html.append("<p><b>Mã phiếu xuất:</b> ")
+                .append(txtMaPX.getText())
+                .append("</p>");
+
+            html.append("<p><b>Ngày xuất:</b> ")
+                .append(txtNgayXuat.getText())
+                .append("</p>");
+
+            html.append("<p><b>Nhân viên lập:</b> ")
+                .append(cbNhanVien.getSelectedItem() != null ? cbNhanVien.getSelectedItem().toString() : "")
+                .append("</p>");
+
+            html.append("<table border='1' ")
+                .append("style='border-collapse:collapse;width:100%;font-family:Arial;'>");
+
+            html.append("<tr style='background:#B41E2D;color:white;'>");
+
+            for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                html.append("<th>")
+                    .append(tableModel.getColumnName(c))
+                    .append("</th>");
+            }
+            html.append("</tr>");
+
+            for (int r = 0; r < tableModel.getRowCount(); r++) {
+                html.append("<tr>");
+                for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                    Object value = tableModel.getValueAt(r, c);
+                    String align = "left";
+                    if (c == 0 || c == 1 || c == 3) {
+                        align = "center";
+                    } else if (c == 4 || c == 5) {
+                        align = "right";
+                    }
+                    html.append("<td style='text-align:")
+                        .append(align)
+                        .append(";'>")
+                        .append(value == null ? "" : value.toString())
+                        .append("</td>");
+                }
+                html.append("</tr>");
+            }
+            html.append("</table>");
+
+            html.append("<h3 style='color:#C00000;'>")
+                .append(lblTongTien.getText())
+                .append("</h3>");
+
+            html.append("</body></html>");
+
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
+
+                // Write UTF-8 BOM
+                fos.write(0xEF);
+                fos.write(0xBB);
+                fos.write(0xBF);
+
+                osw.write(html.toString());
+                osw.flush();
+
+                JOptionPane.showMessageDialog(this, "Xuất Excel thành công!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi xuất Excel: " + ex.getMessage());
+            }
         }
     }
 }

@@ -56,7 +56,7 @@ public class NhaKhoUI extends JPanel {
         add(lblTitle, BorderLayout.NORTH);
 
         // --- CENTER: JTABLE ---
-        String[] columns = {"Mã Kho", "Tên Nhà Kho", "Thủ Kho Phụ Trách", "Số Loại Vật Tư Đang Lưu", "Ghi Chú"};
+        String[] columns = {"Mã Kho", "Tên Nhà Kho", "Thủ Kho Phụ Trách", "Sức chứa", "Ghi Chú"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -121,81 +121,68 @@ public class NhaKhoUI extends JPanel {
     }
 
     private JPanel createDetailPanel() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setPreferredSize(new Dimension(380, 0));
         panel.setOpaque(false);
 
+        // ── FORM NHẬP LIỆU ──────────────────────────────────────────────────────────────────
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
+
         TitledBorder formBorder = BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(jollibeeRed, 2), "Cấu hình Thông tin Nhà Kho"
+            BorderFactory.createLineBorder(jollibeeRed, 2),
+            " 🏪  Cấu hình Thông tin Nhà Kho "
         );
-        formBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
+        formBorder.setTitleFont(new Font("SansSerif", Font.BOLD, 13));
         formBorder.setTitleColor(jollibeeRed);
         form.setBorder(formBorder);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 12, 8, 12);
+        gbc.insets = new Insets(7, 12, 7, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
         txtMaKho = new JTextField();
         txtMaKho.setEditable(false);
         txtMaKho.setBackground(new Color(235, 235, 230));
+        txtMaKho.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        txtTenKho = new JTextField();
-        txtDiaChi = new JTextField();
-        txtSucChua = new JTextField("0");
-        txtGhiChu = new JTextField();
+        txtTenKho = new JTextField(); txtTenKho.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtDiaChi = new JTextField(); txtDiaChi.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtSucChua = new JTextField("0"); txtSucChua.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtGhiChu = new JTextField(); txtGhiChu.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        cbNhanVien = new JComboBox<>(); cbNhanVien.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        cbNhanVien = new JComboBox<>();
-
-        Dimension fieldSize = new Dimension(210, 30);
-        txtMaKho.setPreferredSize(fieldSize);
-        txtTenKho.setPreferredSize(fieldSize);
-        txtDiaChi.setPreferredSize(fieldSize);
-        txtSucChua.setPreferredSize(fieldSize);
-        txtGhiChu.setPreferredSize(fieldSize);
-        cbNhanVien.setPreferredSize(fieldSize);
+        Dimension fieldSize = new Dimension(210, 32);
+        txtMaKho.setPreferredSize(fieldSize); txtTenKho.setPreferredSize(fieldSize);
+        txtDiaChi.setPreferredSize(fieldSize); txtSucChua.setPreferredSize(fieldSize);
+        txtGhiChu.setPreferredSize(fieldSize); cbNhanVien.setPreferredSize(fieldSize);
 
         addField(form, "Mã kho:", txtMaKho, 0, gbc);
         addField(form, "Tên nhà kho:", txtTenKho, 1, gbc);
-        addField(form, "Địa chỉ:", txtDiaChi, 2, gbc);
-        addField(form, "Sức chứa (Tấn):", txtSucChua, 3, gbc);
-        
-        gbc.gridx = 0; gbc.gridy = 4;
-        form.add(new JLabel("Thủ kho:"), gbc);
-        gbc.gridx = 1;
+        addField(form, "Sức chứa (Tấn):", txtSucChua, 2, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
+        JLabel lblNV = new JLabel("Thủ kho:");
+        lblNV.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblNV.setForeground(darkCharcoal);
+        form.add(lblNV, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0;
         form.add(cbNhanVien, gbc);
 
-        addField(form, "Ghi chú:", txtGhiChu, 5, gbc);
+        addField(form, "Ghi chú:", txtGhiChu, 4, gbc);
 
         panel.add(form, BorderLayout.CENTER);
 
-        // Buttons
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 10));
-        btnPanel.setOpaque(false);
+        // ── PANEL NÚT CHỦC NĂNG (GridLayout 2x2 giống NguyenLieuUI) ────────────────────
+        JPanel btnPanel = new JPanel(new GridLayout(2, 2, 8, 8));
+        btnPanel.setBackground(new Color(245, 245, 240));
+        btnPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
 
-        btnAdd = new JButton("Thêm");
-        btnUpdate = new JButton("Cập nhật");
-        btnDelete = new JButton("Xóa");
-        btnClear = new JButton("Nhập mới");
-
-        styleButton(btnAdd, new Color(40, 167, 69)); // Xanh lá
-        styleButton(btnUpdate, new Color(0, 123, 255)); // Xanh dương
-        styleButton(btnDelete, jollibeeRed); // Đỏ
-        styleButton(btnClear, darkCharcoal); // Xám
-
-        Dimension btnSize = new Dimension(80, 35);
-        btnAdd.setPreferredSize(btnSize);
-        btnUpdate.setPreferredSize(btnSize);
-        btnDelete.setPreferredSize(btnSize);
-        btnClear.setPreferredSize(btnSize);
-
-        btnAdd.addActionListener(e -> addKho());
-        btnUpdate.addActionListener(e -> updateKho());
-        btnDelete.addActionListener(e -> deleteKho());
-        btnClear.addActionListener(e -> clearForm());
+        btnAdd    = createStyledButton("➕  Thêm",    new Color(34, 139, 34), Color.WHITE);
+        btnUpdate = createStyledButton("✏  Cập nhật", new Color(30, 100, 200), Color.WHITE);
+        btnDelete = createStyledButton("🗑  Xóa",     jollibeeRed,           Color.WHITE);
+        btnClear  = createStyledButton("🔄  Nhập mới", darkCharcoal,          Color.WHITE);
 
         btnPanel.add(btnAdd);
         btnPanel.add(btnUpdate);
@@ -203,25 +190,48 @@ public class NhaKhoUI extends JPanel {
         btnPanel.add(btnClear);
         panel.add(btnPanel, BorderLayout.SOUTH);
 
+        btnAdd.addActionListener(e -> addKho());
+        btnUpdate.addActionListener(e -> updateKho());
+        btnDelete.addActionListener(e -> deleteKho());
+        btnClear.addActionListener(e -> clearForm());
+
         return panel;
     }
 
     private void addField(JPanel p, String label, JTextField field, int row, GridBagConstraints gbc) {
-        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
         JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lbl.setForeground(darkCharcoal);
         p.add(lbl, gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 1; gbc.weightx = 1.0;
         p.add(field, gbc);
     }
 
     private void styleButton(JButton b, Color bg) {
         b.setBackground(bg);
         b.setForeground(Color.WHITE);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        b.setFont(new Font("SansSerif", Font.BOLD, 13));
         b.setFocusPainted(false);
         b.setBorderPainted(false);
+        b.setContentAreaFilled(true);
+        b.setOpaque(true);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.putClientProperty("JButton.buttonType", "roundRect");
+    }
+
+    private JButton createStyledButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(true);
+        btn.setOpaque(true);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.putClientProperty("JButton.buttonType", "roundRect");
+        return btn;
     }
     
     private void loadKhoTable() {
@@ -232,7 +242,7 @@ public class NhaKhoUI extends JPanel {
         List<NhanVien> listNV = nhanVienDAO.getAllNhanVien();
         if (listNV != null) {
             for (NhanVien nv : listNV) {
-                cbNhanVien.addItem(nv.getMaNV() + " | " + nv.getTenNV());
+                cbNhanVien.addItem(nv.getMaNV().trim() + " | " + nv.getTenNV().trim());
             }
         }
 
@@ -240,53 +250,64 @@ public class NhaKhoUI extends JPanel {
         if (list != null) {
             for (Kho k : list) {
                 String managerName = "Chưa bổ nhiệm";
-                if (k.getMaNV() != null) {
-                    managerName = nhanVienDAO.getTenNhanVienByMaNV(k.getMaNV());
+                if (k.getMaNV() != null && !k.getMaNV().trim().isEmpty()) {
+                    managerName = nhanVienDAO.getTenNhanVienByMaNV(k.getMaNV().trim());
                 }
-                int count = khoDAO.getIngredientCountByKho(k.getMaKho());
 
                 tableModel.addRow(new Object[]{
-                    k.getMaKho(),
-                    k.getTenKho(),
-                    k.getMaNV() + " - " + managerName,
-                    count,
-                    k.getGhiChu()
+                    k.getMaKho().trim(),
+                    k.getTenKho().trim(),
+                    (k.getMaNV() != null ? k.getMaNV().trim() : "") + " - " + managerName.trim(),
+                    k.getSucChua(),
+                    k.getGhiChu() != null ? k.getGhiChu().trim() : ""
                 });
             }
         }
         // Tự động giãn cách các cột bảng nhà kho
         util.UIHelper.autoResizeColumnWidths(tableKho);
-        clearForm();
+        resetFormAndSelection();
     }
 
     private void displayDetails(int row) {
+        if (row < 0 || row >= tableModel.getRowCount()) return;
         String maKho = (String) tableModel.getValueAt(row, 0);
+        if (maKho == null || maKho.isEmpty()) return;
+        maKho = maKho.trim();
+
+        // Đọc giá trị sức chứa trực tiếp từ bảng (cột 3)
+        Object sucChuaObj = tableModel.getValueAt(row, 3);
+        String sucChuaStr = (sucChuaObj != null) ? sucChuaObj.toString() : "0";
+
         currentKho = khoDAO.getKhoById(maKho);
         if (currentKho != null) {
-            txtMaKho.setText(currentKho.getMaKho());
-            txtTenKho.setText(currentKho.getTenKho());
-            txtDiaChi.setText(currentKho.getDiaChi());
-            txtSucChua.setText(String.valueOf(currentKho.getSucChua()));
-            txtGhiChu.setText(currentKho.getGhiChu());
+            txtMaKho.setText(currentKho.getMaKho().trim());
+            txtTenKho.setText(currentKho.getTenKho().trim());
+            txtDiaChi.setText(currentKho.getDiaChi() != null ? currentKho.getDiaChi().trim() : "");
+            txtSucChua.setText(sucChuaStr);   // Hiển thị giá trị từ cột bảng
+            txtGhiChu.setText(currentKho.getGhiChu() != null ? currentKho.getGhiChu().trim() : "");
 
-            // Select manager combo box
+            // Chọn thủ kho trong ComboBox
             boolean found = false;
-            if (currentKho.getMaNV() != null) {
+            if (currentKho.getMaNV() != null && !currentKho.getMaNV().trim().isEmpty()) {
+                String maNVTrimmed = currentKho.getMaNV().trim();
                 for (int i = 0; i < cbNhanVien.getItemCount(); i++) {
-                    if (cbNhanVien.getItemAt(i).startsWith(currentKho.getMaNV())) {
+                    String item = cbNhanVien.getItemAt(i);
+                    if (item != null && item.trim().startsWith(maNVTrimmed)) {
                         cbNhanVien.setSelectedIndex(i);
                         found = true;
                         break;
                     }
                 }
             }
-            if (!found) {
-                cbNhanVien.setSelectedIndex(-1);
+            if (!found && cbNhanVien.getItemCount() > 0) {
+                cbNhanVien.setSelectedIndex(0);
             }
-            
+
             btnAdd.setEnabled(false);
             btnUpdate.setEnabled(true);
             btnDelete.setEnabled(true);
+        } else {
+            System.err.println("[NhaKhoUI] displayDetails: không tìm thấy kho với mã: " + maKho);
         }
     }
 
@@ -297,11 +318,17 @@ public class NhaKhoUI extends JPanel {
         txtSucChua.setText("0");
         txtGhiChu.setText("");
         currentKho = null;
-        tableKho.clearSelection();
-        
+        // Không gọi tableKho.clearSelection() ở đây để tránh vòng lặp sự kiện
+        // tableKho.clearSelection() sẽ được gọi riêng khi cần thiết
         btnAdd.setEnabled(true);
         btnUpdate.setEnabled(false);
         btnDelete.setEnabled(false);
+    }
+
+    /** Gọi khi cần reset cả form lẫn selection trong bảng */
+    private void resetFormAndSelection() {
+        clearForm();
+        tableKho.clearSelection();
     }
 
     private void addKho() {
@@ -388,5 +415,9 @@ public class NhaKhoUI extends JPanel {
                 JOptionPane.showMessageDialog(this, "Không thể xóa do nhà kho này đang chứa các nguyên liệu!", "Lỗi ràng buộc khóa ngoại", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    public void refreshData() {
+        loadKhoTable();
     }
 }

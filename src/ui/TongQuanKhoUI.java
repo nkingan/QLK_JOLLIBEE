@@ -205,7 +205,7 @@ public class TongQuanKhoUI extends JPanel {
         // Load Table
         tableModel.setRowCount(0);
         for (NguyenLieu nl : lowStockList) {
-            double value = nl.getGianhap() * nl.getSoluong();
+            double value = nl.getThanhtien();
             tableModel.addRow(new Object[]{
                     nl.getMaNL(),
                     nl.getTenNL(),

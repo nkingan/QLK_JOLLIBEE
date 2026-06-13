@@ -272,6 +272,18 @@ public class TaoPhieuNhapDialog extends JDialog {
         pnlButtons.add(btnExcel);
 
         btnExcel.addActionListener(e -> exportExcel());
+
+        // Auto load đơn giá từ nguyên liệu được chọn
+        cbNguyenLieu.addActionListener(e -> {
+            if (cbNguyenLieu.getSelectedItem() != null) {
+                String selected = (String) cbNguyenLieu.getSelectedItem();
+                String maNL = selected.split(" \\| ")[0];
+                NguyenLieu nl = nguyenLieuDAO.getNguyenLieuById(maNL);
+                if (nl != null) {
+                    txtDonGia.setText(String.valueOf(nl.getGianhap()));
+                }
+            }
+        });
     }
 
     private void exportExcel() {
@@ -394,7 +406,7 @@ public class TaoPhieuNhapDialog extends JDialog {
         List<NguyenLieu> nlList = nguyenLieuDAO.getAllNguyenLieu();
         if (nlList != null) {
             for (NguyenLieu nl : nlList) {
-                cbNguyenLieu.addItem(nl.getMaNL() + " | " + nl.getTenNL());
+                cbNguyenLieu.addItem(nl.getMaNL() + " | " + nl.getTenNL() + " (Tồn: " + nl.getSoluong() + ")");
             }
         }
 
@@ -507,6 +519,9 @@ public class TaoPhieuNhapDialog extends JDialog {
             String selectedNL = (String) cbNguyenLieu.getSelectedItem();
             String maNL = selectedNL.split(" \\| ")[0];
             String tenNL = selectedNL.split(" \\| ")[1];
+            if (tenNL.contains(" (Tồn:")) {
+                tenNL = tenNL.substring(0, tenNL.indexOf(" (Tồn:"));
+            }
             
             int soLuong = Integer.parseInt(txtSoLuong.getText().trim());
             double donGia = Double.parseDouble(txtDonGia.getText().trim());

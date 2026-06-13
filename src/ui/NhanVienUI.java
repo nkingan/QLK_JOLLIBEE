@@ -141,9 +141,9 @@ public class NhanVienUI extends JPanel {
         JPanel formEmp = new JPanel(new GridBagLayout());
         formEmp.setBackground(Color.WHITE);
         TitledBorder borderEmp = BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(JOLLIBEE_RED, 2), "Thông tin Cá nhân Nhân viên"
+            BorderFactory.createLineBorder(JOLLIBEE_RED, 2), " 👤  Thông tin Cá nhân Nhân viên "
         );
-        borderEmp.setTitleFont(new Font("Segoe UI", Font.BOLD, 13));
+        borderEmp.setTitleFont(new Font("SansSerif", Font.BOLD, 13));
         borderEmp.setTitleColor(JOLLIBEE_RED);
         formEmp.setBorder(borderEmp);
 
@@ -155,15 +155,16 @@ public class NhanVienUI extends JPanel {
         txtMaNV = new JTextField();
         txtMaNV.setEditable(false);
         txtMaNV.setBackground(new Color(235, 235, 230));
+        txtMaNV.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        txtTenNV = new JTextField();
-        txtSDT = new JTextField();
-        txtEmail = new JTextField();
-        txtNgaySinh = new JTextField();
-        txtGioiTinh = new JTextField();
-        txtChucVu = new JTextField();
+        txtTenNV = new JTextField(); txtTenNV.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtSDT = new JTextField(); txtSDT.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtEmail = new JTextField(); txtEmail.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtNgaySinh = new JTextField(); txtNgaySinh.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtGioiTinh = new JTextField(); txtGioiTinh.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtChucVu = new JTextField(); txtChucVu.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        Dimension tfSize = new Dimension(220, 26);
+        Dimension tfSize = new Dimension(210, 32);
         txtMaNV.setPreferredSize(tfSize);
         txtTenNV.setPreferredSize(tfSize);
         txtSDT.setPreferredSize(tfSize);
@@ -184,19 +185,19 @@ public class NhanVienUI extends JPanel {
         JPanel formAcc = new JPanel(new GridBagLayout());
         formAcc.setBackground(Color.WHITE);
         TitledBorder borderAcc = BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(242, 142, 43), 2), "Liên kết tài khoản truy cập hệ thống"
+            BorderFactory.createLineBorder(new Color(242, 142, 43), 2), " 🔑  Liên kết tài khoản truy cập hệ thống "
         );
-        borderAcc.setTitleFont(new Font("Segoe UI", Font.BOLD, 13));
+        borderAcc.setTitleFont(new Font("SansSerif", Font.BOLD, 13));
         borderAcc.setTitleColor(new Color(242, 142, 43));
         formAcc.setBorder(borderAcc);
 
         chkCapTaiKhoan = new JCheckBox("Cấp quyền tài khoản đăng nhập");
-        chkCapTaiKhoan.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        chkCapTaiKhoan.setFont(new Font("SansSerif", Font.BOLD, 13));
         chkCapTaiKhoan.setOpaque(false);
         
-        txtTenDangNhap = new JTextField();
-        txtMatKhau = new JPasswordField();
-        cbQuyen = new JComboBox<>(new String[]{"Nhân viên", "WarehouseManager", "Admin"});
+        txtTenDangNhap = new JTextField(); txtTenDangNhap.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtMatKhau = new JPasswordField(); txtMatKhau.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        cbQuyen = new JComboBox<>(new String[]{"Nhân viên", "WarehouseManager", "Admin"}); cbQuyen.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
         txtTenDangNhap.setPreferredSize(tfSize);
         txtMatKhau.setPreferredSize(tfSize);
@@ -206,22 +207,32 @@ public class NhanVienUI extends JPanel {
         formAcc.add(chkCapTaiKhoan, gbc);
         
         gbc.gridwidth = 1;
-        gbc.gridx = 0; gbc.gridy = 1;
-        formAcc.add(new JLabel("Tên đăng nhập:"), gbc);
-        gbc.gridx = 1;
+        
+        JLabel lblUser = new JLabel("Tên đăng nhập:");
+        lblUser.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblUser.setForeground(DARK_CHARCOAL);
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
+        formAcc.add(lblUser, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0;
         formAcc.add(txtTenDangNhap, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2;
-        formAcc.add(new JLabel("Mật khẩu:"), gbc);
-        gbc.gridx = 1;
+        JLabel lblPass = new JLabel("Mật khẩu:");
+        lblPass.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblPass.setForeground(DARK_CHARCOAL);
+        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0;
+        formAcc.add(lblPass, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0;
         formAcc.add(txtMatKhau, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3;
-        formAcc.add(new JLabel("Quyền hạn:"), gbc);
-        gbc.gridx = 1;
+        JLabel lblQuyen = new JLabel("Quyền hạn:");
+        lblQuyen.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblQuyen.setForeground(DARK_CHARCOAL);
+        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
+        formAcc.add(lblQuyen, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0;
         formAcc.add(cbQuyen, gbc);
 
-        btnSaveAccount = new JButton("💾 Lưu Thông Tin Tài Khoản");
+        btnSaveAccount = new JButton(" Lưu Thông Tin Tài Khoản");
         btnSaveAccount.setBackground(new Color(242, 142, 43));
         btnSaveAccount.setForeground(Color.WHITE);
         btnSaveAccount.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -236,10 +247,10 @@ public class NhanVienUI extends JPanel {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 5));
         btnPanel.setOpaque(false);
 
-        btnAdd = new JButton("Thêm NV");
-        btnUpdate = new JButton("Cập nhật");
-        btnDelete = new JButton("Xóa NV");
-        btnClear = new JButton("Nhập mới");
+        btnAdd = new JButton("➕ Thêm NV");
+        btnUpdate = new JButton("✏ Cập nhật");
+        btnDelete = new JButton("🗑 Xóa NV");
+        btnClear = new JButton("🔄 Nhập mới");
 
         styleButton(btnAdd, new Color(40, 167, 69));
         styleButton(btnUpdate, JOLLIBEE_YELLOW.darker());
@@ -282,26 +293,21 @@ public class NhanVienUI extends JPanel {
     }
 
     private void addField(JPanel p, String label, JTextField field, int row, GridBagConstraints gbc) {
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.35;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.WEST;
         JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
         lbl.setForeground(DARK_CHARCOAL);
-        lbl.setHorizontalAlignment(SwingConstants.RIGHT);
         p.add(lbl, gbc);
 
-        gbc.gridx = 1;
-        gbc.weightx = 0.65;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx = 1; gbc.weightx = 1.0;
         p.add(field, gbc);
     }
 
     private void styleButton(JButton b, Color bg) {
         b.setBackground(bg);
         b.setForeground(Color.WHITE);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        // b.setFont(new Font("Segoe UI", Font.BOLD, 11));
         b.setFocusPainted(false);
         b.setBorderPainted(false);
         b.putClientProperty("JButton.buttonType", "roundRect");
@@ -536,5 +542,9 @@ public class NhanVienUI extends JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Lưu tài khoản thất bại!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public void refreshData() {
+        loadNhanVienTable();
     }
 }
